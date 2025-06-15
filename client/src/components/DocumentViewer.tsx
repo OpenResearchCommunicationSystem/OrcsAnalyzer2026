@@ -3,8 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
-import { parseOrcsCard } from '@/lib/orcsParser';
-import type { Tag, TextSelection } from '@shared/schema';
+import type { Tag, TextSelection, File } from '@shared/schema';
 
 interface DocumentViewerProps {
   selectedFile: string | null;
@@ -15,15 +14,15 @@ interface DocumentViewerProps {
 export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: DocumentViewerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const { data: files = [] } = useQuery({
+  const { data: files = [] } = useQuery<File[]>({
     queryKey: ['/api/files'],
   });
 
-  const { data: tags = [] } = useQuery({
+  const { data: tags = [] } = useQuery<Tag[]>({
     queryKey: ['/api/tags'],
   });
 
-  const { data: fileContent } = useQuery({
+  const { data: fileContent } = useQuery<{ content: string }>({
     queryKey: ['/api/files', selectedFile, 'content'],
     enabled: !!selectedFile,
   });
@@ -45,10 +44,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
             text,
             startOffset,
             endOffset,
-            fileId: selectedFileData.id,
-            reference: fileType === 'csv' 
-              ? `${selectedFileData.name}[${Math.floor(startOffset / 50)},${startOffset % 50}]`
-              : `${selectedFileData.name}@${startOffset}-${endOffset}`
+            filename: selectedFileData.name,
+            reference: `${selectedFileData.name}@${startOffset}-${endOffset}`
           };
           onTextSelection(textSelection);
         }
@@ -57,168 +54,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
 
     document.addEventListener('mouseup', handleMouseUp);
     return () => document.removeEventListener('mouseup', handleMouseUp);
-  }, [selectedFileData, fileType, onTextSelection]);
-
-  // ORCS Card Viewer Component
-  const OrcsCardViewer = ({ card }: { card: any }) => (
-    <>
-      <div className="mb-6 pb-4 border-b border-gray-700">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-medium text-slate-200">
-            {card.title}
-          </h2>
-          <div className="flex items-center space-x-2">
-            <Badge variant="destructive" className="bg-red-600">
-              {card.classification}
-            </Badge>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
-              <Edit className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
-          <div>
-            <span className="font-medium">Source:</span> 
-            <span className="ml-1">{card.source}</span>
-          </div>
-          <div>
-            <span className="font-medium">Modified:</span> 
-            <span className="ml-1">{new Date(card.modified).toLocaleString()}</span>
-          </div>
-          <div>
-            <span className="font-medium">UUID:</span> 
-            <span className="font-mono text-xs ml-1">{card.id}</span>
-          </div>
-          <div>
-            <span className="font-medium">Citation:</span> 
-            <span className="ml-1">{card.citation}</span>
-          </div>
-        </div>
-      </div>
-
-      <div 
-        ref={contentRef}
-        className="font-mono text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text"
-        style={{ userSelect: 'text' }}
-      >
-        <div className="text-slate-300 mb-4 whitespace-pre-wrap">
-          {card.content}
-        </div>
-      </div>
-    </>
-  );
-
-  // CSV Viewer Component
-  const CsvViewer = ({ content }: { content: string }) => {
-    const lines = content.split('\n').filter(line => line.trim());
-    const headers = lines[0]?.split(',') || [];
-    const rows = lines.slice(1).map(line => line.split(','));
-
-    return (
-      <>
-        <div className="mb-6 pb-4 border-b border-gray-700">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-lg font-medium text-slate-200">
-              {selectedFileData?.name}
-            </h2>
-            <div className="flex items-center space-x-2">
-              <Badge variant="outline" className="border-gray-600 text-slate-300">
-                CSV ({rows.length} rows)
-              </Badge>
-              <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
-                <Edit className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
-            <div>
-              <span className="font-medium">Size:</span> 
-              <span className="ml-1">{selectedFileData?.size} bytes</span>
-            </div>
-            <div>
-              <span className="font-medium">Modified:</span> 
-              <span className="ml-1">{selectedFileData?.modified ? new Date(selectedFileData.modified).toLocaleString() : 'Unknown'}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-700">
-                <tr>
-                  {headers.map((header, index) => (
-                    <th key={index} className="px-4 py-3 text-left text-slate-200 font-medium">
-                      {header.trim()}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody 
-                ref={contentRef}
-                className="divide-y divide-gray-700"
-                style={{ userSelect: 'text' }}
-              >
-                {rows.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="hover:bg-gray-750">
-                    {row.map((cell, cellIndex) => (
-                      <td key={cellIndex} className="px-4 py-3 text-slate-300">
-                        {cell.trim()}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </>
-    );
-  };
-
-  // Text File Viewer Component
-  const TextViewer = ({ content }: { content: string }) => (
-    <>
-      <div className="mb-6 pb-4 border-b border-gray-700">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-medium text-slate-200">
-            {selectedFileData?.name}
-          </h2>
-          <div className="flex items-center space-x-2">
-            <Badge variant="outline" className="border-gray-600 text-slate-300">
-              {fileType?.toUpperCase() || 'TEXT'}
-            </Badge>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
-              <Edit className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
-          <div>
-            <span className="font-medium">Size:</span> 
-            <span className="ml-1">{selectedFileData?.size} bytes</span>
-          </div>
-          <div>
-            <span className="font-medium">Modified:</span> 
-            <span className="ml-1">{selectedFileData?.modified ? new Date(selectedFileData.modified).toLocaleString() : 'Unknown'}</span>
-          </div>
-        </div>
-      </div>
-
-      <div 
-        ref={contentRef}
-        className="font-mono text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text"
-        style={{ userSelect: 'text' }}
-      >
-        <div className="text-slate-300 mb-4 whitespace-pre-wrap">
-          {content}
-        </div>
-      </div>
-    </>
-  );
+  }, [selectedFileData, onTextSelection]);
 
   const renderContent = () => {
     if (!selectedFile) {
@@ -237,20 +73,58 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
       );
     }
 
-    // Route to appropriate viewer based on file type
-    if (fileType === 'orcs_card') {
-      const parsedCard = parseOrcsCard(fileContent.content);
-      if (parsedCard) {
-        return <OrcsCardViewer card={parsedCard} />;
-      }
+    // Only show text files
+    if (fileType === 'txt') {
+      return (
+        <>
+          <div className="mb-6 pb-4 border-b border-gray-700">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-medium text-slate-200">
+                {selectedFileData?.name}
+              </h2>
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className="border-gray-600 text-slate-300">
+                  TEXT
+                </Badge>
+                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
+                  <Edit className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
+              <div>
+                <span className="font-medium">Size:</span> 
+                <span className="ml-1">{selectedFileData?.size} bytes</span>
+              </div>
+              <div>
+                <span className="font-medium">Modified:</span> 
+                <span className="ml-1">{selectedFileData?.modified ? new Date(selectedFileData.modified).toLocaleString() : 'Unknown'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            ref={contentRef}
+            className="font-mono text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text"
+            style={{ userSelect: 'text' }}
+          >
+            <div className="text-slate-300 mb-4 whitespace-pre-wrap">
+              {fileContent.content}
+            </div>
+          </div>
+        </>
+      );
     }
 
-    if (fileType === 'csv') {
-      return <CsvViewer content={fileContent.content} />;
-    }
-
-    // Default to text viewer for txt and other files
-    return <TextViewer content={fileContent.content} />;
+    // For non-text files, show a message
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-slate-400">
+          Only text files (.txt) are supported in this viewer
+        </div>
+      </div>
+    );
   };
 
   return (

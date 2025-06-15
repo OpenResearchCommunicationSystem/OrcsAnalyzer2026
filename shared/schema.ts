@@ -90,6 +90,7 @@ export const textSelectionSchema = z.object({
   startOffset: z.number(),
   endOffset: z.number(),
   filename: z.string(),
+  reference: z.string(),
 });
 
 export type TextSelection = z.infer<typeof textSelectionSchema>;
