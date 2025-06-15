@@ -26,6 +26,10 @@ export class OrcsService {
     };
 
     await this.saveTagToFile(tag);
+    
+    // If this tag references an original file, add it to the corresponding ORCS card
+    await this.addTagToOrcsCard(tag);
+    
     return tag;
   }
 
@@ -127,6 +131,45 @@ export class OrcsService {
       return true;
     } catch (error) {
       return false;
+    }
+  }
+
+  async addTagToOrcsCard(tag: Tag): Promise<void> {
+    // Extract filename from the tag reference (format: filename@offset or filename[row,col])
+    const referenceMatch = tag.reference.match(/^([^@\[]+)/);
+    if (!referenceMatch) return;
+    
+    const originalFilename = referenceMatch[1];
+    
+    // Find the corresponding ORCS card
+    const cardFilename = `${path.parse(originalFilename).name}_ORCS_CARD.txt`;
+    const cardPath = path.join(path.join(process.cwd(), 'user_data', 'cards'), cardFilename);
+    
+    try {
+      // Read the existing ORCS card
+      const cardContent = await fs.readFile(cardPath, 'utf-8');
+      
+      // Parse the ORCS card to extract current tags
+      const tagMatch = cardContent.match(/TAGS: (.+)/);
+      const existingTags = tagMatch ? tagMatch[1].split(',').map(t => t.trim()).filter(t => t) : [];
+      
+      // Create tag reference for the ORCS card
+      const tagReference = `${tag.type}:${tag.name} (${tag.reference})`;
+      
+      // Add the new tag if it's not already present
+      if (!existingTags.includes(tagReference)) {
+        existingTags.push(tagReference);
+        
+        // Update the ORCS card content
+        const updatedContent = cardContent.replace(
+          /TAGS: .*/,
+          `TAGS: ${existingTags.join(', ')}`
+        );
+        
+        await fs.writeFile(cardPath, updatedContent, 'utf-8');
+      }
+    } catch (error) {
+      console.warn(`Could not update ORCS card ${cardFilename}:`, error);
     }
   }
 
