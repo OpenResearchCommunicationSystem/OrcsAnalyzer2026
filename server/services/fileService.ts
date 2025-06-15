@@ -39,8 +39,10 @@ export class FileService {
     await fs.writeFile(filepath, content);
     
     const stats = await fs.stat(filepath);
+    const id = crypto.createHash('md5').update(`${filepath}-${stats.mtime.getTime()}`).digest('hex');
+    
     const fileData: File = {
-      id: uuidv4(),
+      id,
       name: sanitizedName,
       path: filepath,
       type: sanitizedName.endsWith('.csv') ? 'csv' : 'txt',
@@ -134,8 +136,11 @@ export class FileService {
         const filepath = path.join(RAW_DIR, filename);
         const stats = await fs.stat(filepath);
         
+        // Use a consistent ID based on file path and modified time
+        const id = crypto.createHash('md5').update(`${filepath}-${stats.mtime.getTime()}`).digest('hex');
+        
         files.push({
-          id: uuidv4(),
+          id,
           name: filename,
           path: filepath,
           type: filename.endsWith('.csv') ? 'csv' : 'txt',
@@ -151,8 +156,11 @@ export class FileService {
         const filepath = path.join(CARDS_DIR, filename);
         const stats = await fs.stat(filepath);
         
+        // Use a consistent ID based on file path and modified time
+        const id = crypto.createHash('md5').update(`${filepath}-${stats.mtime.getTime()}`).digest('hex');
+        
         files.push({
-          id: uuidv4(),
+          id,
           name: filename,
           path: filepath,
           type: 'orcs_card',
