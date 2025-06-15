@@ -13,7 +13,7 @@ interface FileManagerSidebarProps {
 }
 
 export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: FileManagerSidebarProps) {
-  const [showOriginal, setShowOriginal] = useState(true);
+  const [showMetadata, setShowMetadata] = useState(false);
   const { stats }: { stats?: Stats } = useTagOperations();
   const { deleteFile, isDeleting } = useFileOperations();
 
@@ -31,8 +31,13 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
     ? (searchResults || [])
     : files;
 
+  // Filter files based on metadata toggle
   const rawFiles = filteredFiles.filter(file => file.type === 'txt' || file.type === 'csv');
+  const metadataFiles = filteredFiles.filter(file => file.type === 'metadata');
   const cardFiles = filteredFiles.filter(file => file.type === 'orcs_card');
+  
+  // Show raw files and conditionally show metadata files
+  const displayFiles = showMetadata ? [...rawFiles, ...metadataFiles] : rawFiles;
 
   const tagCounts = stats?.tagCounts || {};
 
@@ -63,11 +68,11 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowOriginal(!showOriginal)}
+            onClick={() => setShowMetadata(!showMetadata)}
             className="text-blue-400 hover:text-blue-300"
           >
             <Eye className="w-4 h-4 mr-1" />
-            {showOriginal ? 'Hide' : 'Show'} Original
+            {showMetadata ? 'Hide' : 'Show'} Metadata
           </Button>
         </div>
         
@@ -102,7 +107,7 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
             </div>
             
             {/* raw folder */}
-            {showOriginal && (
+            {true && (
               <div className="ml-4 space-y-1">
                 <div className="flex items-center text-sm text-slate-300 py-1">
                   <FolderOpen className="w-4 h-4 text-amber-400 mr-2" />

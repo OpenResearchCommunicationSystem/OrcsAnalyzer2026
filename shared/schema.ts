@@ -5,7 +5,7 @@ export const fileSchema = z.object({
   id: z.string(),
   name: z.string(),
   path: z.string(),
-  type: z.enum(['txt', 'csv', 'orcs_card']),
+  type: z.enum(['txt', 'csv', 'orcs_card', 'metadata']),
   size: z.number(),
   created: z.string(),
   modified: z.string(),

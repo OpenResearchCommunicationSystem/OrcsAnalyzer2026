@@ -156,10 +156,9 @@ export class FileService {
       const rawFiles = await fs.readdir(RAW_DIR);
       const files: File[] = [];
       
-      // Process only raw files, filter out metadata files
+      // Process all files including metadata files
       for (const filename of rawFiles) {
         if (filename === '.gitkeep') continue;
-        if (filename.endsWith('.yaml.txt')) continue; // Skip metadata files
         
         const filepath = path.join(RAW_DIR, filename);
         const stats = await fs.stat(filepath);
@@ -171,7 +170,7 @@ export class FileService {
           id,
           name: filename,
           path: filepath,
-          type: filename.endsWith('.csv') ? 'csv' : 'txt',
+          type: filename.endsWith('.csv') ? 'csv' : filename.endsWith('.yaml.txt') ? 'metadata' : 'txt',
           size: stats.size,
           created: stats.birthtime.toISOString(),
           modified: stats.mtime.toISOString(),
