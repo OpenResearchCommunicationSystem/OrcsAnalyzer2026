@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Tag, InsertTag } from "@shared/schema";
+import { Tag, InsertTag, Stats } from "@shared/schema";
 
 export function useTagOperations() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<Stats>({
     queryKey: ['/api/stats'],
   });
 

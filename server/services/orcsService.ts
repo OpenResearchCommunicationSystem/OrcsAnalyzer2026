@@ -171,8 +171,8 @@ export class OrcsService {
       
       if (cardContent.includes(sectionName)) {
         // Section exists, add to it
-        cardContent = cardContent.replace(sectionRegex, (match, header, content, footer) => {
-          const existingEntries = content.trim().split('\n').filter(line => line.trim());
+        cardContent = cardContent.replace(sectionRegex, (match: string, header: string, content: string, footer: string) => {
+          const existingEntries = content.trim().split('\n').filter((line: string) => line.trim());
           if (!existingEntries.includes(tagEntry)) {
             existingEntries.push(tagEntry);
           }
