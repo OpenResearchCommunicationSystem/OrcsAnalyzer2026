@@ -1,0 +1,20 @@
+=== ORCS TAG FILE ===
+UUID: 0242ed33-8f7a-4370-8f88-f39d33f449c2
+TYPE: entity
+NAME: AI startup
+REFERENCE: test_news.txt@45-55
+CREATED: 2025-06-15T05:38:20.339Z
+MODIFIED: 2025-06-15T05:38:20.339Z
+
+ALIASES:
+  - AI company
+  - startup
+
+KEY_VALUE_PAIRS:
+valuation: 2.5B
+employees: 150
+
+DESCRIPTION:
+Artificial intelligence startup being acquired
+
+=== END ORCS TAG FILE ===

@@ -1,0 +1,25 @@
+# ORCS Metadata Card
+version: "2025.003"
+uuid: "3d02caf3-2962-4838-9526-c999c3cd5e40"
+source_file: "beneficial_owners.csv"
+source_reference: ""  # External URL or reference
+classification: "Proprietary Information"
+handling:
+  - "Copyright 2025 TechWatch Intelligence"
+  - "Distribution: Internal Use Only"
+created: "2025-06-15T05:32:39.295Z"
+modified: "2025-06-15T05:32:39.295Z"
+source_hash: "sha256:87506b7916834ff50d42b518c7b9941a4b64e7618423a95db577716bf0102012"
+
+metadata:
+  file_type: "csv"
+  file_size: 135
+  analyst: ""
+  confidence: ""
+
+tag_index: []
+  # Tags will be added here as:
+  # - id: "tag_id"
+  #   type: "entity"
+  #   name: "TagName"
+  #   reference: "beneficial_owners.csv[row,col]"

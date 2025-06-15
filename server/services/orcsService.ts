@@ -150,21 +150,45 @@ export class OrcsService {
     // Create edges for relationships
     const relationships = tags.filter(tag => tag.type === 'relationship');
     relationships.forEach(relationship => {
-      // Parse relationship format: "entityA RELATION entityB"
+      // Parse relationship format: "entityA RELATION entityB" (supporting multi-word entities)
       const relationshipText = relationship.description || relationship.name;
-      const match = relationshipText.match(/(\w+)\s+(\w+)\s+(\w+)/);
       
-      if (match) {
-        const [, sourceEntity, relationLabel, targetEntity] = match;
-        const sourceNode = nodes.find(node => node.label.toLowerCase() === sourceEntity.toLowerCase());
-        const targetNode = nodes.find(node => node.label.toLowerCase() === targetEntity.toLowerCase());
+      // Try to find a relationship verb/action in the middle
+      const relationshipWords = ['ACQUIRED', 'OWNS', 'LEADS', 'WORKS_FOR', 'LOCATED_IN', 'PART_OF', 'CREATED', 'MANAGES'];
+      let sourceEntity = '';
+      let relationLabel = '';
+      let targetEntity = '';
+      
+      for (const verb of relationshipWords) {
+        if (relationshipText.includes(verb)) {
+          const parts = relationshipText.split(verb);
+          if (parts.length === 2) {
+            sourceEntity = parts[0].trim();
+            relationLabel = verb;
+            targetEntity = parts[1].trim();
+            break;
+          }
+        }
+      }
+      
+      if (sourceEntity && targetEntity) {
+        const sourceNode = nodes.find(node => 
+          node.label.toLowerCase() === sourceEntity.toLowerCase() ||
+          sourceEntity.toLowerCase().includes(node.label.toLowerCase()) ||
+          node.label.toLowerCase().includes(sourceEntity.toLowerCase())
+        );
+        const targetNode = nodes.find(node => 
+          node.label.toLowerCase() === targetEntity.toLowerCase() ||
+          targetEntity.toLowerCase().includes(node.label.toLowerCase()) ||
+          node.label.toLowerCase().includes(targetEntity.toLowerCase())
+        );
         
         if (sourceNode && targetNode) {
           edges.push({
             id: relationship.id,
             source: sourceNode.id,
             target: targetNode.id,
-            label: relationLabel,
+            label: relationLabel.toLowerCase(),
             type: 'relationship',
           });
         }
