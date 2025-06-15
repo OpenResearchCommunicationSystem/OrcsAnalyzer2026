@@ -40,6 +40,7 @@ export function TagCreationModal({
     
     const tagData: InsertTag = {
       type: selectedType as any,
+      entityType: entityType || undefined,
       name: identifier.trim(),
       reference,
       aliases: [],
@@ -99,6 +100,80 @@ export function TagCreationModal({
               ))}
             </div>
           </div>
+
+          {selectedType && (
+            <div>
+              <Label className="text-sm font-medium text-slate-300 mb-2 block">
+                {selectedType === 'entity' ? 'Entity Type' : 
+                 selectedType === 'relationship' ? 'Relationship Type' :
+                 selectedType === 'attribute' ? 'Attribute Type' :
+                 selectedType === 'comment' ? 'Comment Type' :
+                 'Key-Value Type'}
+              </Label>
+              <Select
+                value={entityType}
+                onValueChange={setEntityType}
+              >
+                <SelectTrigger className="w-full bg-gray-900 border-gray-600 text-slate-200">
+                  <SelectValue placeholder={`Select ${selectedType} type (optional)`} />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  {selectedType === 'entity' && (
+                    <>
+                      <SelectItem value="person">Person</SelectItem>
+                      <SelectItem value="organization">Organization</SelectItem>
+                      <SelectItem value="location">Location</SelectItem>
+                      <SelectItem value="event">Event</SelectItem>
+                      <SelectItem value="product">Product</SelectItem>
+                      <SelectItem value="concept">Concept</SelectItem>
+                      <SelectItem value="document">Document</SelectItem>
+                    </>
+                  )}
+                  {selectedType === 'relationship' && (
+                    <>
+                      <SelectItem value="ownership">Ownership</SelectItem>
+                      <SelectItem value="employment">Employment</SelectItem>
+                      <SelectItem value="partnership">Partnership</SelectItem>
+                      <SelectItem value="acquisition">Acquisition</SelectItem>
+                      <SelectItem value="collaboration">Collaboration</SelectItem>
+                      <SelectItem value="competition">Competition</SelectItem>
+                      <SelectItem value="family">Family</SelectItem>
+                      <SelectItem value="location">Location</SelectItem>
+                    </>
+                  )}
+                  {selectedType === 'attribute' && (
+                    <>
+                      <SelectItem value="physical">Physical</SelectItem>
+                      <SelectItem value="temporal">Temporal</SelectItem>
+                      <SelectItem value="financial">Financial</SelectItem>
+                      <SelectItem value="descriptive">Descriptive</SelectItem>
+                      <SelectItem value="quantitative">Quantitative</SelectItem>
+                      <SelectItem value="qualitative">Qualitative</SelectItem>
+                    </>
+                  )}
+                  {selectedType === 'comment' && (
+                    <>
+                      <SelectItem value="analysis">Analysis</SelectItem>
+                      <SelectItem value="hypothesis">Hypothesis</SelectItem>
+                      <SelectItem value="question">Question</SelectItem>
+                      <SelectItem value="note">Note</SelectItem>
+                      <SelectItem value="warning">Warning</SelectItem>
+                      <SelectItem value="summary">Summary</SelectItem>
+                    </>
+                  )}
+                  {selectedType === 'kv_pair' && (
+                    <>
+                      <SelectItem value="metadata">Metadata</SelectItem>
+                      <SelectItem value="classification">Classification</SelectItem>
+                      <SelectItem value="reference">Reference</SelectItem>
+                      <SelectItem value="identifier">Identifier</SelectItem>
+                      <SelectItem value="property">Property</SelectItem>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div>
             <Label className="text-sm font-medium text-slate-300">Identifier</Label>

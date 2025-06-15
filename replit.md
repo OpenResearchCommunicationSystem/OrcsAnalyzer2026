@@ -122,6 +122,10 @@ Changelog:
 - June 15, 2025. Implemented content search indexing with persistent storage
 - June 15, 2025. Completed expandable/collapsible folder tree structure for tag directories
 - June 15, 2025. Removed obsolete cards folder, tags now displayed as individual files within type folders
+- June 15, 2025. Added entity type system with subtypes for all tag categories
+- June 15, 2025. Implemented tag editor dropdown for entity types (person, organization, location, etc.)
+- June 15, 2025. Added entity type selection to tag creation modal
+- June 15, 2025. Connected tag clicking from file sidebar to tag editor for seamless editing
 ```
 
 ## User Preferences

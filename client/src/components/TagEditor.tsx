@@ -27,20 +27,16 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
     }
   }, [selectedTag]);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (selectedTag && formData.name && formData.type) {
-      try {
-        updateTag(selectedTag.id, formData);
-        // Create updated tag object for callback
-        const updatedTag: Tag = {
-          ...selectedTag,
-          ...formData,
-          modified: new Date().toISOString()
-        } as Tag;
-        onTagUpdate(updatedTag);
-      } catch (error) {
-        console.error('Failed to update tag:', error);
-      }
+      updateTag(selectedTag.id, formData);
+      // Create updated tag object for callback
+      const updatedTag: Tag = {
+        ...selectedTag,
+        ...formData,
+        modified: new Date().toISOString()
+      } as Tag;
+      onTagUpdate(updatedTag);
     }
   };
 
