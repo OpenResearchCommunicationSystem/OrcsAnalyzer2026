@@ -21,9 +21,15 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
     queryKey: ['/api/files'],
   });
 
-  const filteredFiles = files.filter(file => 
-    file.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Use search API when there's a query, otherwise show all files
+  const { data: searchResults } = useQuery<File[]>({
+    queryKey: [`/api/search/files?q=${encodeURIComponent(searchQuery)}`],
+    enabled: searchQuery.trim().length > 0,
+  });
+
+  const filteredFiles = searchQuery.trim().length > 0 
+    ? (searchResults || [])
+    : files;
 
   const rawFiles = filteredFiles.filter(file => file.type === 'txt' || file.type === 'csv');
   const cardFiles = filteredFiles.filter(file => file.type === 'orcs_card');

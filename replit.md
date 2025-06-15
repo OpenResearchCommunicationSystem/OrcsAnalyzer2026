@@ -25,11 +25,13 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 
 ### Data Storage Solutions
 - **Primary Storage**: File-based system organized in structured directories
+- **Search Index**: Persistent JSON-based index stored in `user_data/index.json`
 - **Database**: PostgreSQL 16 (configured but not yet implemented with Drizzle ORM)
 - **File Organization**: Hierarchical directory structure under `user_data/`
   - `raw/` - Original uploaded files (.txt, .csv)
   - `cards/` - Generated ORCS intelligence cards
   - `entities/`, `relationships/`, `attributes/`, `comments/`, `kv_pairs/` - Categorized tags
+  - `index.json` - Search index with keywords, content hashes, and metadata
 
 ## Key Components
 
@@ -51,6 +53,14 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 - Node-based representation of entities and their connections
 - Real-time updates as new tags and relationships are created
 - SVG-based rendering for scalability
+
+### Search and Indexing System
+- Persistent search index stored in `user_data/index.json`
+- Automatic indexing on startup and file changes
+- Keyword extraction with stop-word filtering
+- Content-based search with relevance scoring
+- API endpoints: `/api/search/files`, `/api/search/content`, `/api/index/rebuild`
+- Index includes file names, content, tags, and metadata
 
 ### ORCS Card System
 - Structured intelligence document format with standardized metadata

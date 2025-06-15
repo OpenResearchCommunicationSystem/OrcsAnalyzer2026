@@ -5,6 +5,7 @@ import { z } from "zod";
 import { insertTagSchema, textSelectionSchema } from "@shared/schema";
 import { fileService } from "./services/fileService";
 import { orcsService } from "./services/orcsService";
+import { storage } from "./storage";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -166,6 +167,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch statistics" });
+    }
+  });
+
+  // Search files
+  app.get('/api/search/files', async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.trim().length === 0) {
+        return res.json([]);
+      }
+      
+      const results = await storage.searchFiles(query);
+      res.json(results);
+    } catch (error) {
+      console.error('Search failed:', error);
+      res.status(500).json({ error: 'Search failed' });
+    }
+  });
+
+  // Search content with context
+  app.get('/api/search/content', async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.trim().length === 0) {
+        return res.json([]);
+      }
+      
+      const results = await storage.searchContent(query);
+      res.json(results);
+    } catch (error) {
+      console.error('Content search failed:', error);
+      res.status(500).json({ error: 'Content search failed' });
+    }
+  });
+
+  // Rebuild search index
+  app.post('/api/index/rebuild', async (req, res) => {
+    try {
+      await storage.buildIndex();
+      res.json({ message: 'Index rebuilt successfully' });
+    } catch (error) {
+      console.error('Index rebuild failed:', error);
+      res.status(500).json({ error: 'Index rebuild failed' });
     }
   });
 
