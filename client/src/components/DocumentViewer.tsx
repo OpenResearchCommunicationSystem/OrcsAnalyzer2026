@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Edit, Table, Save, FileText } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { Tag, TextSelection, File } from '@shared/schema';
+import { MetadataForm } from './MetadataForm';
 
 interface DocumentViewerProps {
   selectedFile: string | null;
@@ -17,7 +18,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   const contentRef = useRef<HTMLDivElement>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [metadataContent, setMetadataContent] = useState<string>('');
-  const [isEditingMetadata, setIsEditingMetadata] = useState(false);
+  const [showMetadataForm, setShowMetadataForm] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: files = [] } = useQuery<File[]>({
@@ -73,26 +74,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     }
   }, [metadataResponse, selectedFileData]);
 
-  // Metadata save mutation
-  const saveMetadataMutation = useMutation({
-    mutationFn: async (metadata: string) => {
-      const response = await apiRequest(`/api/files/${selectedFile}/metadata`, 'PUT', { metadata });
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
-      setIsEditingMetadata(false);
-      // Show success notification
-      console.log('Metadata saved successfully');
-    },
-    onError: (error: any) => {
-      console.error('Failed to save metadata:', error);
-      alert('Failed to save metadata. Please try again.');
-    }
-  });
-
-  const handleSaveMetadata = () => {
-    saveMetadataMutation.mutate(metadataContent);
+  const handleMetadataSave = () => {
+    queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
   };
 
   // CSV parsing function
@@ -335,49 +318,15 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-slate-400 font-sans text-xs uppercase tracking-wide">ORCS Metadata</h3>
             <div className="flex items-center space-x-2">
-              {isEditingMetadata ? (
-                <>
-                  <Button
-                    onClick={handleSaveMetadata}
-                    disabled={saveMetadataMutation.isPending}
-                    size="sm"
-                    className={`${
-                      saveMetadataMutation.isSuccess 
-                        ? 'bg-green-600 hover:bg-green-700' 
-                        : saveMetadataMutation.isError
-                        ? 'bg-red-600 hover:bg-red-700'
-                        : 'bg-blue-600 hover:bg-blue-700'
-                    }`}
-                  >
-                    <Save className="w-3 h-3 mr-1" />
-                    {saveMetadataMutation.isPending 
-                      ? 'Saving...' 
-                      : saveMetadataMutation.isSuccess 
-                      ? 'Saved!' 
-                      : saveMetadataMutation.isError 
-                      ? 'Error - Retry' 
-                      : 'Save'}
-                  </Button>
-                  <Button
-                    onClick={() => setIsEditingMetadata(false)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-slate-400"
-                  >
-                    Cancel
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  onClick={() => setIsEditingMetadata(true)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-slate-400 hover:text-slate-200"
-                >
-                  <Edit className="w-3 h-3 mr-1" />
-                  Edit
-                </Button>
-              )}
+              <Button
+                onClick={() => setShowMetadataForm(true)}
+                variant="ghost"
+                size="sm"
+                className="text-slate-400 hover:text-slate-200"
+              >
+                <Edit className="w-3 h-3 mr-1" />
+                Edit
+              </Button>
             </div>
           </div>
           
