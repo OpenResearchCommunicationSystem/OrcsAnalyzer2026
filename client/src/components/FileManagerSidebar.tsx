@@ -13,7 +13,7 @@ interface FileManagerSidebarProps {
 }
 
 export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: FileManagerSidebarProps) {
-  const [showOriginal, setShowOriginal] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(true);
   const { stats } = useTagOperations();
   const { deleteFile, isDeleting } = useFileOperations();
 
