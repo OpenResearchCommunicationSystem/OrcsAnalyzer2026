@@ -1,0 +1,71 @@
+=== CLASSIFICATION: Proprietary Information ===
+=== HANDLING: Copyright 2025 TechWatch Intelligence ===
+=== HANDLING: Distribution: Internal Use Only ===
+=== ORCS FORMAT VERSION: 2025.003 ===
+UUID: a94c82d2-6c89-11ed-a1eb-0242ac120002
+TITLE: Corporate Merger Analysis - Tech Sector Q1 2025
+SOURCE: file:///research/merger_analysis_q1_2025.txt
+SOURCE_HASH: sha256:4a3f1239abcd4567ef9876abcde1234567890abcdef1234567890abcdef1234
+CITATION: TechWatch Intelligence Brief, Q1 2025, Internal Analysis
+CREATED: 2025-01-22T09:15:00Z
+MODIFIED: 2025-01-22T11:02:45Z
+
+=== CLASSIFICATION: Proprietary Information ===
+=== HANDLING: Copyright 2025 TechWatch Intelligence ===
+=== HANDLING: Distribution: Internal Use Only ===
+=== ORCS FORMAT VERSION: 2025.003 ===
+UUID: a94c82d2-6c89-11ed-a1eb-0242ac120002
+TITLE: Corporate Merger Analysis - Tech Sector Q1 2025
+SOURCE: file:///research/merger_analysis_q1_2025.txt
+SOURCE_HASH: sha256:4a3f1239abcd4567ef9876abcde1234567890abcdef1234567890abcdef1234
+CITATION: TechWatch Intelligence Brief, Q1 2025, Internal Analysis
+CREATED: 2025-01-22T09:15:00Z
+MODIFIED: 2025-01-22T11:02:45Z
+
+CLASSIFICATION_LEVELS:
+Level_1: Proprietary Information (default)
+Level_2: Internal Use Only  
+Level_3: Public Information
+Level_4: Open Source
+
+KEYVALUE_PAIRS:
+analyst: j.doe@techwatch
+confidence_level: medium
+related_case: ORCS-2025-MER-044
+
+CONTENT:
+TechCorp announced acquisition of StartupX for $2.5B. CEO John Smith stated this strengthens their AI portfolio. However, internal board discussions revealed concerns about integration costs and cultural fit issues. Industry analysts question the valuation. His LinkedIn profile is available at https://www.linkedin.com/in/john-smith-ceo. The deal faces regulatory review in Q2 2025.
+
+ENTITIES:
+uuid:ed872f24-6c8a-11ed-a1eb-0242ac120001 organization:techcorp@0-8 [tech corp, techcorporation]
+uuid:ed872f24-6c8a-11ed-a1eb-0242ac120002 organization:startupx@31-39 [startup x]
+uuid:ed872f24-6c8a-11ed-a1eb-0242ac120003 person:john-smith@55-65 [john, j.smith, smith]
+uuid:ed872f24-6c8a-11ed-a1eb-0242ac120004 profile:linkedin-john-smith@140-186 [john smith linkedin, ceo profile]
+
+RELATIONSHIPS:
+techcorp(ed872f24-6c8a-11ed-a1eb-0242ac120001) ACQUIRES startupx(ed872f24-6c8a-11ed-a1eb-0242ac120002)
+john-smith(ed872f24-6c8a-11ed-a1eb-0242ac120003) LEADS techcorp(ed872f24-6c8a-11ed-a1eb-0242ac120001)
+john-smith(ed872f24-6c8a-11ed-a1eb-0242ac120003) OWNS_PROFILE linkedin-john-smith(ed872f24-6c8a-11ed-a1eb-0242ac120004)
+
+ATTRIBUTES:
+uuid:at1d24c1-9d93-42f0-bf3e-2341e1234567 attribute:linkedin-url@140-186 -> ed872f24-6c8a-11ed-a1eb-0242ac120003
+value: https://www.linkedin.com/in/john-smith-ceo
+source: public-linkedin-profile
+
+KEYVALUE_PAIRS (entity: ed872f24-6c8a-11ed-a1eb-0242ac120003):
+role: ceo
+tenure: 2019-present
+notability: public-spokesperson
+
+PORTION_EXCEPTIONS:
+@0-54,195-250 Level_3 REASON "Public announcement information - press release content"
+@55-110 Level_2 REASON "CEO statement from public interview"
+@111-194 Level_1 REASON "Internal board deliberations - confidential"
+
+COMMENTS:
+uuid:ed872f24-6c8a-11ed-a1eb-0242ac120006 comment:analyst-note@260-320 [evaluation needed]
+
+=== END HANDLING: Distribution: Internal Use Only ===
+=== END HANDLING: Copyright 2025 TechWatch Intelligence ===
+=== END ORCS FORMAT VERSION: 2025.003 ===
+=== END CLASSIFICATION: Proprietary Information ===
