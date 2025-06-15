@@ -1,0 +1,26 @@
+=== CLASSIFICATION: Proprietary Information ===
+=== HANDLING: Copyright 2025 TechWatch Intelligence ===
+=== HANDLING: Distribution: Internal Use Only ===
+=== ORCS FORMAT VERSION: 2025.003 ===
+UUID: e2380408-f695-4bd0-85f1-0f7c5ab0eebe
+TITLE: social_post_2.txt - ORCS Analysis Card
+SOURCE: file:////home/runner/workspace/user_data/raw/social_post_2.txt
+SOURCE_HASH: sha256:740c7909e777bd6abcd8b0f5a0868e1899a164a41496d454f371fa2137c7c674
+CITATION: Original file: social_post_2.txt
+CREATED: 2025-06-15T02:00:05.817Z
+MODIFIED: 2025-06-15T02:00:05.817Z
+
+KEYVALUE_PAIRS:
+original_filename: social_post_2.txt
+file_type: txt
+orcs_version: 2025.003
+
+CONTENT:
+Facebook Status — Jasmine O'Neil checked in at the Global Clean Energy Forum in Berlin. "Excited to speak on the ethics of AI in infrastructure planning!"
+
+
+TAGS:
+
+=== END HANDLING: Distribution: Internal Use Only ===
+=== END ORCS FORMAT VERSION: 2025.003 ===
+=== END CLASSIFICATION: Proprietary Information ===

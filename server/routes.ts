@@ -40,10 +40,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/files/:path/content", async (req, res) => {
+  app.get("/api/files/:id/content", async (req, res) => {
     try {
-      const decodedPath = decodeURIComponent(req.params.path);
-      const content = await fileService.getFileContent(decodedPath);
+      const fileId = req.params.id;
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      const content = await fileService.getFileContent(file.path);
       res.json({ content });
     } catch (error) {
       res.status(404).json({ error: "File not found" });
