@@ -22,8 +22,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     queryKey: ['/api/tags'],
   });
 
-  const { data: fileContent } = useQuery<{ content: string }>({
-    queryKey: ['/api/files', selectedFile, 'content'],
+  const { data: fileContent, isLoading: isContentLoading } = useQuery<{ content: string }>({
+    queryKey: [`/api/files/${selectedFile}/content`],
     enabled: !!selectedFile,
   });
 
@@ -57,12 +57,6 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   }, [selectedFileData, onTextSelection]);
 
   const renderContent = () => {
-    console.log('DocumentViewer debug:', { 
-      selectedFile, 
-      fileType, 
-      hasContent: !!fileContent?.content,
-      selectedFileData: selectedFileData?.name 
-    });
 
     if (!selectedFile) {
       return (
