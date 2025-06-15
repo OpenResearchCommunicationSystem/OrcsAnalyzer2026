@@ -76,11 +76,18 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   // Metadata save mutation
   const saveMetadataMutation = useMutation({
     mutationFn: async (metadata: string) => {
-      return await apiRequest(`/api/files/${selectedFile}/metadata`, 'PUT', { metadata });
+      const response = await apiRequest(`/api/files/${selectedFile}/metadata`, 'PUT', { metadata });
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
       setIsEditingMetadata(false);
+      // Show success notification
+      console.log('Metadata saved successfully');
+    },
+    onError: (error: any) => {
+      console.error('Failed to save metadata:', error);
+      alert('Failed to save metadata. Please try again.');
     }
   });
 
@@ -334,10 +341,22 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
                     onClick={handleSaveMetadata}
                     disabled={saveMetadataMutation.isPending}
                     size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className={`${
+                      saveMetadataMutation.isSuccess 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : saveMetadataMutation.isError
+                        ? 'bg-red-600 hover:bg-red-700'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
                   >
                     <Save className="w-3 h-3 mr-1" />
-                    {saveMetadataMutation.isPending ? 'Saving...' : 'Save'}
+                    {saveMetadataMutation.isPending 
+                      ? 'Saving...' 
+                      : saveMetadataMutation.isSuccess 
+                      ? 'Saved!' 
+                      : saveMetadataMutation.isError 
+                      ? 'Error - Retry' 
+                      : 'Save'}
                   </Button>
                   <Button
                     onClick={() => setIsEditingMetadata(false)}
