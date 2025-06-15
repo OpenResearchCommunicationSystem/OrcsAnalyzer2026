@@ -195,6 +195,62 @@ export class OrcsService {
       }
     });
 
+    // Add attribute nodes and connect them to related entities
+    const attributes = tags.filter(tag => tag.type === 'attribute');
+    attributes.forEach((attribute, index) => {
+      // Add attribute as a smaller node
+      nodes.push({
+        id: attribute.id,
+        label: attribute.name,
+        type: attribute.type,
+        x: 50 + (index * 80), // Position attributes along the bottom
+        y: 300,
+      });
+      
+      // Try to connect attribute to related entities or relationships
+      const attrName = attribute.name.toLowerCase();
+      const attrDesc = (attribute.description || '').toLowerCase();
+      
+      // First try to connect to relationships if attribute describes a relationship aspect
+      let connected = false;
+      relationships.forEach(relationship => {
+        const relName = relationship.name.toLowerCase();
+        const relDesc = (relationship.description || '').toLowerCase();
+        
+        if (attrName.includes(relName) || relDesc.includes(attrName.split('_')[0]) || 
+            (attrName.includes('acquisition') && relName.includes('acquisition'))) {
+          edges.push({
+            id: `attr_${attribute.id}`,
+            source: attribute.id,
+            target: relationship.id,
+            label: 'describes',
+            type: 'attribute',
+          });
+          connected = true;
+        }
+      });
+      
+      // If not connected to relationship, try entities
+      if (!connected) {
+        const relatedEntities = entities.filter(entity => {
+          const entityName = entity.name.toLowerCase();
+          return attrName.includes(entityName) || 
+                 attrDesc.includes(entityName) ||
+                 entityName.includes(attrName.split('_')[0]);
+        });
+        
+        if (relatedEntities.length > 0) {
+          edges.push({
+            id: `attr_${attribute.id}`,
+            source: attribute.id,
+            target: relatedEntities[0].id,
+            label: 'describes',
+            type: 'attribute',
+          });
+        }
+      }
+    });
+
     return { nodes, edges };
   }
 
