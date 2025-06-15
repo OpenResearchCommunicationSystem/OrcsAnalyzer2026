@@ -57,6 +57,13 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   }, [selectedFileData, onTextSelection]);
 
   const renderContent = () => {
+    console.log('DocumentViewer debug:', { 
+      selectedFile, 
+      fileType, 
+      hasContent: !!fileContent?.content,
+      selectedFileData: selectedFileData?.name 
+    });
+
     if (!selectedFile) {
       return (
         <div className="flex items-center justify-center h-64">
