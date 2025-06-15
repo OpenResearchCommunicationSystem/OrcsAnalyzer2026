@@ -64,7 +64,8 @@ export class MemStorage implements IStorage {
   constructor() {
     this.ensureDirectories().then(() => {
       this.loadIndex().then(() => {
-        this.buildIndex();
+        // Delay initial indexing to allow file service to populate data
+        setTimeout(() => this.buildIndex(), 1000);
       });
     });
   }

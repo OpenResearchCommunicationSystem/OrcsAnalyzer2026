@@ -178,8 +178,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
       
-      const results = await storage.searchFiles(query);
-      res.json(results);
+      // Use file service to get files and search through them
+      const files = await fileService.getFiles();
+      const searchTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 2);
+      
+      const results = [];
+      for (const file of files) {
+        let score = 0;
+        
+        // Search in filename (higher weight)
+        if (file.name.toLowerCase().includes(query.toLowerCase())) {
+          score += 10;
+        }
+        
+        try {
+          // Search in content
+          const content = await fileService.getFileContent(file.path);
+          const contentLower = content.toLowerCase();
+          
+          for (const term of searchTerms) {
+            if (contentLower.includes(term)) {
+              score += contentLower.split(term).length - 1; // Count occurrences
+            }
+          }
+          
+          // Debug logging for testing
+          if (query.toLowerCase() === 'techcorp' && content.toLowerCase().includes('techcorp')) {
+            console.log(`Found TechCorp in ${file.name}, score: ${score}`);
+          }
+        } catch (error) {
+          console.warn(`Could not read content for ${file.name}:`, error);
+        }
+        
+        if (score > 0) {
+          results.push({ file, score });
+        }
+      }
+      
+      // Sort by relevance and return files
+      const sortedFiles = results
+        .sort((a, b) => b.score - a.score)
+        .map(result => result.file);
+      
+      res.json(sortedFiles);
     } catch (error) {
       console.error('Search failed:', error);
       res.status(500).json({ error: 'Search failed' });
