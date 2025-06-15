@@ -100,15 +100,15 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
         {/* Tag Details Form */}
         <div className="space-y-4">
           <div>
-            <Label className="text-sm font-medium text-slate-300">Tag Type</Label>
+            <Label className="text-sm font-medium text-slate-300 mb-2 block">Tag Type</Label>
             <Select
               value={formData.type}
               onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any }))}
             >
-              <SelectTrigger className="bg-gray-800 border-gray-600">
-                <SelectValue />
+              <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-slate-200">
+                <SelectValue placeholder="Select tag type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-gray-800 border-gray-600">
                 <SelectItem value="entity">Entity</SelectItem>
                 <SelectItem value="relationship">Relationship</SelectItem>
                 <SelectItem value="attribute">Attribute</SelectItem>
