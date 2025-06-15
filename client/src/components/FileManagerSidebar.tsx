@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Folder, FolderOpen, File as FileIcon, Eye, RefreshCw, Plus, FileText, Table, Trash2 } from "lucide-react";
-import { File } from "@shared/schema";
+import { File, Stats } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { useFileOperations } from "@/hooks/useFileOperations";
 
@@ -14,7 +14,7 @@ interface FileManagerSidebarProps {
 
 export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: FileManagerSidebarProps) {
   const [showOriginal, setShowOriginal] = useState(true);
-  const { stats } = useTagOperations();
+  const { stats }: { stats?: Stats } = useTagOperations();
   const { deleteFile, isDeleting } = useFileOperations();
 
   const { data: files = [], isLoading } = useQuery<File[]>({

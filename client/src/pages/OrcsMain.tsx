@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Shield, Upload, Search } from "lucide-react";
 import { useFileOperations } from "@/hooks/useFileOperations";
 import { useTagOperations } from "@/hooks/useTagOperations";
-import { TextSelection, Tag } from "@shared/schema";
+import { TextSelection, Tag, Stats } from "@shared/schema";
 
 export default function OrcsMain() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -22,7 +22,7 @@ export default function OrcsMain() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { uploadFile, isUploading } = useFileOperations();
-  const { stats } = useTagOperations();
+  const { stats }: { stats?: Stats } = useTagOperations();
 
   const handleFileUpload = () => {
     const input = document.createElement('input');
