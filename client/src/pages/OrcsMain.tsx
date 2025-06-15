@@ -97,6 +97,7 @@ export default function OrcsMain() {
           selectedFile={selectedFile}
           onFileSelect={setSelectedFile}
           searchQuery={searchQuery}
+          onTagClick={handleTagClick}
         />
 
         {/* Central Content Area */}

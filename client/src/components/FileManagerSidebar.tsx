@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Folder, FolderOpen, File as FileIcon, Eye, RefreshCw, Plus, FileText, Table, Trash2 } from "lucide-react";
-import { File, Stats } from "@shared/schema";
+import { File, Stats, Tag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { useFileOperations } from "@/hooks/useFileOperations";
 
@@ -10,9 +10,10 @@ interface FileManagerSidebarProps {
   selectedFile: string | null;
   onFileSelect: (fileId: string) => void;
   searchQuery: string;
+  onTagClick: (tag: Tag) => void;
 }
 
-export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: FileManagerSidebarProps) {
+export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, onTagClick }: FileManagerSidebarProps) {
   const [showMetadata, setShowMetadata] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['raw']));
   const { stats }: { stats?: Stats } = useTagOperations();
@@ -217,7 +218,7 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
                         <div
                           key={tag.id}
                           className="group flex items-center justify-between text-xs py-1 px-2 rounded cursor-pointer text-slate-400 hover:bg-gray-800 hover:text-slate-300"
-                          onClick={() => {/* TODO: Handle tag selection */}}
+                          onClick={() => onTagClick(tag)}
                         >
                           <div className="flex items-center">
                             <FileText className="w-3 h-3 text-slate-500 mr-2" />
