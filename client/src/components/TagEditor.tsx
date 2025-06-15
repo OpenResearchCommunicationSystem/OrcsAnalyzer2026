@@ -30,7 +30,13 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
   const handleSave = async () => {
     if (selectedTag && formData.name && formData.type) {
       try {
-        const updatedTag = await updateTag(selectedTag.id, formData as Tag);
+        updateTag(selectedTag.id, formData);
+        // Create updated tag object for callback
+        const updatedTag: Tag = {
+          ...selectedTag,
+          ...formData,
+          modified: new Date().toISOString()
+        } as Tag;
         onTagUpdate(updatedTag);
       } catch (error) {
         console.error('Failed to update tag:', error);
@@ -117,6 +123,80 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
               </SelectContent>
             </Select>
           </div>
+
+          {formData.type && (
+            <div>
+              <Label className="text-sm font-medium text-slate-300 mb-2 block">
+                {formData.type === 'entity' ? 'Entity Type' : 
+                 formData.type === 'relationship' ? 'Relationship Type' :
+                 formData.type === 'attribute' ? 'Attribute Type' :
+                 formData.type === 'comment' ? 'Comment Type' :
+                 'Key-Value Type'}
+              </Label>
+              <Select
+                value={formData.entityType || ''}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, entityType: value }))}
+              >
+                <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-slate-200">
+                  <SelectValue placeholder={`Select ${formData.type} type`} />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  {formData.type === 'entity' && (
+                    <>
+                      <SelectItem value="person">Person</SelectItem>
+                      <SelectItem value="organization">Organization</SelectItem>
+                      <SelectItem value="location">Location</SelectItem>
+                      <SelectItem value="event">Event</SelectItem>
+                      <SelectItem value="product">Product</SelectItem>
+                      <SelectItem value="concept">Concept</SelectItem>
+                      <SelectItem value="document">Document</SelectItem>
+                    </>
+                  )}
+                  {formData.type === 'relationship' && (
+                    <>
+                      <SelectItem value="ownership">Ownership</SelectItem>
+                      <SelectItem value="employment">Employment</SelectItem>
+                      <SelectItem value="partnership">Partnership</SelectItem>
+                      <SelectItem value="acquisition">Acquisition</SelectItem>
+                      <SelectItem value="collaboration">Collaboration</SelectItem>
+                      <SelectItem value="competition">Competition</SelectItem>
+                      <SelectItem value="family">Family</SelectItem>
+                      <SelectItem value="location">Location</SelectItem>
+                    </>
+                  )}
+                  {formData.type === 'attribute' && (
+                    <>
+                      <SelectItem value="physical">Physical</SelectItem>
+                      <SelectItem value="temporal">Temporal</SelectItem>
+                      <SelectItem value="financial">Financial</SelectItem>
+                      <SelectItem value="descriptive">Descriptive</SelectItem>
+                      <SelectItem value="quantitative">Quantitative</SelectItem>
+                      <SelectItem value="qualitative">Qualitative</SelectItem>
+                    </>
+                  )}
+                  {formData.type === 'comment' && (
+                    <>
+                      <SelectItem value="analysis">Analysis</SelectItem>
+                      <SelectItem value="hypothesis">Hypothesis</SelectItem>
+                      <SelectItem value="question">Question</SelectItem>
+                      <SelectItem value="note">Note</SelectItem>
+                      <SelectItem value="warning">Warning</SelectItem>
+                      <SelectItem value="summary">Summary</SelectItem>
+                    </>
+                  )}
+                  {formData.type === 'kv_pair' && (
+                    <>
+                      <SelectItem value="metadata">Metadata</SelectItem>
+                      <SelectItem value="classification">Classification</SelectItem>
+                      <SelectItem value="reference">Reference</SelectItem>
+                      <SelectItem value="identifier">Identifier</SelectItem>
+                      <SelectItem value="property">Property</SelectItem>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div>
             <Label className="text-sm font-medium text-slate-300">UUID</Label>

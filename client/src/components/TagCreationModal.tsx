@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { User, Link, Tag, MessageCircle, Key, X } from "lucide-react";
 import { TextSelection, InsertTag } from "@shared/schema";
@@ -26,6 +27,7 @@ export function TagCreationModal({
   const [identifier, setIdentifier] = useState('');
   const [description, setDescription] = useState('');
   const [selectedType, setSelectedType] = useState(tagType);
+  const [entityType, setEntityType] = useState('');
 
   const { createTag, isCreating } = useTagOperations();
 

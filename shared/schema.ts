@@ -22,6 +22,7 @@ export const tagTypeSchema = z.enum(['entity', 'relationship', 'attribute', 'com
 export const tagSchema = z.object({
   id: z.string(), // UUID
   type: tagTypeSchema,
+  entityType: z.string().optional(), // Subtype within the tag category (e.g., "person", "organization" for entities)
   name: z.string(),
   reference: z.string(), // filename@start-end or filename[row,col]
   aliases: z.array(z.string()).default([]),
