@@ -120,6 +120,8 @@ Changelog:
 - June 15, 2025. Created unified document viewer showing raw content + editable metadata
 - June 15, 2025. Added CSV table viewer with click-to-select cell functionality
 - June 15, 2025. Implemented content search indexing with persistent storage
+- June 15, 2025. Completed expandable/collapsible folder tree structure for tag directories
+- June 15, 2025. Removed obsolete cards folder, tags now displayed as individual files within type folders
 ```
 
 ## User Preferences
