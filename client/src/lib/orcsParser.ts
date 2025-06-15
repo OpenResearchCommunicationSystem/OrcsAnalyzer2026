@@ -43,6 +43,7 @@ export function parseOrcsCard(content: string): OrcsCard | null {
       currentSection = 'tags';
       inContent = false;
     } else if (trimmed.startsWith('=== END')) {
+      inContent = false;
       break;
     } else if (currentSection === 'kvp' && trimmed.includes(':')) {
       const [key, ...valueParts] = trimmed.split(':');

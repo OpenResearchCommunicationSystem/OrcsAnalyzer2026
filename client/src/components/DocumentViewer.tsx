@@ -30,7 +30,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   });
 
   const selectedFileData = files.find(f => f.id === selectedFile);
-  const parsedCard = fileContent?.content ? parseOrcsCard(fileContent.content) : null;
+  const isOrcsCard = selectedFileData?.type === 'orcs_card';
+  const parsedCard = isOrcsCard && fileContent?.content ? parseOrcsCard(fileContent.content) : null;
 
   useEffect(() => {
     const handleMouseUp = () => {
