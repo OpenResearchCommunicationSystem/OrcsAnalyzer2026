@@ -202,10 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Debug logging for testing
-          if (query.toLowerCase() === 'techcorp' && content.toLowerCase().includes('techcorp')) {
-            console.log(`Found TechCorp in ${file.name}, score: ${score}`);
-          }
+
         } catch (error) {
           console.warn(`Could not read content for ${file.name}:`, error);
         }
