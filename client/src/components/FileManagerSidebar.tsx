@@ -117,7 +117,7 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
                   {isLoading ? (
                     <div className="text-sm text-slate-400">Loading...</div>
                   ) : (
-                    rawFiles.map((file) => (
+                    displayFiles.map((file) => (
                       <div
                         key={file.id}
                         className={`group flex items-center justify-between text-sm py-1 px-2 rounded cursor-pointer ${
@@ -130,6 +130,8 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
                         <div className="flex items-center">
                           {file.type === 'csv' ? (
                             <Table className="w-4 h-4 text-green-400 mr-2" />
+                          ) : file.type === 'metadata' ? (
+                            <FileText className="w-4 h-4 text-amber-400 mr-2" />
                           ) : (
                             <FileText className="w-4 h-4 text-blue-400 mr-2" />
                           )}
