@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a sophisticated intelligence analysis and document management system called ORCS (Open-source Research and Citation System). The application is designed to help analysts process, tag, and visualize relationships within intelligence documents through an interactive web interface.
+This is a sophisticated intelligence analysis and document management system called ORCS (Open Research Communication System). The application is designed to help analysts process, tag, and visualize relationships within intelligence documents through an interactive web interface.
 
 The system uses a full-stack architecture with a React frontend, Express.js backend, and file-based storage system that organizes intelligence data into structured formats including ORCS cards, tags, and relationship mappings.
 
@@ -38,6 +38,7 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 - Automatic generation of ORCS cards from uploaded content
 - File metadata tracking (size, creation date, modification date)
 - Content parsing and display with syntax highlighting
+- Complete file deletion with automatic cleanup of related files (source + ORCS card)
 
 ### Tagging and Annotation System
 - Five tag types: Entity, Relationship, Attribute, Comment, Key-Value Pair
@@ -105,6 +106,7 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 ```
 Changelog:
 - June 15, 2025. Initial setup
+- June 15, 2025. Added complete file deletion functionality with automatic cleanup of related files
 ```
 
 ## User Preferences
