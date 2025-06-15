@@ -14,11 +14,16 @@ interface FileManagerSidebarProps {
 
 export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: FileManagerSidebarProps) {
   const [showMetadata, setShowMetadata] = useState(false);
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['raw']));
   const { stats }: { stats?: Stats } = useTagOperations();
   const { deleteFile, isDeleting } = useFileOperations();
 
   const { data: files = [], isLoading } = useQuery<File[]>({
     queryKey: ['/api/files'],
+  });
+
+  const { data: tags = [] } = useQuery<any[]>({
+    queryKey: ['/api/tags'],
   });
 
   // Use search API when there's a query, otherwise show all files
@@ -40,6 +45,25 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
   const displayFiles = showMetadata ? [...rawFiles, ...metadataFiles] : rawFiles;
 
   const tagCounts = stats?.tagCounts || {};
+
+  // Group tags by type
+  const tagsByType = {
+    entity: (tags as any[]).filter((tag: any) => tag.type === 'entity'),
+    relationship: (tags as any[]).filter((tag: any) => tag.type === 'relationship'),
+    attribute: (tags as any[]).filter((tag: any) => tag.type === 'attribute'),
+    comment: (tags as any[]).filter((tag: any) => tag.type === 'comment'),
+    kv_pair: (tags as any[]).filter((tag: any) => tag.type === 'kv_pair'),
+  };
+
+  const toggleFolder = (folderName: string) => {
+    const newExpanded = new Set(expandedFolders);
+    if (newExpanded.has(folderName)) {
+      newExpanded.delete(folderName);
+    } else {
+      newExpanded.add(folderName);
+    }
+    setExpandedFolders(newExpanded);
+  };
 
   const handleDeleteFile = async (fileId: string, fileName: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent file selection when clicking delete
@@ -107,12 +131,19 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
             </div>
             
             {/* raw folder */}
-            {true && (
-              <div className="ml-4 space-y-1">
-                <div className="flex items-center text-sm text-slate-300 py-1">
+            <div className="ml-4 space-y-1">
+              <div 
+                className="flex items-center text-sm text-slate-300 py-1 cursor-pointer hover:text-slate-200"
+                onClick={() => toggleFolder('raw')}
+              >
+                {expandedFolders.has('raw') ? (
                   <FolderOpen className="w-4 h-4 text-amber-400 mr-2" />
-                  <span>raw</span>
-                </div>
+                ) : (
+                  <Folder className="w-4 h-4 text-amber-500 mr-2" />
+                )}
+                <span>raw</span>
+              </div>
+              {expandedFolders.has('raw') && (
                 <div className="ml-4 space-y-1">
                   {isLoading ? (
                     <div className="text-sm text-slate-400">Loading...</div>
@@ -150,8 +181,8 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
                     ))
                   )}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* cards folder */}
             <div className="ml-4 space-y-1">
