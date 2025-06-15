@@ -147,30 +147,81 @@ export class OrcsService {
     
     try {
       // Read the existing ORCS card
-      const cardContent = await fs.readFile(cardPath, 'utf-8');
+      let cardContent = await fs.readFile(cardPath, 'utf-8');
       
-      // Parse the ORCS card to extract current tags
-      const tagMatch = cardContent.match(/TAGS: (.+)/);
-      const existingTags = tagMatch ? tagMatch[1].split(',').map(t => t.trim()).filter(t => t) : [];
+      // Extract UUID from card for index file
+      const uuidMatch = cardContent.match(/UUID: ([^\n]+)/);
+      const cardUuid = uuidMatch ? uuidMatch[1] : '';
       
-      // Create tag reference for the ORCS card
-      const tagReference = `${tag.type}:${tag.name} (${tag.reference})`;
-      
-      // Add the new tag if it's not already present
-      if (!existingTags.includes(tagReference)) {
-        existingTags.push(tagReference);
-        
-        // Update the ORCS card content
-        const updatedContent = cardContent.replace(
-          /TAGS: .*/,
-          `TAGS: ${existingTags.join(', ')}`
-        );
-        
-        await fs.writeFile(cardPath, updatedContent, 'utf-8');
+      // Format tag entry based on type
+      let tagEntry = '';
+      if (tag.type === 'entity') {
+        tagEntry = `uuid:${tag.id} ${tag.description || 'entity'}:${tag.name}@${tag.reference.split('@')[1] || '0-0'} [${tag.aliases.join(', ')}]`;
+      } else if (tag.type === 'relationship') {
+        tagEntry = `${tag.name}(${tag.id})`;
+      } else if (tag.type === 'attribute') {
+        tagEntry = `uuid:${tag.id} attribute:${tag.name}@${tag.reference.split('@')[1] || '0-0'}`;
+      } else if (tag.type === 'comment') {
+        tagEntry = `uuid:${tag.id} comment:${tag.name}@${tag.reference.split('@')[1] || '0-0'} [${tag.aliases.join(', ')}]`;
       }
+      
+      // Add to appropriate section in ORCS card
+      const sectionName = tag.type.toUpperCase() + 'S:';
+      const sectionRegex = new RegExp(`(${sectionName}\\n)(.*?)(\\n\\n|\\n===|$)`, 's');
+      
+      if (cardContent.includes(sectionName)) {
+        // Section exists, add to it
+        cardContent = cardContent.replace(sectionRegex, (match, header, content, footer) => {
+          const existingEntries = content.trim().split('\n').filter(line => line.trim());
+          if (!existingEntries.includes(tagEntry)) {
+            existingEntries.push(tagEntry);
+          }
+          return header + existingEntries.join('\n') + '\n' + footer;
+        });
+      } else {
+        // Section doesn't exist, add it before the END markers
+        const insertPoint = cardContent.indexOf('=== END HANDLING:');
+        if (insertPoint > -1) {
+          const before = cardContent.substring(0, insertPoint);
+          const after = cardContent.substring(insertPoint);
+          cardContent = before + `${sectionName}\n${tagEntry}\n\n` + after;
+        }
+      }
+      
+      // Update the ORCS card
+      await fs.writeFile(cardPath, cardContent, 'utf-8');
+      
+      // Create index file in appropriate tag folder
+      await this.createTagIndexFile(tag, cardUuid, cardFilename);
+      
     } catch (error) {
       console.warn(`Could not update ORCS card ${cardFilename}:`, error);
     }
+  }
+
+  private async createTagIndexFile(tag: Tag, sourceCardUuid: string, cardFilename: string): Promise<void> {
+    const tagDir = TAG_DIRECTORIES[tag.type];
+    const indexFilename = `${tag.name}_${tag.id}.orcs`;
+    const indexPath = path.join(tagDir, indexFilename);
+    
+    const indexContent = [
+      `=== TAG TYPE: ${tag.type.charAt(0).toUpperCase() + tag.type.slice(1)} ===`,
+      `UUID: ${tag.id}`,
+      tag.type === 'entity' ? `ENTITY_TYPE: ${tag.description || 'unknown'}` : '',
+      `LABEL: ${tag.name}`,
+      tag.aliases.length > 0 ? `ALIAS: ${tag.aliases.join(', ')}` : '',
+      `INDEX: ${tag.reference}`,
+      `SOURCE_CARD_UUID: ${sourceCardUuid}`,
+      '',
+      'CLASSIFICATION: Proprietary Information',
+      'CITATION: TechWatch Intelligence Brief, Q1 2025, Internal Analysis',
+      '',
+      tag.keyValuePairs && Object.keys(tag.keyValuePairs).length > 0 ? 'KEYVALUE_PAIRS:' : '',
+      ...Object.entries(tag.keyValuePairs || {}).map(([k, v]) => `  ${k}: ${v}`),
+      ''
+    ].filter(line => line !== '').join('\n');
+    
+    await fs.writeFile(indexPath, indexContent, 'utf-8');
   }
 
   async generateGraphData(): Promise<GraphData> {
