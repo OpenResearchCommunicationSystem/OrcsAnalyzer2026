@@ -330,20 +330,11 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
             </div>
           </div>
           
-          {isEditingMetadata ? (
-            <Textarea
-              value={metadataContent}
-              onChange={(e) => setMetadataContent(e.target.value)}
-              className="font-mono text-xs bg-gray-800 border-gray-600 min-h-48"
-              placeholder="YAML metadata content..."
-            />
-          ) : (
-            <div className="bg-gray-800 p-3 rounded-lg border border-gray-700">
-              <pre className="font-mono text-xs text-slate-300 whitespace-pre-wrap">
-                {metadataContent || 'No metadata available'}
-              </pre>
-            </div>
-          )}
+          <div className="bg-gray-800 p-3 rounded-lg border border-gray-700">
+            <pre className="font-mono text-xs text-slate-300 whitespace-pre-wrap">
+              {metadataContent || 'No metadata available'}
+            </pre>
+          </div>
         </div>
       )}
       
@@ -381,6 +372,17 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
           </div>
         );
       })()}
+
+      {/* Metadata Form Modal */}
+      {showMetadataForm && selectedFile && selectedFileData && (
+        <MetadataForm
+          fileId={selectedFile}
+          fileName={selectedFileData.name}
+          initialMetadata={metadataContent}
+          onClose={() => setShowMetadataForm(false)}
+          onSave={handleMetadataSave}
+        />
+      )}
     </div>
   );
 }
