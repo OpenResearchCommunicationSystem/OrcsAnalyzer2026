@@ -176,6 +176,55 @@ export class FileService {
     }
   }
 
+  async deleteFile(fileId: string): Promise<boolean> {
+    try {
+      const files = await this.getFiles();
+      const fileToDelete = files.find(f => f.id === fileId);
+      
+      if (!fileToDelete) {
+        return false;
+      }
+
+      // Delete the actual file
+      await fs.unlink(fileToDelete.path);
+      
+      // If it's a raw file, also delete the corresponding ORCS card
+      if (fileToDelete.type === 'txt' || fileToDelete.type === 'csv') {
+        const cardFilename = `${path.parse(fileToDelete.name).name}_ORCS_CARD.txt`;
+        const cardPath = path.join(CARDS_DIR, cardFilename);
+        
+        try {
+          await fs.unlink(cardPath);
+        } catch (error) {
+          // Card might not exist, continue anyway
+        }
+      }
+      
+      // If it's an ORCS card, try to find and delete the original file
+      if (fileToDelete.type === 'orcs_card') {
+        const originalName = fileToDelete.name.replace('_ORCS_CARD.txt', '');
+        const rawFiles = await fs.readdir(RAW_DIR);
+        
+        for (const rawFile of rawFiles) {
+          if (path.parse(rawFile).name === originalName) {
+            const rawPath = path.join(RAW_DIR, rawFile);
+            try {
+              await fs.unlink(rawPath);
+            } catch (error) {
+              // Original file might not exist, continue anyway
+            }
+            break;
+          }
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('File deletion error:', error);
+      return false;
+    }
+  }
+
   private sanitizeFilename(filename: string): string {
     return filename.replace(/[^a-z0-9.-]/gi, '_');
   }

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Folder, FolderOpen, File as FileIcon, Eye, RefreshCw, Plus, FileText, Table } from "lucide-react";
+import { Folder, FolderOpen, File as FileIcon, Eye, RefreshCw, Plus, FileText, Table, Trash2 } from "lucide-react";
 import { File } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
+import { useFileOperations } from "@/hooks/useFileOperations";
 
 interface FileManagerSidebarProps {
   selectedFile: string | null;
@@ -14,6 +15,7 @@ interface FileManagerSidebarProps {
 export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: FileManagerSidebarProps) {
   const [showOriginal, setShowOriginal] = useState(false);
   const { stats } = useTagOperations();
+  const { deleteFile, isDeleting } = useFileOperations();
 
   const { data: files = [], isLoading } = useQuery<File[]>({
     queryKey: ['/api/files'],
@@ -27,6 +29,19 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
   const cardFiles = filteredFiles.filter(file => file.type === 'orcs_card');
 
   const tagCounts = stats?.tagCounts || {};
+
+  const handleDeleteFile = async (fileId: string, fileName: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent file selection when clicking delete
+    
+    if (confirm(`Are you sure you want to delete "${fileName}"? This will also delete the corresponding ORCS card.`)) {
+      deleteFile(fileId);
+      
+      // Clear selection if the deleted file was selected
+      if (selectedFile === fileId) {
+        onFileSelect('');
+      }
+    }
+  };
 
   return (
     <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="w-80 border-r border-gray-700 flex flex-col">
@@ -89,19 +104,30 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
                     rawFiles.map((file) => (
                       <div
                         key={file.id}
-                        className={`flex items-center text-sm py-1 px-2 rounded cursor-pointer ${
+                        className={`group flex items-center justify-between text-sm py-1 px-2 rounded cursor-pointer ${
                           selectedFile === file.id 
                             ? 'bg-gray-800 border-l-2 border-blue-400 text-slate-200' 
                             : 'text-slate-400 hover:bg-gray-800'
                         }`}
                         onClick={() => onFileSelect(file.id)}
                       >
-                        {file.type === 'csv' ? (
-                          <Table className="w-4 h-4 text-green-400 mr-2" />
-                        ) : (
-                          <FileText className="w-4 h-4 text-blue-400 mr-2" />
-                        )}
-                        <span>{file.name}</span>
+                        <div className="flex items-center">
+                          {file.type === 'csv' ? (
+                            <Table className="w-4 h-4 text-green-400 mr-2" />
+                          ) : (
+                            <FileText className="w-4 h-4 text-blue-400 mr-2" />
+                          )}
+                          <span>{file.name}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleDeleteFile(file.id, file.name, e)}
+                          disabled={isDeleting}
+                          className="opacity-0 group-hover:opacity-100 hover:text-red-400 p-1 h-auto ml-2"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
                       </div>
                     ))
                   )}

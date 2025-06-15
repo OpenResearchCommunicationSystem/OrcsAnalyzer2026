@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export function useFileOperations() {
   const queryClient = useQueryClient();
@@ -40,8 +41,32 @@ export function useFileOperations() {
     },
   });
 
+  const deleteFileMutation = useMutation({
+    mutationFn: async (fileId: string) => {
+      const response = await apiRequest('DELETE', `/api/files/${fileId}`);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      toast({
+        title: "File deleted successfully",
+        description: "Both original file and ORCS card have been removed",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to delete file",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
     uploadFile: uploadFileMutation.mutate,
     isUploading: uploadFileMutation.isPending,
+    deleteFile: deleteFileMutation.mutate,
+    isDeleting: deleteFileMutation.isPending,
   };
 }

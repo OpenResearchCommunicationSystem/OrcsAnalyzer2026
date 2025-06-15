@@ -1,0 +1,33 @@
+=== CLASSIFICATION: Proprietary Information ===
+=== HANDLING: Copyright 2025 TechWatch Intelligence ===
+=== HANDLING: Distribution: Internal Use Only ===
+=== ORCS FORMAT VERSION: 2025.003 ===
+UUID: 3083da83-f7f1-4a39-8fac-3d47d580e2b7
+TITLE: tasklist.txt - ORCS Analysis Card
+SOURCE: file:////home/runner/workspace/user_data/raw/tasklist.txt
+SOURCE_HASH: sha256:a20c0d21d9200496c3107168b411aa201c8c7478da227187b9532d494a416a49
+CITATION: Original file: tasklist.txt
+CREATED: 2025-06-15T01:47:34.174Z
+MODIFIED: 2025-06-15T01:47:34.174Z
+
+KEYVALUE_PAIRS:
+original_filename: tasklist.txt
+file_type: txt
+orcs_version: 2025.003
+
+CONTENT:
+ADT FIX 
+SELL CAR
+VA CLAIM ALEX
+VA CLAIM RICK
+VA 
+LAWN
+TOILET FOR RENTERS
+CHANGE STUFF
+
+
+TAGS:
+
+=== END HANDLING: Distribution: Internal Use Only ===
+=== END ORCS FORMAT VERSION: 2025.003 ===
+=== END CLASSIFICATION: Proprietary Information ===
