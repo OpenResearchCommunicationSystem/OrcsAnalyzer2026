@@ -1,0 +1,28 @@
+# ORCS Metadata Card
+version: "2025.003"
+uuid: "test-123-456-789"
+source_file: "test_news.txt"
+source_reference: "https://techcorp.com/press-releases/ai-acquisition"
+classification: "Proprietary Information"
+handling:
+  - "Copyright 2025 TechWatch Intelligence"
+  - "Distribution: Internal Use Only"
+created: "2025-06-15T05:20:00.000Z"
+modified: "2025-06-15T05:20:00.000Z"
+source_hash: "sha256:abc123def456"
+
+metadata:
+  file_type: "txt"
+  file_size: 74
+  analyst: "john_smith"
+  confidence: "high"
+
+tag_index:
+  - id: "tag_001"
+    type: "entity"
+    name: "TechCorp"
+    reference: "test_news.txt@0-8"
+  - id: "tag_002"
+    type: "entity"
+    name: "AI startup"
+    reference: "test_news.txt@45-55"
