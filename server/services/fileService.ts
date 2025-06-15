@@ -109,8 +109,17 @@ export class FileService {
       'CONTENT:',
       card.content,
       '',
-      'TAGS:',
-      ...card.tags.map(tagId => `tag_ref: ${tagId}`),
+      'ENTITIES:',
+      // Entities will be added here when tags are created
+      '',
+      'RELATIONSHIPS:',
+      // Relationships will be added here when tags are created
+      '',
+      'ATTRIBUTES:',
+      // Attributes will be added here when tags are created
+      '',
+      'COMMENTS:',
+      // Comments will be added here when tags are created
       '',
       '=== END HANDLING: ' + card.handling[card.handling.length - 1] + ' ===',
       '=== END ORCS FORMAT VERSION: 2025.003 ===',
