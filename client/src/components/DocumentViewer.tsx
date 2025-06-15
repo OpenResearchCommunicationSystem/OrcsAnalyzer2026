@@ -380,28 +380,39 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
       )}
       
       {/* Tagged entities visualization */}
-      {tags.length > 0 && selectedFile && (
-        <div className="mt-6 pt-4 border-t border-gray-700">
-          <h3 className="text-slate-400 font-sans text-xs uppercase tracking-wide mb-3">Tagged Elements</h3>
-          <div className="space-y-2 text-xs">
-            {tags.slice(0, 5).map((tag) => (
-              <div 
-                key={tag.id} 
-                className="flex items-center space-x-3 cursor-pointer hover:bg-gray-700 p-1 rounded"
-                onClick={() => onTagClick(tag)}
-              >
-                <span className={`text-${tag.type === 'entity' ? 'green' : tag.type === 'relationship' ? 'amber' : 'purple'}-400`}>
-                  {tag.type}:{tag.name}
-                </span>
-                <span className="text-slate-400">{tag.reference}</span>
-                {tag.aliases.length > 0 && (
-                  <span className="text-slate-500">[{tag.aliases.join(', ')}]</span>
-                )}
-              </div>
-            ))}
+      {(() => {
+        // Filter tags to only show those that reference the current file
+        const currentFileName = selectedFileData?.name;
+        const fileSpecificTags = tags.filter(tag => {
+          if (!currentFileName || !tag.reference) return false;
+          // Check if tag references this file (handle both @offset and [row,col] formats)
+          return tag.reference.startsWith(currentFileName + '@') || 
+                 tag.reference.startsWith(currentFileName + '[');
+        });
+        
+        return fileSpecificTags.length > 0 && selectedFile && (
+          <div className="mt-6 pt-4 border-t border-gray-700">
+            <h3 className="text-slate-400 font-sans text-xs uppercase tracking-wide mb-3">Tagged Elements</h3>
+            <div className="space-y-2 text-xs">
+              {fileSpecificTags.map((tag) => (
+                <div 
+                  key={tag.id} 
+                  className="flex items-center space-x-3 cursor-pointer hover:bg-gray-700 p-1 rounded"
+                  onClick={() => onTagClick(tag)}
+                >
+                  <span className={`text-${tag.type === 'entity' ? 'green' : tag.type === 'relationship' ? 'amber' : 'purple'}-400`}>
+                    {tag.type}:{tag.name}
+                  </span>
+                  <span className="text-slate-400">{tag.reference}</span>
+                  {tag.aliases.length > 0 && (
+                    <span className="text-slate-500">[{tag.aliases.join(', ')}]</span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
