@@ -26,10 +26,6 @@ export class OrcsService {
     };
 
     await this.saveTagToFile(tag);
-    
-    // If this tag references an original file, add it to the corresponding ORCS card
-    await this.addTagToOrcsCard(tag);
-    
     return tag;
   }
 
@@ -132,96 +128,6 @@ export class OrcsService {
     } catch (error) {
       return false;
     }
-  }
-
-  async addTagToOrcsCard(tag: Tag): Promise<void> {
-    // Extract filename from the tag reference (format: filename@offset or filename[row,col])
-    const referenceMatch = tag.reference.match(/^([^@\[]+)/);
-    if (!referenceMatch) return;
-    
-    const originalFilename = referenceMatch[1];
-    
-    // Find the corresponding ORCS card
-    const cardFilename = `${path.parse(originalFilename).name}_ORCS_CARD.txt`;
-    const cardPath = path.join(path.join(process.cwd(), 'user_data', 'cards'), cardFilename);
-    
-    try {
-      // Read the existing ORCS card
-      let cardContent = await fs.readFile(cardPath, 'utf-8');
-      
-      // Extract UUID from card for index file
-      const uuidMatch = cardContent.match(/UUID: ([^\n]+)/);
-      const cardUuid = uuidMatch ? uuidMatch[1] : '';
-      
-      // Format tag entry based on type
-      let tagEntry = '';
-      if (tag.type === 'entity') {
-        tagEntry = `uuid:${tag.id} ${tag.description || 'entity'}:${tag.name}@${tag.reference.split('@')[1] || '0-0'} [${tag.aliases.join(', ')}]`;
-      } else if (tag.type === 'relationship') {
-        tagEntry = `${tag.name}(${tag.id})`;
-      } else if (tag.type === 'attribute') {
-        tagEntry = `uuid:${tag.id} attribute:${tag.name}@${tag.reference.split('@')[1] || '0-0'}`;
-      } else if (tag.type === 'comment') {
-        tagEntry = `uuid:${tag.id} comment:${tag.name}@${tag.reference.split('@')[1] || '0-0'} [${tag.aliases.join(', ')}]`;
-      }
-      
-      // Add to appropriate section in ORCS card
-      const sectionName = tag.type.toUpperCase() + 'S:';
-      const sectionRegex = new RegExp(`(${sectionName}\\n)(.*?)(\\n\\n|\\n===|$)`, 's');
-      
-      if (cardContent.includes(sectionName)) {
-        // Section exists, add to it
-        cardContent = cardContent.replace(sectionRegex, (match: string, header: string, content: string, footer: string) => {
-          const existingEntries = content.trim().split('\n').filter((line: string) => line.trim());
-          if (!existingEntries.includes(tagEntry)) {
-            existingEntries.push(tagEntry);
-          }
-          return header + existingEntries.join('\n') + '\n' + footer;
-        });
-      } else {
-        // Section doesn't exist, add it before the END markers
-        const insertPoint = cardContent.indexOf('=== END HANDLING:');
-        if (insertPoint > -1) {
-          const before = cardContent.substring(0, insertPoint);
-          const after = cardContent.substring(insertPoint);
-          cardContent = before + `${sectionName}\n${tagEntry}\n\n` + after;
-        }
-      }
-      
-      // Update the ORCS card
-      await fs.writeFile(cardPath, cardContent, 'utf-8');
-      
-      // Create index file in appropriate tag folder
-      await this.createTagIndexFile(tag, cardUuid, cardFilename);
-      
-    } catch (error) {
-      console.warn(`Could not update ORCS card ${cardFilename}:`, error);
-    }
-  }
-
-  private async createTagIndexFile(tag: Tag, sourceCardUuid: string, cardFilename: string): Promise<void> {
-    const tagDir = TAG_DIRECTORIES[tag.type];
-    const indexFilename = `${tag.name}_${tag.id}.orcs`;
-    const indexPath = path.join(tagDir, indexFilename);
-    
-    const indexContent = [
-      `=== TAG TYPE: ${tag.type.charAt(0).toUpperCase() + tag.type.slice(1)} ===`,
-      `UUID: ${tag.id}`,
-      tag.type === 'entity' ? `ENTITY_TYPE: ${tag.description || 'unknown'}` : '',
-      `LABEL: ${tag.name}`,
-      tag.aliases.length > 0 ? `ALIAS: ${tag.aliases.join(', ')}` : '',
-      `INDEX: ${tag.reference}`,
-      `SOURCE_CARD_UUID: ${sourceCardUuid}`,
-      '',
-      'CLASSIFICATION: Proprietary Information',
-      'CITATION: TechWatch Intelligence Brief, Q1 2025, Internal Analysis',
-      '',
-      tag.keyValuePairs && Object.keys(tag.keyValuePairs).length > 0 ? 'KEYVALUE_PAIRS:' : '',
-      ...Object.entries(tag.keyValuePairs || {}).map(([k, v]) => `  ${k}: ${v}`),
-      ''
-    ].filter(line => line !== '').join('\n');
-    
-    await fs.writeFile(indexPath, indexContent, 'utf-8');
   }
 
   async generateGraphData(): Promise<GraphData> {

@@ -29,109 +29,84 @@ export function GraphVisualization({ onNodeClick }: GraphVisualizationProps) {
     const svg = svgRef.current;
     if (!svg) return;
 
-    try {
-      // Safely clear existing content
-      while (svg.firstChild) {
-        svg.removeChild(svg.firstChild);
+    // Clear existing content
+    svg.innerHTML = '';
+
+    const width = svg.clientWidth;
+    const height = svg.clientHeight;
+
+    // Render edges first (so they appear behind nodes)
+    data.edges.forEach(edge => {
+      const sourceNode = data.nodes.find(n => n.id === edge.source);
+      const targetNode = data.nodes.find(n => n.id === edge.target);
+      
+      if (sourceNode && targetNode) {
+        // Line
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', String(sourceNode.x || 100));
+        line.setAttribute('y1', String(sourceNode.y || 100));
+        line.setAttribute('x2', String(targetNode.x || 200));
+        line.setAttribute('y2', String(targetNode.y || 150));
+        line.setAttribute('stroke', '#F59E0B');
+        line.setAttribute('stroke-width', '2');
+        line.style.cursor = 'pointer';
+        svg.appendChild(line);
+
+        // Edge label
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const midX = ((sourceNode.x || 100) + (targetNode.x || 200)) / 2;
+        const midY = ((sourceNode.y || 100) + (targetNode.y || 150)) / 2;
+        text.setAttribute('x', String(midX));
+        text.setAttribute('y', String(midY));
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', '#F59E0B');
+        text.setAttribute('font-size', '10');
+        text.textContent = edge.label;
+        svg.appendChild(text);
       }
+    });
 
-      const width = svg.clientWidth || 400;
-      const height = svg.clientHeight || 300;
-
-      // Create a main group for all graph elements
-      const mainGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      mainGroup.setAttribute('class', 'graph-container');
-
-      // Render edges first (so they appear behind nodes)
-      data.edges.forEach((edge, index) => {
-        const sourceNode = data.nodes.find(n => n.id === edge.source);
-        const targetNode = data.nodes.find(n => n.id === edge.target);
-        
-        if (sourceNode && targetNode) {
-          // Line
-          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          line.setAttribute('x1', String(sourceNode.x || 100));
-          line.setAttribute('y1', String(sourceNode.y || 100));
-          line.setAttribute('x2', String(targetNode.x || 200));
-          line.setAttribute('y2', String(targetNode.y || 150));
-          line.setAttribute('stroke', '#F59E0B');
-          line.setAttribute('stroke-width', '2');
-          line.setAttribute('class', `edge-${index}`);
-          mainGroup.appendChild(line);
-
-          // Edge label
-          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-          const midX = ((sourceNode.x || 100) + (targetNode.x || 200)) / 2;
-          const midY = ((sourceNode.y || 100) + (targetNode.y || 150)) / 2;
-          text.setAttribute('x', String(midX));
-          text.setAttribute('y', String(midY));
-          text.setAttribute('text-anchor', 'middle');
-          text.setAttribute('fill', '#F59E0B');
-          text.setAttribute('font-size', '10');
-          text.setAttribute('class', `edge-label-${index}`);
-          text.textContent = edge.label || 'related';
-          mainGroup.appendChild(text);
+    // Render nodes
+    data.nodes.forEach(node => {
+      const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      nodeGroup.style.cursor = 'pointer';
+      
+      // Circle
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', String(node.x || 100));
+      circle.setAttribute('cy', String(node.y || 100));
+      circle.setAttribute('r', node.type === 'entity' ? '15' : '12');
+      
+      const color = node.type === 'entity' ? '#10B981' : 
+                   node.type === 'relationship' ? '#F59E0B' :
+                   node.type === 'attribute' ? '#8B5CF6' : '#06B6D4';
+      
+      circle.setAttribute('fill', color);
+      circle.setAttribute('stroke', color);
+      circle.setAttribute('stroke-width', '2');
+      
+      // Label
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', String(node.x || 100));
+      text.setAttribute('y', String((node.y || 100) + 25));
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('fill', '#E5E7EB');
+      text.setAttribute('font-size', '10');
+      text.textContent = node.label;
+      
+      nodeGroup.appendChild(circle);
+      nodeGroup.appendChild(text);
+      
+      // Click handler
+      nodeGroup.addEventListener('click', () => {
+        const tag = tags.find(t => t.id === node.id);
+        if (tag) {
+          onNodeClick(tag);
         }
       });
-
-      // Render nodes
-      data.nodes.forEach((node, index) => {
-        const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        nodeGroup.setAttribute('class', `node-${index}`);
-        nodeGroup.style.cursor = 'pointer';
-        
-        // Circle
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', String(node.x || 100 + (index * 80)));
-        circle.setAttribute('cy', String(node.y || 100 + (index * 60)));
-        circle.setAttribute('r', node.type === 'entity' ? '15' : '12');
-        
-        const color = node.type === 'entity' ? '#10B981' : 
-                     node.type === 'relationship' ? '#F59E0B' :
-                     node.type === 'attribute' ? '#8B5CF6' : '#06B6D4';
-        
-        circle.setAttribute('fill', color);
-        circle.setAttribute('stroke', color);
-        circle.setAttribute('stroke-width', '2');
-        
-        // Label
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', String(node.x || 100 + (index * 80)));
-        text.setAttribute('y', String((node.y || 100 + (index * 60)) + 25));
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('fill', '#E5E7EB');
-        text.setAttribute('font-size', '10');
-        text.textContent = node.label || 'Unknown';
-        
-        nodeGroup.appendChild(circle);
-        nodeGroup.appendChild(text);
-        
-        // Click handler
-        nodeGroup.addEventListener('click', () => {
-          const tag = tags.find(t => t.id === node.id);
-          if (tag) {
-            onNodeClick(tag);
-          }
-        });
-        
-        mainGroup.appendChild(nodeGroup);
-      });
-
-      // Add the main group to SVG
-      svg.appendChild(mainGroup);
       
-    } catch (error) {
-      console.warn('Graph rendering error:', error);
-      // Fallback: create a simple "error" text
-      const errorText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      errorText.setAttribute('x', '50%');
-      errorText.setAttribute('y', '50%');
-      errorText.setAttribute('text-anchor', 'middle');
-      errorText.setAttribute('fill', '#EF4444');
-      errorText.setAttribute('font-size', '12');
-      errorText.textContent = 'Graph render error';
-      svg.appendChild(errorText);
-    }
+      svg.appendChild(nodeGroup);
+    });
   };
 
   return (

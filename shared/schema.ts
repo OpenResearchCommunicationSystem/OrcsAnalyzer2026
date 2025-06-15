@@ -94,12 +94,3 @@ export const textSelectionSchema = z.object({
 });
 
 export type TextSelection = z.infer<typeof textSelectionSchema>;
-
-// Stats schema for directory statistics
-export const statsSchema = z.object({
-  totalFiles: z.number(),
-  totalTags: z.number(),
-  tagCounts: z.record(z.string(), z.number()),
-});
-
-export type Stats = z.infer<typeof statsSchema>;

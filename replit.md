@@ -24,13 +24,13 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 - **Validation**: Zod schemas for type-safe data validation
 
 ### Data Storage Solutions
-- **Primary Storage**: ORCS card-centric architecture with embedded tags and metadata
+- **Primary Storage**: File-based system organized in structured directories
 - **Search Index**: Persistent JSON-based index stored in `user_data/index.json`
 - **Database**: PostgreSQL 16 (configured but not yet implemented with Drizzle ORM)
-- **File Organization**: ORCS card as single source of truth under `user_data/`
+- **File Organization**: Hierarchical directory structure under `user_data/`
   - `raw/` - Original uploaded files (.txt, .csv)
-  - `cards/` - Primary storage: Complete ORCS intelligence cards with embedded entities, relationships, attributes, comments
-  - `entities/`, `relationships/`, `attributes/`, `comments/`, `kv_pairs/` - Index files pointing to source cards
+  - `cards/` - Generated ORCS intelligence cards
+  - `entities/`, `relationships/`, `attributes/`, `comments/`, `kv_pairs/` - Categorized tags
   - `index.json` - Search index with keywords, content hashes, and metadata
 
 ## Key Components
@@ -117,9 +117,6 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 Changelog:
 - June 15, 2025. Initial setup
 - June 15, 2025. Added complete file deletion functionality with automatic cleanup of related files
-- June 15, 2025. Implemented CSV viewer with table display and cell selection for tagging
-- June 15, 2025. Added comprehensive search functionality with content indexing and relevance scoring
-- June 15, 2025. Redesigned architecture: ORCS cards as primary storage with embedded tags, tag folders as structured index files
 ```
 
 ## User Preferences
