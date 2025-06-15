@@ -224,43 +224,53 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery }: 
             </div>
 
             {/* Tag directories */}
-            <div className="ml-4 space-y-1">
-              <div className="flex items-center text-sm text-slate-300 py-1">
-                <Folder className="w-4 h-4 text-amber-500 mr-2" />
-                <span>entities</span>
-                <span className="ml-auto text-xs bg-green-600 text-white rounded-full px-2 py-0.5">
-                  {tagCounts.entity || 0}
-                </span>
+            {[
+              { name: 'entities', type: 'entity', color: 'green', tags: tagsByType.entity },
+              { name: 'relationships', type: 'relationship', color: 'orange', tags: tagsByType.relationship },
+              { name: 'attributes', type: 'attribute', color: 'blue', tags: tagsByType.attribute },
+              { name: 'comments', type: 'comment', color: 'purple', tags: tagsByType.comment },
+              { name: 'kv_pairs', type: 'kv_pair', color: 'red', tags: tagsByType.kv_pair },
+            ].map((folder) => (
+              <div key={folder.name} className="ml-4 space-y-1">
+                <div 
+                  className="flex items-center text-sm text-slate-300 py-1 cursor-pointer hover:text-slate-200"
+                  onClick={() => toggleFolder(folder.name)}
+                >
+                  {expandedFolders.has(folder.name) ? (
+                    <FolderOpen className="w-4 h-4 text-amber-400 mr-2" />
+                  ) : (
+                    <Folder className="w-4 h-4 text-amber-500 mr-2" />
+                  )}
+                  <span>{folder.name}</span>
+                  <span className={`ml-auto text-xs bg-${folder.color}-600 text-white rounded-full px-2 py-0.5`}>
+                    {folder.tags.length}
+                  </span>
+                </div>
+                {expandedFolders.has(folder.name) && (
+                  <div className="ml-4 space-y-1">
+                    {folder.tags.length === 0 ? (
+                      <div className="text-xs text-slate-500 py-1">No tags</div>
+                    ) : (
+                      folder.tags.map((tag: any) => (
+                        <div
+                          key={tag.id}
+                          className="group flex items-center justify-between text-xs py-1 px-2 rounded cursor-pointer text-slate-400 hover:bg-gray-800 hover:text-slate-300"
+                          onClick={() => {/* TODO: Handle tag selection */}}
+                        >
+                          <div className="flex items-center">
+                            <FileText className="w-3 h-3 text-slate-500 mr-2" />
+                            <span>{tag.name}</span>
+                          </div>
+                          <span className="text-xs text-slate-500">
+                            {tag.reference?.split('@')[0]?.split('[')[0] || ''}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="flex items-center text-sm text-slate-300 py-1">
-                <Folder className="w-4 h-4 text-amber-500 mr-2" />
-                <span>relationships</span>
-                <span className="ml-auto text-xs bg-amber-600 text-white rounded-full px-2 py-0.5">
-                  {tagCounts.relationship || 0}
-                </span>
-              </div>
-              <div className="flex items-center text-sm text-slate-300 py-1">
-                <Folder className="w-4 h-4 text-amber-500 mr-2" />
-                <span>attributes</span>
-                <span className="ml-auto text-xs bg-purple-600 text-white rounded-full px-2 py-0.5">
-                  {tagCounts.attribute || 0}
-                </span>
-              </div>
-              <div className="flex items-center text-sm text-slate-300 py-1">
-                <Folder className="w-4 h-4 text-amber-500 mr-2" />
-                <span>comments</span>
-                <span className="ml-auto text-xs bg-cyan-600 text-white rounded-full px-2 py-0.5">
-                  {tagCounts.comment || 0}
-                </span>
-              </div>
-              <div className="flex items-center text-sm text-slate-300 py-1">
-                <Folder className="w-4 h-4 text-amber-500 mr-2" />
-                <span>kv_pairs</span>
-                <span className="ml-auto text-xs bg-orange-600 text-white rounded-full px-2 py-0.5">
-                  {tagCounts.kv_pair || 0}
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
