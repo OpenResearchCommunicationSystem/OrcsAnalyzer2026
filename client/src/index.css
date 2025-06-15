@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 3.7%, 15.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+  
+  /* ORCS specific colors */
+  --orcs-bg: hsl(222, 84%, 5%);
+  --orcs-panel: hsl(215, 25%, 12%);
+  --orcs-border: hsl(217, 19%, 27%);
+  --orcs-accent: hsl(213, 94%, 68%);
+  --orcs-entity: hsl(158, 77%, 42%);
+  --orcs-relationship: hsl(43, 96%, 56%);
+  --orcs-attribute: hsl(262, 83%, 58%);
+  --orcs-comment: hsl(189, 94%, 43%);
+  --orcs-kv: hsl(24, 95%, 53%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased text-foreground;
+    background-color: var(--orcs-bg);
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .orcs-entity {
+    @apply bg-opacity-20 text-green-400 hover:bg-opacity-30;
+    background-color: var(--orcs-entity);
+  }
+  
+  .orcs-relationship {
+    @apply bg-opacity-20 text-amber-400 hover:bg-opacity-30;
+    background-color: var(--orcs-relationship);
+  }
+  
+  .orcs-attribute {
+    @apply bg-opacity-20 text-purple-400 hover:bg-opacity-30;
+    background-color: var(--orcs-attribute);
+  }
+  
+  .orcs-comment {
+    @apply bg-opacity-20 text-cyan-400 hover:bg-opacity-30;
+    background-color: var(--orcs-comment);
+  }
+  
+  .orcs-kv {
+    @apply bg-opacity-20 text-orange-400 hover:bg-opacity-30;
+    background-color: var(--orcs-kv);
+  }
+}
+
+/* Selection highlighting */
+.text-selection {
+  @apply bg-blue-500 bg-opacity-30 px-1 rounded cursor-pointer;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--orcs-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--orcs-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--orcs-accent);
+}
