@@ -1,8 +1,10 @@
 import { useRef, useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, Table } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Edit, Table, Save, FileText } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
 import type { Tag, TextSelection, File } from '@shared/schema';
 
 interface DocumentViewerProps {
@@ -14,6 +16,9 @@ interface DocumentViewerProps {
 export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: DocumentViewerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
+  const [metadataContent, setMetadataContent] = useState<string>('');
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ['/api/files'],
@@ -28,8 +33,64 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     enabled: !!selectedFile,
   });
 
+  const { data: metadataResponse, isLoading: isMetadataLoading } = useQuery<{ metadata: string }>({
+    queryKey: [`/api/files/${selectedFile}/metadata`],
+    enabled: !!selectedFile,
+  });
+
   const selectedFileData = files.find(f => f.id === selectedFile);
   const fileType = selectedFileData?.type;
+
+  // Update metadata content when data loads
+  useEffect(() => {
+    if (metadataResponse?.metadata) {
+      setMetadataContent(metadataResponse.metadata);
+    } else if (selectedFileData && metadataResponse?.metadata === '') {
+      // Create default metadata if none exists
+      const defaultMetadata = [
+        '# ORCS Metadata Card',
+        `version: "2025.003"`,
+        `uuid: ""`,
+        `source_file: "${selectedFileData.name}"`,
+        `source_reference: ""  # External URL or reference`,
+        `classification: "Proprietary Information"`,
+        `handling:`,
+        `  - "Copyright 2025 TechWatch Intelligence"`,
+        `  - "Distribution: Internal Use Only"`,
+        `created: "${new Date().toISOString()}"`,
+        `modified: "${new Date().toISOString()}"`,
+        ``,
+        `metadata:`,
+        `  file_type: "${selectedFileData.type}"`,
+        `  file_size: ${selectedFileData.size}`,
+        `  analyst: ""`,
+        `  confidence: ""`,
+        ``,
+        `tag_index: []`,
+        ``
+      ].join('\n');
+      setMetadataContent(defaultMetadata);
+    }
+  }, [metadataResponse, selectedFileData]);
+
+  // Metadata save mutation
+  const saveMetadataMutation = useMutation({
+    mutationFn: async (metadata: string) => {
+      return await apiRequest(`/api/files/${selectedFile}/metadata`, {
+        method: 'PUT',
+        body: JSON.stringify({ metadata }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
+      setIsEditingMetadata(false);
+    }
+  });
+
+  const handleSaveMetadata = () => {
+    saveMetadataMutation.mutate(metadataContent);
+  };
 
   // CSV parsing function
   const parseCSV = (csvText: string): string[][] => {
@@ -264,6 +325,63 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   return (
     <div className="flex-1 bg-gray-900 p-6 overflow-y-auto">
       {renderContent()}
+      
+      {/* Metadata Panel */}
+      {selectedFile && (
+        <div className="mt-6 pt-4 border-t border-gray-700">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-slate-400 font-sans text-xs uppercase tracking-wide">ORCS Metadata</h3>
+            <div className="flex items-center space-x-2">
+              {isEditingMetadata ? (
+                <>
+                  <Button
+                    onClick={handleSaveMetadata}
+                    disabled={saveMetadataMutation.isPending}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Save className="w-3 h-3 mr-1" />
+                    {saveMetadataMutation.isPending ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    onClick={() => setIsEditingMetadata(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400"
+                  >
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={() => setIsEditingMetadata(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-400 hover:text-slate-200"
+                >
+                  <Edit className="w-3 h-3 mr-1" />
+                  Edit
+                </Button>
+              )}
+            </div>
+          </div>
+          
+          {isEditingMetadata ? (
+            <Textarea
+              value={metadataContent}
+              onChange={(e) => setMetadataContent(e.target.value)}
+              className="font-mono text-xs bg-gray-800 border-gray-600 min-h-48"
+              placeholder="YAML metadata content..."
+            />
+          ) : (
+            <div className="bg-gray-800 p-3 rounded-lg border border-gray-700">
+              <pre className="font-mono text-xs text-slate-300 whitespace-pre-wrap">
+                {metadataContent || 'No metadata available'}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Tagged entities visualization */}
       {tags.length > 0 && selectedFile && (
