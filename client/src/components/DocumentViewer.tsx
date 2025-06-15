@@ -76,11 +76,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   // Metadata save mutation
   const saveMetadataMutation = useMutation({
     mutationFn: async (metadata: string) => {
-      return await apiRequest(`/api/files/${selectedFile}/metadata`, {
-        method: 'PUT',
-        body: JSON.stringify({ metadata }),
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return await apiRequest(`/api/files/${selectedFile}/metadata`, 'PUT', { metadata });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
