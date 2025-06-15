@@ -71,6 +71,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Metadata operations
+  app.get("/api/files/:id/metadata", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      const metadata = await fileService.getMetadataForFile(file.name);
+      res.json({ metadata: metadata || "" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch metadata" });
+    }
+  });
+
+  app.put("/api/files/:id/metadata", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      const { metadata } = req.body;
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      await fileService.updateMetadataFile(file.name, metadata);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update metadata" });
+    }
+  });
+
   // Tag operations
   app.get("/api/tags", async (req, res) => {
     try {

@@ -51,43 +51,71 @@ export class FileService {
       modified: stats.mtime.toISOString(),
     };
 
-    // Create corresponding ORCS card
-    await this.createOrcsCard(fileData, content.toString('utf-8'));
+    // Create companion metadata file
+    await this.createMetadataFile(fileData, content.toString('utf-8'));
     
     return fileData;
   }
 
-  async createOrcsCard(file: File, content: string): Promise<OrcsCard> {
-    const cardId = uuidv4();
+  async createMetadataFile(file: File, content: string): Promise<void> {
+    const metadataId = uuidv4();
     const now = new Date().toISOString();
     const sourceHash = crypto.createHash('sha256').update(content).digest('hex');
     
-    const cardData: OrcsCard = {
-      id: cardId,
-      title: `${file.name} - ORCS Analysis Card`,
-      source: `file:///${file.path}`,
-      sourceHash: `sha256:${sourceHash}`,
-      citation: `Original file: ${file.name}`,
-      classification: 'Proprietary Information',
-      handling: ['Copyright 2025 TechWatch Intelligence', 'Distribution: Internal Use Only'],
-      created: now,
-      modified: now,
-      content: content,
-      keyValuePairs: {
-        original_filename: file.name,
-        file_type: file.type,
-        orcs_version: '2025.003'
-      },
-      tags: [],
-    };
+    const baseName = path.parse(file.name).name;
+    const metadataFilename = `${baseName}.yaml.txt`;
+    const metadataPath = path.join(RAW_DIR, metadataFilename);
+    
+    const yamlContent = [
+      '# ORCS Metadata Card',
+      `version: "2025.003"`,
+      `uuid: "${metadataId}"`,
+      `source_file: "${file.name}"`,
+      `source_reference: ""  # External URL or reference`,
+      `classification: "Proprietary Information"`,
+      `handling:`,
+      `  - "Copyright 2025 TechWatch Intelligence"`,
+      `  - "Distribution: Internal Use Only"`,
+      `created: "${now}"`,
+      `modified: "${now}"`,
+      `source_hash: "sha256:${sourceHash}"`,
+      ``,
+      `metadata:`,
+      `  file_type: "${file.type}"`,
+      `  file_size: ${file.size}`,
+      `  analyst: ""`,
+      `  confidence: ""`,
+      ``,
+      `tag_index: []`,
+      `  # Tags will be added here as:`,
+      `  # - id: "tag_id"`,
+      `  #   type: "entity"`,
+      `  #   name: "TagName"`,
+      `  #   reference: "${file.name}[row,col]"`,
+      ``
+    ].join('\n');
+    
+    await fs.writeFile(metadataPath, yamlContent, 'utf-8');
+  }
 
-    const cardFilename = `${path.parse(file.name).name}_ORCS_CARD.txt`;
-    const cardPath = path.join(CARDS_DIR, cardFilename);
+  async getMetadataForFile(filename: string): Promise<string | null> {
+    const baseName = path.parse(filename).name;
+    const metadataFilename = `${baseName}.yaml.txt`;
+    const metadataPath = path.join(RAW_DIR, metadataFilename);
     
-    const orcsContent = this.formatOrcsCard(cardData);
-    await fs.writeFile(cardPath, orcsContent, 'utf-8');
+    try {
+      return await fs.readFile(metadataPath, 'utf-8');
+    } catch (error) {
+      return null; // Metadata file doesn't exist
+    }
+  }
+
+  async updateMetadataFile(filename: string, content: string): Promise<void> {
+    const baseName = path.parse(filename).name;
+    const metadataFilename = `${baseName}.yaml.txt`;
+    const metadataPath = path.join(RAW_DIR, metadataFilename);
     
-    return cardData;
+    await fs.writeFile(metadataPath, content, 'utf-8');
   }
 
   private formatOrcsCard(card: OrcsCard): string {
@@ -126,13 +154,13 @@ export class FileService {
     
     try {
       const rawFiles = await fs.readdir(RAW_DIR);
-      const cardFiles = await fs.readdir(CARDS_DIR);
-      
       const files: File[] = [];
       
-      // Process raw files
+      // Process only raw files, filter out metadata files
       for (const filename of rawFiles) {
         if (filename === '.gitkeep') continue;
+        if (filename.endsWith('.yaml.txt')) continue; // Skip metadata files
+        
         const filepath = path.join(RAW_DIR, filename);
         const stats = await fs.stat(filepath);
         
@@ -144,26 +172,6 @@ export class FileService {
           name: filename,
           path: filepath,
           type: filename.endsWith('.csv') ? 'csv' : 'txt',
-          size: stats.size,
-          created: stats.birthtime.toISOString(),
-          modified: stats.mtime.toISOString(),
-        });
-      }
-      
-      // Process card files
-      for (const filename of cardFiles) {
-        if (filename === '.gitkeep') continue;
-        const filepath = path.join(CARDS_DIR, filename);
-        const stats = await fs.stat(filepath);
-        
-        // Use a consistent ID based on file path and modified time
-        const id = crypto.createHash('md5').update(`${filepath}-${stats.mtime.getTime()}`).digest('hex');
-        
-        files.push({
-          id,
-          name: filename,
-          path: filepath,
-          type: 'orcs_card',
           size: stats.size,
           created: stats.birthtime.toISOString(),
           modified: stats.mtime.toISOString(),
