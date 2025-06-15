@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,13 +23,24 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     queryKey: ['/api/tags'],
   });
 
+  const selectedFileData = files.find(f => f.id === selectedFile);
+  const fileType = selectedFileData?.type;
+
   const { data: fileContent, isLoading: isContentLoading } = useQuery<{ content: string }>({
     queryKey: [`/api/files/${selectedFile}/content`],
     enabled: !!selectedFile,
   });
 
-  const selectedFileData = files.find(f => f.id === selectedFile);
-  const fileType = selectedFileData?.type;
+  // Fetch corresponding ORCS card for original files  
+  const orcsCardId = useMemo(() => {
+    if (!selectedFileData || selectedFileData.type === 'orcs_card' || !selectedFileData.name) return null;
+    return files.find(f => f.name === `${selectedFileData.name.split('.')[0]}_ORCS_CARD.txt`)?.id || null;
+  }, [selectedFileData, files]);
+
+  const { data: orcsCardContent } = useQuery<{ content: string }>({
+    queryKey: [`/api/files/${orcsCardId}/content`],
+    enabled: !!orcsCardId,
+  });
 
   // CSV parsing function
   const parseCSV = (csvText: string): string[][] => {
@@ -70,6 +81,41 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
       setSelectedCell({ row, col });
     }
   };
+
+  // Parse ORCS card metadata
+  const parseOrcsMetadata = (content: string) => {
+    if (!content) return null;
+    
+    const lines = content.split('\n');
+    const metadata: any = {};
+    
+    for (const line of lines) {
+      if (line.startsWith('UUID: ')) metadata.uuid = line.substring(6);
+      if (line.startsWith('TITLE: ')) metadata.title = line.substring(7);
+      if (line.startsWith('CLASSIFICATION: ') || line.includes('CLASSIFICATION: ')) {
+        metadata.classification = line.split('CLASSIFICATION: ')[1]?.replace(/===/g, '').trim();
+      }
+      if (line.startsWith('CREATED: ')) metadata.created = line.substring(9);
+      if (line.startsWith('MODIFIED: ')) metadata.modified = line.substring(10);
+    }
+    
+    // Count entities, relationships, etc.
+    const entityCount = (content.match(/^uuid:[^\n]+\s+[^:]+:[^@]+@/gm) || []).length;
+    const relationshipCount = (content.match(/^[^(]+\([^)]+\)\s+\w+\s+[^(]+\([^)]+\)/gm) || []).length;
+    const attributeCount = (content.match(/^uuid:[^\n]+\s+attribute:/gm) || []).length;
+    const commentCount = (content.match(/^uuid:[^\n]+\s+comment:/gm) || []).length;
+    
+    metadata.counts = {
+      entities: entityCount,
+      relationships: relationshipCount,
+      attributes: attributeCount,
+      comments: commentCount
+    };
+    
+    return metadata;
+  };
+
+  const orcsMetadata = orcsCardContent ? parseOrcsMetadata(orcsCardContent.content) : null;
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -134,7 +180,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
+            <div className="grid grid-cols-3 gap-4 text-sm text-slate-400">
               <div>
                 <span className="font-medium">Size:</span> 
                 <span className="ml-1">{selectedFileData?.size} bytes</span>
@@ -143,7 +189,37 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
                 <span className="font-medium">Modified:</span> 
                 <span className="ml-1">{selectedFileData?.modified ? new Date(selectedFileData.modified).toLocaleString() : 'Unknown'}</span>
               </div>
+              <div>
+                <span className="font-medium">Classification:</span> 
+                <span className="ml-1 text-amber-400">{orcsMetadata?.classification || 'Unclassified'}</span>
+              </div>
             </div>
+            
+            {orcsMetadata && (
+              <div className="mt-3 pt-3 border-t border-gray-700">
+                <div className="grid grid-cols-4 gap-4 text-xs text-slate-500">
+                  <div className="text-center">
+                    <div className="text-green-400 font-medium">{orcsMetadata.counts?.entities || 0}</div>
+                    <div>Entities</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-amber-400 font-medium">{orcsMetadata.counts?.relationships || 0}</div>
+                    <div>Relations</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-purple-400 font-medium">{orcsMetadata.counts?.attributes || 0}</div>
+                    <div>Attributes</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-cyan-400 font-medium">{orcsMetadata.counts?.comments || 0}</div>
+                    <div>Comments</div>
+                  </div>
+                </div>
+                <div className="mt-2 text-xs text-slate-500">
+                  <span className="font-medium">ORCS Title:</span> {orcsMetadata.title || 'Analysis in progress'}
+                </div>
+              </div>
+            )}
           </div>
 
           <div 
