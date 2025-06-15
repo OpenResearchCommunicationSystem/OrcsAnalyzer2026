@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Edit } from "lucide-react";
-import { File, Tag, TextSelection, OrcsCard } from "@shared/schema";
-import { parseOrcsCard } from "@/lib/orcsParser";
+import { useRef, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Edit } from 'lucide-react';
+import { parseOrcsCard } from '@/lib/orcsParser';
+import type { Tag, TextSelection } from '@shared/schema';
 
 interface DocumentViewerProps {
   selectedFile: string | null;
@@ -13,14 +13,13 @@ interface DocumentViewerProps {
 }
 
 export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: DocumentViewerProps) {
-  const [selectedText, setSelectedText] = useState<string>('');
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const { data: files = [] } = useQuery<File[]>({
+  const { data: files = [] } = useQuery({
     queryKey: ['/api/files'],
   });
 
-  const { data: tags = [] } = useQuery<Tag[]>({
+  const { data: tags = [] } = useQuery({
     queryKey: ['/api/tags'],
   });
 
@@ -30,146 +29,254 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   });
 
   const selectedFileData = files.find(f => f.id === selectedFile);
-  const isOrcsCard = selectedFileData?.type === 'orcs_card';
-  const parsedCard = isOrcsCard && fileContent?.content ? parseOrcsCard(fileContent.content) : null;
+  const fileType = selectedFileData?.type;
 
   useEffect(() => {
     const handleMouseUp = () => {
       const selection = window.getSelection();
-      if (selection && selection.toString().trim() && contentRef.current?.contains(selection.anchorNode)) {
-        const text = selection.toString().trim();
+      if (selection && selection.toString().trim().length > 0 && contentRef.current) {
         const range = selection.getRangeAt(0);
+        const text = selection.toString();
         const startOffset = range.startOffset;
         const endOffset = range.endOffset;
-        
-        setSelectedText(text);
-        
+
         if (selectedFileData) {
-          onTextSelection({
+          const textSelection: TextSelection = {
             text,
             startOffset,
             endOffset,
-            filename: selectedFileData.name,
-          });
+            fileId: selectedFileData.id,
+            reference: fileType === 'csv' 
+              ? `${selectedFileData.name}[${Math.floor(startOffset / 50)},${startOffset % 50}]`
+              : `${selectedFileData.name}@${startOffset}-${endOffset}`
+          };
+          onTextSelection(textSelection);
         }
       }
     };
 
     document.addEventListener('mouseup', handleMouseUp);
     return () => document.removeEventListener('mouseup', handleMouseUp);
-  }, [selectedFileData, onTextSelection]);
+  }, [selectedFileData, fileType, onTextSelection]);
 
-  if (!selectedFile || !selectedFileData) {
-    return (
-      <div className="flex-1 bg-gray-900 p-6 flex items-center justify-center">
-        <div className="text-center text-slate-400">
-          <h3 className="text-lg font-medium mb-2">No File Selected</h3>
-          <p>Select a file from the sidebar to view its contents</p>
+  // ORCS Card Viewer Component
+  const OrcsCardViewer = ({ card }: { card: any }) => (
+    <>
+      <div className="mb-6 pb-4 border-b border-gray-700">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-medium text-slate-200">
+            {card.title}
+          </h2>
+          <div className="flex items-center space-x-2">
+            <Badge variant="destructive" className="bg-red-600">
+              {card.classification}
+            </Badge>
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
+              <Edit className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
+          <div>
+            <span className="font-medium">Source:</span> 
+            <span className="ml-1">{card.source}</span>
+          </div>
+          <div>
+            <span className="font-medium">Modified:</span> 
+            <span className="ml-1">{new Date(card.modified).toLocaleString()}</span>
+          </div>
+          <div>
+            <span className="font-medium">UUID:</span> 
+            <span className="font-mono text-xs ml-1">{card.id}</span>
+          </div>
+          <div>
+            <span className="font-medium">Citation:</span> 
+            <span className="ml-1">{card.citation}</span>
+          </div>
         </div>
       </div>
-    );
-  }
 
-  if (!fileContent) {
-    return (
-      <div className="flex-1 bg-gray-900 p-6 flex items-center justify-center">
-        <div className="text-slate-400">Loading file content...</div>
+      <div 
+        ref={contentRef}
+        className="font-mono text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text"
+        style={{ userSelect: 'text' }}
+      >
+        <div className="text-slate-300 mb-4 whitespace-pre-wrap">
+          {card.content}
+        </div>
       </div>
+    </>
+  );
+
+  // CSV Viewer Component
+  const CsvViewer = ({ content }: { content: string }) => {
+    const lines = content.split('\n').filter(line => line.trim());
+    const headers = lines[0]?.split(',') || [];
+    const rows = lines.slice(1).map(line => line.split(','));
+
+    return (
+      <>
+        <div className="mb-6 pb-4 border-b border-gray-700">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-medium text-slate-200">
+              {selectedFileData?.name}
+            </h2>
+            <div className="flex items-center space-x-2">
+              <Badge variant="outline" className="border-gray-600 text-slate-300">
+                CSV ({rows.length} rows)
+              </Badge>
+              <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
+                <Edit className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
+            <div>
+              <span className="font-medium">Size:</span> 
+              <span className="ml-1">{selectedFileData?.size} bytes</span>
+            </div>
+            <div>
+              <span className="font-medium">Modified:</span> 
+              <span className="ml-1">{selectedFileData?.modified ? new Date(selectedFileData.modified).toLocaleString() : 'Unknown'}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-700">
+                <tr>
+                  {headers.map((header, index) => (
+                    <th key={index} className="px-4 py-3 text-left text-slate-200 font-medium">
+                      {header.trim()}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody 
+                ref={contentRef}
+                className="divide-y divide-gray-700"
+                style={{ userSelect: 'text' }}
+              >
+                {rows.map((row, rowIndex) => (
+                  <tr key={rowIndex} className="hover:bg-gray-750">
+                    {row.map((cell, cellIndex) => (
+                      <td key={cellIndex} className="px-4 py-3 text-slate-300">
+                        {cell.trim()}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </>
     );
-  }
+  };
+
+  // Text File Viewer Component
+  const TextViewer = ({ content }: { content: string }) => (
+    <>
+      <div className="mb-6 pb-4 border-b border-gray-700">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-medium text-slate-200">
+            {selectedFileData?.name}
+          </h2>
+          <div className="flex items-center space-x-2">
+            <Badge variant="outline" className="border-gray-600 text-slate-300">
+              {fileType?.toUpperCase() || 'TEXT'}
+            </Badge>
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
+              <Edit className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
+          <div>
+            <span className="font-medium">Size:</span> 
+            <span className="ml-1">{selectedFileData?.size} bytes</span>
+          </div>
+          <div>
+            <span className="font-medium">Modified:</span> 
+            <span className="ml-1">{selectedFileData?.modified ? new Date(selectedFileData.modified).toLocaleString() : 'Unknown'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div 
+        ref={contentRef}
+        className="font-mono text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text"
+        style={{ userSelect: 'text' }}
+      >
+        <div className="text-slate-300 mb-4 whitespace-pre-wrap">
+          {content}
+        </div>
+      </div>
+    </>
+  );
+
+  const renderContent = () => {
+    if (!selectedFile) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-slate-400">Select a document to view</div>
+        </div>
+      );
+    }
+
+    if (!fileContent?.content) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-slate-400">Loading document...</div>
+        </div>
+      );
+    }
+
+    // Route to appropriate viewer based on file type
+    if (fileType === 'orcs_card') {
+      const parsedCard = parseOrcsCard(fileContent.content);
+      if (parsedCard) {
+        return <OrcsCardViewer card={parsedCard} />;
+      }
+    }
+
+    if (fileType === 'csv') {
+      return <CsvViewer content={fileContent.content} />;
+    }
+
+    // Default to text viewer for txt and other files
+    return <TextViewer content={fileContent.content} />;
+  };
 
   return (
     <div className="flex-1 bg-gray-900 p-6 overflow-y-auto">
-      {parsedCard ? (
-        // ORCS Card View
-        <>
-          {/* Document Header */}
-          <div className="mb-6 pb-4 border-b border-gray-700">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-medium text-slate-200">
-                {parsedCard.title}
-              </h2>
-              <div className="flex items-center space-x-2">
-                <Badge variant="destructive" className="bg-red-600">
-                  {parsedCard.classification}
-                </Badge>
-                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200">
-                  <Edit className="w-4 h-4" />
-                </Button>
+      {renderContent()}
+      
+      {/* Tagged entities visualization */}
+      {tags.length > 0 && selectedFile && (
+        <div className="mt-6 pt-4 border-t border-gray-700">
+          <h3 className="text-slate-400 font-sans text-xs uppercase tracking-wide mb-3">Tagged Elements</h3>
+          <div className="space-y-2 text-xs">
+            {tags.slice(0, 5).map((tag) => (
+              <div 
+                key={tag.id} 
+                className="flex items-center space-x-3 cursor-pointer hover:bg-gray-700 p-1 rounded"
+                onClick={() => onTagClick(tag)}
+              >
+                <span className={`text-${tag.type === 'entity' ? 'green' : tag.type === 'relationship' ? 'amber' : 'purple'}-400`}>
+                  {tag.type}:{tag.name}
+                </span>
+                <span className="text-slate-400">{tag.reference}</span>
+                {tag.aliases.length > 0 && (
+                  <span className="text-slate-500">[{tag.aliases.join(', ')}]</span>
+                )}
               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
-              <div>
-                <span className="font-medium">Source:</span> 
-                <span className="ml-1">{parsedCard.source}</span>
-              </div>
-              <div>
-                <span className="font-medium">Modified:</span> 
-                <span className="ml-1">{new Date(parsedCard.modified).toLocaleString()}</span>
-              </div>
-              <div>
-                <span className="font-medium">UUID:</span> 
-                <span className="font-mono text-xs ml-1">{parsedCard.id}</span>
-              </div>
-              <div>
-                <span className="font-medium">Citation:</span> 
-                <span className="ml-1">{parsedCard.citation}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Document Content */}
-          <div 
-            ref={contentRef}
-            className="font-mono text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text"
-            style={{ userSelect: 'text' }}
-          >
-            <div className="text-slate-300 mb-4 whitespace-pre-wrap">
-              {parsedCard.content}
-            </div>
-
-            {/* Tagged entities visualization would go here */}
-            {tags.length > 0 && (
-              <div className="mt-6 pt-4 border-t border-gray-700">
-                <h3 className="text-slate-400 font-sans text-xs uppercase tracking-wide mb-3">Tagged Elements</h3>
-                <div className="space-y-2 text-xs">
-                  {tags.slice(0, 5).map((tag) => (
-                    <div 
-                      key={tag.id} 
-                      className="flex items-center space-x-3 cursor-pointer hover:bg-gray-700 p-1 rounded"
-                      onClick={() => onTagClick(tag)}
-                    >
-                      <span className={`text-${tag.type === 'entity' ? 'green' : tag.type === 'relationship' ? 'amber' : 'purple'}-400`}>
-                        {tag.type}:{tag.name}
-                      </span>
-                      <span className="text-slate-400">{tag.reference}</span>
-                      {tag.aliases.length > 0 && (
-                        <span className="text-slate-500">[{tag.aliases.join(', ')}]</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </>
-      ) : (
-        // Plain file view
-        <div>
-          <div className="mb-4">
-            <h2 className="text-lg font-medium text-slate-200">{selectedFileData.name}</h2>
-            <p className="text-sm text-slate-400">
-              {selectedFileData.type.toUpperCase()} file • {(selectedFileData.size / 1024).toFixed(1)} KB
-            </p>
-          </div>
-          
-          <div 
-            ref={contentRef}
-            className="font-mono text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text whitespace-pre-wrap"
-            style={{ userSelect: 'text' }}
-          >
-            {fileContent.content}
+            ))}
           </div>
         </div>
       )}
