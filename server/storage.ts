@@ -209,7 +209,7 @@ export class MemStorage implements IStorage {
     console.log('Building search index...');
     
     // Index files
-    for (const [id, file] of this.files) {
+    for (const [id, file] of Array.from(this.files.entries())) {
       try {
         const content = await this.getFileContent(file.path);
         const keywords = this.extractKeywords(content + ' ' + file.name);
@@ -225,7 +225,7 @@ export class MemStorage implements IStorage {
     }
 
     // Index ORCS cards
-    for (const [id, card] of this.orcsCards) {
+    for (const [id, card] of Array.from(this.orcsCards.entries())) {
       try {
         const content = await this.getFileContent(card.source.replace('file:///', ''));
         const keywords = this.extractKeywords(content + ' ' + card.title + ' ' + card.citation);
@@ -241,7 +241,7 @@ export class MemStorage implements IStorage {
     }
 
     // Index tags
-    for (const [id, tag] of this.tags) {
+    for (const [id, tag] of Array.from(this.tags.entries())) {
       const keywords = this.extractKeywords(
         tag.name + ' ' + 
         tag.aliases.join(' ') + ' ' + 
@@ -300,7 +300,7 @@ export class MemStorage implements IStorage {
 
     const results: { file: File; score: number }[] = [];
 
-    for (const [id, file] of this.files) {
+    for (const [id, file] of Array.from(this.files.entries())) {
       const indexed = this.searchIndex.files.get(id);
       if (!indexed) continue;
 
@@ -335,7 +335,7 @@ export class MemStorage implements IStorage {
 
     const results: { file: File; matches: string[] }[] = [];
 
-    for (const [id, file] of this.files) {
+    for (const [id, file] of Array.from(this.files.entries())) {
       const indexed = this.searchIndex.files.get(id);
       if (!indexed) continue;
 
@@ -351,7 +351,7 @@ export class MemStorage implements IStorage {
       }
 
       if (matches.length > 0) {
-        results.push({ file, matches: [...new Set(matches)] });
+        results.push({ file, matches: Array.from(new Set(matches)) });
       }
     }
 

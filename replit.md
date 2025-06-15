@@ -117,6 +117,10 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 Changelog:
 - June 15, 2025. Initial setup
 - June 15, 2025. Added complete file deletion functionality with automatic cleanup of related files
+- June 15, 2025. Implemented YAML metadata system with .yaml.txt companion files
+- June 15, 2025. Created unified document viewer showing raw content + editable metadata
+- June 15, 2025. Added CSV table viewer with click-to-select cell functionality
+- June 15, 2025. Implemented content search indexing with persistent storage
 ```
 
 ## User Preferences
