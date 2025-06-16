@@ -163,6 +163,33 @@ Changelog:
 - **Conflicting opinions**: Handle disagreements between analysts
 - **Audit trail**: Track all decision changes for accountability
 
+### Knowledge Reuse System - "The Common Problem" Solution
+- **Enhanced clipboard functionality**: Copy snippets and bulletpoints with automatic metadata preservation
+- **Risk reduction**: Automatic classification and citation inclusion prevents spillage during copy/paste operations
+- **Drafting tool focus**: Designed for initial document creation, not final products
+- **Cross-platform compatibility**: MS Office integration first, maximum forward compatibility strategy
+
+#### Snippets - Direct Content Extraction
+- **Text selection with metadata**: Copy document content with embedded classification, citation, and handling instructions
+- **Generic copy/paste**: Plain text format with automatic metadata inclusion
+- **MS Office integration**: Automatic footnote/endnote citation formatting
+- **RTF template support**: Future rich text formatting for output (system remains plain text internally)
+- **Clipboard-first approach**: Transient items by default, save/delete without formal tracking
+
+#### Bulletpoints - Generated Relationship Statements
+- **Tag-to-tag relationships**: Generate natural language sentences from stored entity connections
+- **Universal connectivity**: Any tag can connect to any other tag for sentence generation
+- **Template flexibility**: User-configurable citation systems, support any format
+- **AI assistance ready**: Designed for future artificial intelligence integration
+- **Iterative complexity**: Start simple, build sophistication over time
+
+#### Implementation Strategy
+- **Generic classification terminology**: Use corporate/proprietary markings only, avoid actual intelligence classifications
+- **Maximum compatibility**: Plain text foundation, no rich text in system to prevent word processor temptation
+- **Forward compatibility**: Framework designed for ICD 206 and other marking systems
+- **Comment integration**: Future formal storage within existing comment system
+- **Separation of concerns**: Clear distinction between unanalyzed clipboard items and formal knowledge objects
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
