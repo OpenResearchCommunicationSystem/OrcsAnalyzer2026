@@ -1,0 +1,33 @@
+Summary of ORCS Architecture
+Core Principles
+
+    Individual repositories - Each analyst has their own ORCS folder
+    File-based storage - No databases, only human-readable text files
+    Universal formats - .txt/.csv input, structured YAML output
+    Supervisor merging - Higher-level users can combine multiple analyst repositories
+    UUID-based entity resolution - Cross-analyst entity mapping through UUIDs
+    Shared drive boundary - Security/access control handled at filesystem level
+
+Implementation Priorities
+
+    Disambiguation modal from tag menu for untagged matches, merge/split operations
+    Master index for search term matching and highlighting
+    Entity clustering with human decision capture
+    Export capabilities to various formats (Office, node/edge tables, etc.)
+
+Key Questions
+1. Disambiguation Modal Workflow: 
+  We need a way to store negative responses to matches as well. In other words John Smith UUID XYZ is NOT John Smith in the following locations...
+  1. Show a list of documents that are fully tagged (both positive and negative), those that have partial, and those that have none, allow with the matches. Allow the removal of some search terms. For example I would likely have John in an my search alias for Johns Smith, I would want to remove that in some cases. I would also probably like a list of any items that had a shared search term. So all the other entities that have "john" in the search term or john in the label. 
+
+2. UUID Generation Strategy: 
+	1. Same entity gets the same UUIDs based on the user. The user can map another users UUID to their own, meaning additional imports from USER UUID XYZ will map to my UUID XYZ. 
+    Namespace UUIDs that include analyst identifier. We will probably need a way to map user UUIDs with other UUIDs. That becomes the best way to make things interoperable. 
+
+3. Supervisor Merge Process
+
+When combining repositories:
+
+    Conflict detection - This is a regular problem and should be handled through merges. We also need a way for documents to get merged. 
+
+4. Export Format Priority: Future problem. 

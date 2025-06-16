@@ -132,6 +132,37 @@ Changelog:
 - June 16, 2025. Implemented safe handling instruction add/remove with bounds checking
 ```
 
+## Future Enhancements
+
+### Advanced Disambiguation System
+- **Search term management**: Check/uncheck individual search terms during disambiguation
+- **Temporary/permanent modifications**: Add/remove search terms for current session or permanently
+- **Document resolution**: Resolve multiple analyst views of same document with automatic future resolution
+- **Import library system**: Imported content staged in separate library for selective integration
+- **Negative match tracking**: Store explicit rejections alongside positive matches in same format
+- **Cross-entity correlation**: Pre-computed index showing entities sharing search terms
+
+### UUID Architecture & Cross-Analyst Collaboration
+- **Namespace UUIDs**: Include analyst identifier in UUID generation
+- **Cross-analyst mapping**: Map foreign UUIDs to local UUIDs for entity resolution
+- **Import inheritance**: Future imports from mapped analysts automatically resolve
+- **Conflict detection**: Handle UUID collisions and entity conflicts through merge workflows
+- **User precedence**: User's own tags always take priority over imported content
+
+### Organizational Features
+- **Individual analyst UUIDs**: Future addition for user identification
+- **Repository UUIDs**: Allow organizations to track and merge multiple repositories
+- **Export capabilities**: MS Office, Google Office, node/edge tables, ORCS-to-ORCS
+- **Supervisor merge tools**: Higher-level users combine multiple analyst repositories
+- **Security boundary**: ORCS stops at shared drive level for access control
+
+### Human Decision Capture
+- **Rejection reasons**: Track why entities were not merged
+- **Merge confidence**: Analyst certainty levels
+- **Decision history**: Who made what choices when
+- **Conflicting opinions**: Handle disagreements between analysts
+- **Audit trail**: Track all decision changes for accountability
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
