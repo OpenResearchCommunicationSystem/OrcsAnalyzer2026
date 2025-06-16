@@ -140,7 +140,7 @@ export function MetadataForm({ fileId, fileName, initialMetadata, onClose, onSav
   const saveMetadataMutation = useMutation({
     mutationFn: async (metadata: string) => {
       console.log('Saving metadata:', { fileId, metadataLength: metadata.length });
-      const response = await apiRequest(`/api/files/${fileId}/metadata`, 'PUT', { metadata });
+      const response = await apiRequest('PUT', `/api/files/${fileId}/metadata`, { metadata });
       console.log('Save response:', response);
       return response;
     },
