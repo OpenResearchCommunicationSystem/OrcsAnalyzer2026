@@ -139,16 +139,21 @@ export function MetadataForm({ fileId, fileName, initialMetadata, onClose, onSav
 
   const saveMetadataMutation = useMutation({
     mutationFn: async (metadata: string) => {
-      return await apiRequest(`/api/files/${fileId}/metadata`, 'PUT', { metadata });
+      console.log('Saving metadata:', { fileId, metadataLength: metadata.length });
+      const response = await apiRequest(`/api/files/${fileId}/metadata`, 'PUT', { metadata });
+      console.log('Save response:', response);
+      return response;
     },
     onSuccess: () => {
+      console.log('Metadata saved successfully');
       queryClient.invalidateQueries({ queryKey: [`/api/files/${fileId}/metadata`] });
       onSave();
       onClose();
     },
     onError: (error: any) => {
       console.error('Failed to save metadata:', error);
-      alert('Failed to save metadata. Please try again.');
+      console.error('Error details:', error.message, error.cause);
+      alert(`Failed to save metadata: ${error.message || 'Unknown error'}`);
     }
   });
 

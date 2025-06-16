@@ -93,17 +93,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const fileId = req.params.id;
       const { metadata } = req.body;
+      
+      console.log("Metadata update request:", { fileId, metadataLength: metadata?.length });
+      
       const files = await fileService.getFiles();
       const file = files.find(f => f.id === fileId);
       
       if (!file) {
+        console.error("File not found:", fileId);
         return res.status(404).json({ error: "File not found" });
       }
       
+      if (!metadata || typeof metadata !== 'string') {
+        console.error("Invalid metadata:", metadata);
+        return res.status(400).json({ error: "Invalid metadata content" });
+      }
+      
       await fileService.updateMetadataFile(file.name, metadata);
+      console.log("Metadata saved successfully for:", file.name);
       res.json({ success: true });
     } catch (error) {
-      res.status(500).json({ error: "Failed to update metadata" });
+      console.error("Metadata update error:", error);
+      res.status(500).json({ error: "Failed to update metadata", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
