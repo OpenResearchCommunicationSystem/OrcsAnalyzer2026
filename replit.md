@@ -126,6 +126,10 @@ Changelog:
 - June 15, 2025. Implemented tag editor dropdown for entity types (person, organization, location, etc.)
 - June 15, 2025. Added entity type selection to tag creation modal
 - June 15, 2025. Connected tag clicking from file sidebar to tag editor for seamless editing
+- June 16, 2025. Replaced raw text metadata editor with structured ORCS form
+- June 16, 2025. Added professional metadata form with classification levels and handling instructions
+- June 16, 2025. Fixed metadata saving issues and file locking problems with form-based approach
+- June 16, 2025. Implemented safe handling instruction add/remove with bounds checking
 ```
 
 ## User Preferences

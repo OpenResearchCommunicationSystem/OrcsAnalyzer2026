@@ -172,10 +172,12 @@ export function MetadataForm({ fileId, fileName, initialMetadata, onClose, onSav
   };
 
   const removeHandlingLine = (index: number) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      handling: prev.handling.filter((_, i) => i !== index) 
-    }));
+    if (index >= 0 && index < formData.handling.length && formData.handling.length > 1) {
+      setFormData(prev => ({ 
+        ...prev, 
+        handling: prev.handling.filter((_, i) => i !== index) 
+      }));
+    }
   };
 
   return (
