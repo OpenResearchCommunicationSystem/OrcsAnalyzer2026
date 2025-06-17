@@ -91,17 +91,19 @@ export default function OrcsMain() {
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-w-0" style={{ minWidth: '1024px' }}>
         {/* Left Sidebar - File Management */}
-        <FileManagerSidebar
-          selectedFile={selectedFile}
-          onFileSelect={setSelectedFile}
-          searchQuery={searchQuery}
-          onTagClick={handleTagClick}
-        />
+        <div className="w-80 flex-shrink-0">
+          <FileManagerSidebar
+            selectedFile={selectedFile}
+            onFileSelect={setSelectedFile}
+            searchQuery={searchQuery}
+            onTagClick={handleTagClick}
+          />
+        </div>
 
         {/* Central Content Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Document Header */}
           <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-b border-gray-700 px-6 py-2 text-xs text-slate-400">
             <div className="flex items-center justify-between">
@@ -132,7 +134,7 @@ export default function OrcsMain() {
         </div>
 
         {/* Right Sidebar - Graph & Tag Editor */}
-        <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="w-80 border-l border-gray-700 flex flex-col">
+        <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="w-80 flex-shrink-0 border-l border-gray-700 flex flex-col">
           {/* Tab Navigation */}
           <div className="border-b border-gray-700">
             <div className="flex">
