@@ -186,6 +186,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tag Connection operations
+  app.get("/api/connections", async (req, res) => {
+    try {
+      const connections = await storage.getTagConnections();
+      res.json(connections);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch tag connections" });
+    }
+  });
+
+  app.get("/api/connections/:id", async (req, res) => {
+    try {
+      const connection = await storage.getTagConnection(req.params.id);
+      if (!connection) {
+        return res.status(404).json({ error: "Connection not found" });
+      }
+      res.json(connection);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch tag connection" });
+    }
+  });
+
+  app.get("/api/tags/:id/connections", async (req, res) => {
+    try {
+      const connections = await storage.getConnectionsForTag(req.params.id);
+      res.json(connections);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch connections for tag" });
+    }
+  });
+
+  app.post("/api/connections", async (req, res) => {
+    try {
+      const validatedData = insertTagConnectionSchema.parse(req.body);
+      const connection = await storage.createTagConnection(validatedData);
+      res.status(201).json(connection);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid connection data", details: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create tag connection" });
+    }
+  });
+
+  app.put("/api/connections/:id", async (req, res) => {
+    try {
+      const connection = await storage.updateTagConnection(req.params.id, req.body);
+      res.json(connection);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update tag connection" });
+    }
+  });
+
+  app.delete("/api/connections/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteTagConnection(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Connection not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete tag connection" });
+    }
+  });
+
   // Graph data
   app.get("/api/graph", async (req, res) => {
     try {

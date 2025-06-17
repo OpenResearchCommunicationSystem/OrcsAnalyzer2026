@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X, Save, Trash2, Plus } from "lucide-react";
+import { X, Save, Trash2, Plus, Link } from "lucide-react";
 import { Tag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
+import { TagConnectionModal } from "./TagConnectionModal";
 
 interface TagEditorProps {
   selectedTag: Tag | null;
@@ -18,6 +19,7 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
   const [formData, setFormData] = useState<Partial<Tag>>({});
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
+  const [showConnectionModal, setShowConnectionModal] = useState(false);
   
   const { updateTag, deleteTag, isUpdating, isDeleting } = useTagOperations();
 
@@ -296,6 +298,15 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
               {isUpdating ? 'Saving...' : 'Save'}
             </Button>
             <Button
+              onClick={() => setShowConnectionModal(true)}
+              disabled={!selectedTag}
+              variant="outline"
+              className="border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white"
+            >
+              <Link className="w-4 h-4 mr-2" />
+              Connect
+            </Button>
+            <Button
               onClick={handleDelete}
               disabled={isDeleting}
               variant="destructive"
@@ -307,6 +318,17 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
           </div>
         </div>
       </div>
+      
+      {/* Tag Connection Modal */}
+      <TagConnectionModal
+        isOpen={showConnectionModal}
+        onClose={() => setShowConnectionModal(false)}
+        sourceTag={selectedTag || undefined}
+        onConnectionCreated={() => {
+          // Refresh graph and connections data
+          console.log('Connection created successfully');
+        }}
+      />
     </div>
   );
 }
