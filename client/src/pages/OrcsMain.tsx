@@ -56,9 +56,9 @@ export default function OrcsMain() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-slate-50">
+    <div className="h-screen flex flex-col bg-gray-900 text-slate-50" style={{ minHeight: '100vh' }}>
       {/* Header */}
-      <header style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-b border-gray-700 px-6 py-3 flex items-center justify-between">
+      <header style={{ backgroundColor: 'var(--orcs-panel)' }} className="flex-shrink-0 border-b border-gray-700 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Shield className="w-5 h-5 text-blue-500" />
@@ -189,7 +189,7 @@ export default function OrcsMain() {
       )}
 
       {/* Status Bar */}
-      <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-t border-gray-700 px-6 py-2 text-xs text-slate-400">
+      <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="flex-shrink-0 border-t border-gray-700 px-6 py-2 text-xs text-slate-400">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <span>Ready</span>
