@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Tag, InsertTag, TagType, GraphData, GraphNode, GraphEdge } from '@shared/schema';
+import { storage } from '../storage';
 
 const USER_DATA_DIR = path.join(process.cwd(), 'user_data');
 
