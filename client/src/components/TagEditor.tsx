@@ -4,10 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X, Save, Trash2, Plus, Link } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { X, Save, Trash2, Plus, Link, Search, ChevronDown, ChevronRight, FileText, Users } from "lucide-react";
 import { Tag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { TagConnectionModal } from "./TagConnectionModal";
+import { useQuery } from "@tanstack/react-query";
 
 interface TagEditorProps {
   selectedTag: Tag | null;
@@ -20,14 +22,93 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const [showConnectionModal, setShowConnectionModal] = useState(false);
+  const [showReferences, setShowReferences] = useState(false);
+  const [showSimilarTags, setShowSimilarTags] = useState(false);
   
   const { updateTag, deleteTag, isUpdating, isDeleting } = useTagOperations();
+
+  // Fetch all tags for similarity detection
+  const { data: allTags = [] } = useQuery<Tag[]>({
+    queryKey: ['/api/tags'],
+  });
 
   useEffect(() => {
     if (selectedTag) {
       setFormData(selectedTag);
     }
   }, [selectedTag]);
+
+  // Find similar tags based on name, aliases, and entity type
+  const findSimilarTags = () => {
+    if (!selectedTag) return [];
+    
+    return allTags.filter(tag => {
+      if (tag.id === selectedTag.id) return false; // Don't include self
+      
+      const tagName = tag.name.toLowerCase();
+      const selectedName = selectedTag.name.toLowerCase();
+      const tagAliases = tag.aliases?.map(a => a.toLowerCase()) || [];
+      const selectedAliases = selectedTag.aliases?.map(a => a.toLowerCase()) || [];
+      
+      // Check for exact matches or partial matches
+      const nameMatch = tagName === selectedName || 
+                       tagName.includes(selectedName) || 
+                       selectedName.includes(tagName);
+      
+      // Check if any aliases match
+      const aliasMatch = tagAliases.some(alias => 
+        selectedAliases.includes(alias) || 
+        alias.includes(selectedName) ||
+        selectedName.includes(alias)
+      );
+      
+      // Check if selected name matches any alias
+      const nameAliasMatch = tagAliases.includes(selectedName) || 
+                            selectedAliases.includes(tagName);
+      
+      // Same entity type is a strong indicator
+      const sameType = tag.type === selectedTag.type && 
+                      tag.entityType === selectedTag.entityType;
+      
+      return (nameMatch || aliasMatch || nameAliasMatch) && sameType;
+    });
+  };
+
+  const similarTags = findSimilarTags();
+
+  // Parse references to show file locations
+  const parseReferences = (tag: Tag) => {
+    if (!tag.reference) return [];
+    
+    // Handle multiple references if they're stored as array or comma-separated
+    const refs = Array.isArray(tag.reference) ? tag.reference : [tag.reference];
+    
+    return refs.map(ref => {
+      // Parse filename@start-end or filename[row,col] format
+      const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
+      const csvMatch = ref.match(/^(.+?)\[(\d+),(\d+)\]$/);
+      
+      if (atMatch) {
+        return {
+          filename: atMatch[1],
+          location: `Characters ${atMatch[2]}-${atMatch[3]}`,
+          type: 'text'
+        };
+      } else if (csvMatch) {
+        return {
+          filename: csvMatch[1],
+          location: `Row ${csvMatch[2]}, Column ${csvMatch[3]}`,
+          type: 'csv'
+        };
+      } else {
+        return {
+          filename: ref,
+          location: 'Unknown location',
+          type: 'unknown'
+        };
+      }
+    });
+  };
 
   const handleSave = () => {
     if (selectedTag && formData.name && formData.type) {
@@ -287,6 +368,93 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
               )}
             </div>
           </div>
+
+          {/* References Section */}
+          {selectedTag && (
+            <Collapsible open={showReferences} onOpenChange={setShowReferences}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-between text-slate-300 hover:text-white">
+                  <div className="flex items-center">
+                    <FileText className="w-4 h-4 mr-2" />
+                    References ({parseReferences(selectedTag).length})
+                  </div>
+                  {showReferences ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2 mt-2">
+                {parseReferences(selectedTag).map((ref, index) => (
+                  <div key={index} className="bg-gray-800 p-3 rounded border border-gray-600">
+                    <div className="font-medium text-slate-200">{ref.filename}</div>
+                    <div className="text-sm text-slate-400">{ref.location}</div>
+                    <div className="text-xs text-slate-500 capitalize">{ref.type} file</div>
+                  </div>
+                ))}
+                {parseReferences(selectedTag).length === 0 && (
+                  <div className="text-slate-400 text-sm italic">No references found</div>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+
+          {/* Similar Tags Section */}
+          {selectedTag && similarTags.length > 0 && (
+            <Collapsible open={showSimilarTags} onOpenChange={setShowSimilarTags}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-between text-amber-300 hover:text-amber-200">
+                  <div className="flex items-center">
+                    <Users className="w-4 h-4 mr-2" />
+                    Similar Tags ({similarTags.length})
+                  </div>
+                  {showSimilarTags ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2 mt-2">
+                <div className="text-sm text-amber-200 mb-2">
+                  These tags might be duplicates that could be merged:
+                </div>
+                {similarTags.map((tag) => (
+                  <div key={tag.id} className="bg-amber-900/20 border border-amber-600/30 p-3 rounded">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-medium text-amber-200">{tag.name}</div>
+                        <div className="text-sm text-amber-300">
+                          {tag.entityType} • {parseReferences(tag).length} reference(s)
+                        </div>
+                        {tag.aliases && tag.aliases.length > 0 && (
+                          <div className="text-xs text-amber-400 mt-1">
+                            Aliases: {tag.aliases.join(', ')}
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white"
+                        onClick={() => {
+                          // TODO: Implement merge functionality
+                          console.log(`Merge ${tag.name} into ${selectedTag.name}`);
+                        }}
+                      >
+                        Merge
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+
+          {/* Find Similar Button */}
+          {selectedTag && (
+            <Button
+              variant="outline"
+              className="w-full border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white mt-4"
+              onClick={() => setShowSimilarTags(true)}
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Find Similar Tags
+            </Button>
+          )}
 
           <div className="flex space-x-2 pt-4">
             <Button
