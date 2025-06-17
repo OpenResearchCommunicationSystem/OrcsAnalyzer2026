@@ -188,14 +188,14 @@ export function TagConnectionModal({
             <div>
               <Label className="text-slate-300">Relationship (Optional)</Label>
               <Select 
-                value={connectionData.relationshipTagId || ''} 
-                onValueChange={(value) => setConnectionData(prev => ({ ...prev, relationshipTagId: value || undefined }))}
+                value={connectionData.relationshipTagId || 'none'} 
+                onValueChange={(value) => setConnectionData(prev => ({ ...prev, relationshipTagId: value === 'none' ? undefined : value }))}
               >
                 <SelectTrigger className="bg-gray-700 border-gray-600 text-slate-200">
                   <SelectValue placeholder="Select relationship" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-700 border-gray-600">
-                  <SelectItem value="">No specific relationship</SelectItem>
+                  <SelectItem value="none">No specific relationship</SelectItem>
                   {relationshipTags.map((tag) => (
                     <SelectItem key={tag.id} value={tag.id}>
                       <div className="flex items-center space-x-2">
