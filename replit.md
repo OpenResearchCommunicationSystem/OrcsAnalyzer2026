@@ -130,6 +130,9 @@ Changelog:
 - June 16, 2025. Added professional metadata form with classification levels and handling instructions
 - June 16, 2025. Fixed metadata saving issues and file locking problems with form-based approach
 - June 16, 2025. Implemented safe handling instruction add/remove with bounds checking
+- June 17, 2025. Enhanced tag editor with reference display and similarity detection
+- June 17, 2025. Created comprehensive Tag Merge Modal with fuzzy matching and conflict resolution
+- June 17, 2025. Added viewport settings to force desktop mode on mobile browsers
 ```
 
 ## Future Enhancements
