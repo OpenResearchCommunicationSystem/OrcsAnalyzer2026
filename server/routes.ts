@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { z } from "zod";
-import { insertTagSchema, textSelectionSchema } from "@shared/schema";
+import { insertTagSchema, insertTagConnectionSchema, textSelectionSchema } from "@shared/schema";
 import { fileService } from "./services/fileService";
 import { orcsService } from "./services/orcsService";
 import { storage } from "./storage";

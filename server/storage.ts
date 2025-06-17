@@ -1,4 +1,4 @@
-import { File, InsertFile, Tag, InsertTag, OrcsCard, InsertOrcsCard } from "@shared/schema";
+import { File, InsertFile, Tag, InsertTag, TagConnection, InsertTagConnection, OrcsCard, InsertOrcsCard } from "@shared/schema";
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -24,6 +24,14 @@ export interface IStorage {
   createTag(tag: InsertTag): Promise<Tag>;
   updateTag(id: string, updates: Partial<Tag>): Promise<Tag>;
   deleteTag(id: string): Promise<boolean>;
+  
+  // Tag Connection operations
+  getTagConnections(): Promise<TagConnection[]>;
+  getTagConnection(id: string): Promise<TagConnection | undefined>;
+  getConnectionsForTag(tagId: string): Promise<TagConnection[]>;
+  createTagConnection(connection: InsertTagConnection): Promise<TagConnection>;
+  updateTagConnection(id: string, updates: Partial<TagConnection>): Promise<TagConnection>;
+  deleteTagConnection(id: string): Promise<boolean>;
   
   // Content operations
   getFileContent(path: string): Promise<string>;
@@ -53,6 +61,7 @@ export class MemStorage implements IStorage {
   private files: Map<string, File> = new Map();
   private orcsCards: Map<string, OrcsCard> = new Map();
   private tags: Map<string, Tag> = new Map();
+  private tagConnections: Map<string, TagConnection> = new Map();
   private searchIndex: SearchIndex = {
     files: new Map(),
     tags: new Map(),
@@ -176,7 +185,61 @@ export class MemStorage implements IStorage {
   }
 
   async deleteTag(id: string): Promise<boolean> {
+    // Also delete any connections involving this tag
+    const connectionsToDelete = Array.from(this.tagConnections.values())
+      .filter(conn => conn.sourceTagId === id || conn.targetTagId === id || conn.relationshipTagId === id || conn.attributeTagIds.includes(id));
+    
+    connectionsToDelete.forEach(conn => this.tagConnections.delete(conn.id));
+    
     return this.tags.delete(id);
+  }
+
+  // Tag Connection operations
+  async getTagConnections(): Promise<TagConnection[]> {
+    return Array.from(this.tagConnections.values());
+  }
+
+  async getTagConnection(id: string): Promise<TagConnection | undefined> {
+    return this.tagConnections.get(id);
+  }
+
+  async getConnectionsForTag(tagId: string): Promise<TagConnection[]> {
+    return Array.from(this.tagConnections.values())
+      .filter(conn => 
+        conn.sourceTagId === tagId || 
+        conn.targetTagId === tagId || 
+        conn.relationshipTagId === tagId ||
+        conn.attributeTagIds.includes(tagId)
+      );
+  }
+
+  async createTagConnection(insertConnection: InsertTagConnection): Promise<TagConnection> {
+    const connection: TagConnection = {
+      id: crypto.randomUUID(),
+      ...insertConnection,
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+    };
+    this.tagConnections.set(connection.id, connection);
+    return connection;
+  }
+
+  async updateTagConnection(id: string, updates: Partial<TagConnection>): Promise<TagConnection> {
+    const existing = this.tagConnections.get(id);
+    if (!existing) {
+      throw new Error(`Tag connection not found: ${id}`);
+    }
+    const updated: TagConnection = {
+      ...existing,
+      ...updates,
+      modified: new Date().toISOString(),
+    };
+    this.tagConnections.set(id, updated);
+    return updated;
+  }
+
+  async deleteTagConnection(id: string): Promise<boolean> {
+    return this.tagConnections.delete(id);
   }
 
   async getFileContent(path: string): Promise<string> {

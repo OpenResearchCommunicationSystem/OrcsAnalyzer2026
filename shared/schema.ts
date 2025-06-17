@@ -104,3 +104,22 @@ export const statsSchema = z.object({
 });
 
 export type Stats = z.infer<typeof statsSchema>;
+
+// Tag Connection Schema for linking entities with relationships and attributes
+export const tagConnectionSchema = z.object({
+  id: z.string(), // UUID
+  sourceTagId: z.string(), // Entity tag ID
+  targetTagId: z.string(), // Related entity tag ID
+  relationshipTagId: z.string().optional(), // Relationship tag ID (if applicable)
+  attributeTagIds: z.array(z.string()).default([]), // Attribute tag IDs
+  connectionType: z.enum(['entity_relationship', 'entity_attribute', 'relationship_attribute']),
+  strength: z.number().min(0).max(1).default(1), // Connection strength (0-1)
+  notes: z.string().optional(),
+  created: z.string(),
+  modified: z.string(),
+});
+
+export const insertTagConnectionSchema = tagConnectionSchema.omit({ id: true, created: true, modified: true });
+
+export type TagConnection = z.infer<typeof tagConnectionSchema>;
+export type InsertTagConnection = z.infer<typeof insertTagConnectionSchema>;
