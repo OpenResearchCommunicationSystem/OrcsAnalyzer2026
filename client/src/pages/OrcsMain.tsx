@@ -56,9 +56,9 @@ export default function OrcsMain() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-slate-50" style={{ minHeight: '100vh' }}>
+    <div className="h-screen flex flex-col bg-gray-900 text-slate-50">
       {/* Header */}
-      <header style={{ backgroundColor: 'var(--orcs-panel)' }} className="flex-shrink-0 border-b border-gray-700 px-6 py-3 flex items-center justify-between">
+      <header style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-b border-gray-700 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Shield className="w-5 h-5 text-blue-500" />
@@ -91,19 +91,17 @@ export default function OrcsMain() {
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden min-w-0" style={{ minWidth: '1024px' }}>
+      <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - File Management */}
-        <div className="w-80 flex-shrink-0">
-          <FileManagerSidebar
-            selectedFile={selectedFile}
-            onFileSelect={setSelectedFile}
-            searchQuery={searchQuery}
-            onTagClick={handleTagClick}
-          />
-        </div>
+        <FileManagerSidebar
+          selectedFile={selectedFile}
+          onFileSelect={setSelectedFile}
+          searchQuery={searchQuery}
+          onTagClick={handleTagClick}
+        />
 
         {/* Central Content Area */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col">
           {/* Document Header */}
           <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-b border-gray-700 px-6 py-2 text-xs text-slate-400">
             <div className="flex items-center justify-between">
@@ -134,7 +132,7 @@ export default function OrcsMain() {
         </div>
 
         {/* Right Sidebar - Graph & Tag Editor */}
-        <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="w-80 flex-shrink-0 border-l border-gray-700 flex flex-col">
+        <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="w-80 border-l border-gray-700 flex flex-col">
           {/* Tab Navigation */}
           <div className="border-b border-gray-700">
             <div className="flex">
@@ -189,7 +187,7 @@ export default function OrcsMain() {
       )}
 
       {/* Status Bar */}
-      <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="flex-shrink-0 border-t border-gray-700 px-6 py-2 text-xs text-slate-400">
+      <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-t border-gray-700 px-6 py-2 text-xs text-slate-400">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <span>Ready</span>
