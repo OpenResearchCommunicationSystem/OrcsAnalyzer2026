@@ -73,7 +73,7 @@ export const graphEdgeSchema = z.object({
   source: z.string(),
   target: z.string(),
   label: z.string(),
-  type: z.enum(['relationship', 'attribute']),
+  type: z.enum(['relationship', 'attribute', 'connection', 'co-occurrence']),
 });
 
 export const graphDataSchema = z.object({

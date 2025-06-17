@@ -255,6 +255,79 @@ export class OrcsService {
     return { nodes, edges };
   }
 
+  async generateGraphDataWithConnections(): Promise<GraphData> {
+    const tags = await this.getTags();
+    const connections = await storage.getTagConnections();
+    
+    // Create nodes for all tags
+    const nodes: GraphNode[] = tags.map(tag => ({
+      id: tag.id,
+      label: tag.name,
+      type: tag.type,
+    }));
+
+    const edges: GraphEdge[] = [];
+    
+    // Create edges from explicit tag connections
+    for (const connection of connections) {
+      // Find the relationship name if one exists
+      let relationshipName = 'connected';
+      if (connection.relationshipTagId) {
+        const relationshipTag = tags.find(t => t.id === connection.relationshipTagId);
+        relationshipName = relationshipTag?.name || 'connected';
+      }
+
+      // Main connection edge between source and target
+      edges.push({
+        id: connection.id,
+        source: connection.sourceTagId,
+        target: connection.targetTagId,
+        label: relationshipName,
+        type: 'connection'
+      });
+      
+      // Add edges for attribute connections
+      for (const attributeId of connection.attributeTagIds) {
+        edges.push({
+          id: `${connection.id}-attr-${attributeId}`,
+          source: connection.sourceTagId,
+          target: attributeId,
+          label: 'has attribute',
+          type: 'attribute'
+        });
+      }
+    }
+    
+    // Fallback: create simple co-occurrence edges for unconnected entities
+    const connectedTagIds = new Set([
+      ...connections.flatMap(c => [c.sourceTagId, c.targetTagId, c.relationshipTagId, ...c.attributeTagIds].filter(Boolean))
+    ]);
+    
+    const unconnectedEntities = tags.filter(tag => tag.type === 'entity' && !connectedTagIds.has(tag.id));
+    for (let i = 0; i < unconnectedEntities.length; i++) {
+      for (let j = i + 1; j < unconnectedEntities.length; j++) {
+        const tag1 = unconnectedEntities[i];
+        const tag2 = unconnectedEntities[j];
+        
+        // Check if they reference the same file
+        const file1 = tag1.reference.split('@')[0] || tag1.reference.split('[')[0];
+        const file2 = tag2.reference.split('@')[0] || tag2.reference.split('[')[0];
+        
+        if (file1 === file2) {
+          edges.push({
+            id: `co-occur-${tag1.id}-${tag2.id}`,
+            source: tag1.id,
+            target: tag2.id,
+            label: 'co-occurs',
+            type: 'co-occurrence'
+          });
+        }
+      }
+    }
+
+    return { nodes, edges };
+  }
+
   private async saveTagToFile(tag: Tag): Promise<void> {
     const dir = TAG_DIRECTORIES[tag.type];
     const filename = `${tag.name}_${tag.id}.orcs`;

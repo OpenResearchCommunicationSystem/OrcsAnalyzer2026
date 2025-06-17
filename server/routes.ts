@@ -254,7 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Graph data
   app.get("/api/graph", async (req, res) => {
     try {
-      const graphData = await orcsService.generateGraphData();
+      const graphData = await orcsService.generateGraphDataWithConnections();
       res.json(graphData);
     } catch (error) {
       res.status(500).json({ error: "Failed to generate graph data" });
