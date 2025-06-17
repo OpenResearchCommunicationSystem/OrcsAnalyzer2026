@@ -170,25 +170,26 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-slate-200">Edit Tag</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-slate-400 hover:text-slate-200"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+    <>
+      <div className="flex-1 flex flex-col">
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium text-slate-200">Edit Tag</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="text-slate-400 hover:text-slate-200"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
 
-        {/* Tag Details Form */}
-        <div className="space-y-4">
-          <div>
-            <Label className="text-sm font-medium text-slate-300 mb-2 block">Tag Type</Label>
+            {/* Tag Details Form */}
+            <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium text-slate-300 mb-2 block">Tag Type</Label>
             <Select
               value={formData.type}
               onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any }))}
@@ -486,7 +487,6 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
           </div>
         </div>
       </div>
-    </div>
       
       {/* Tag Connection Modal */}
       <TagConnectionModal
