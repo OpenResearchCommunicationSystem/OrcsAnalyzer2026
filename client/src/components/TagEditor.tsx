@@ -9,6 +9,7 @@ import { X, Save, Trash2, Plus, Link, Search, ChevronDown, ChevronRight, FileTex
 import { Tag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { TagConnectionModal } from "./TagConnectionModal";
+import { TagMergeModal } from "./TagMergeModal";
 import { useQuery } from "@tanstack/react-query";
 
 interface TagEditorProps {
@@ -22,6 +23,7 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const [showConnectionModal, setShowConnectionModal] = useState(false);
+  const [showMergeModal, setShowMergeModal] = useState(false);
   const [showReferences, setShowReferences] = useState(false);
   const [showSimilarTags, setShowSimilarTags] = useState(false);
   
@@ -430,10 +432,7 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
                         size="sm"
                         variant="outline"
                         className="border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white"
-                        onClick={() => {
-                          // TODO: Implement merge functionality
-                          console.log(`Merge ${tag.name} into ${selectedTag.name}`);
-                        }}
+                        onClick={() => setShowMergeModal(true)}
                       >
                         Merge
                       </Button>
@@ -449,10 +448,10 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
             <Button
               variant="outline"
               className="w-full border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white mt-4"
-              onClick={() => setShowSimilarTags(true)}
+              onClick={() => setShowMergeModal(true)}
             >
               <Search className="w-4 h-4 mr-2" />
-              Find Similar Tags
+              Find & Merge Similar Tags
             </Button>
           )}
 
@@ -495,6 +494,17 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
         onConnectionCreated={() => {
           // Refresh graph and connections data
           console.log('Connection created successfully');
+        }}
+      />
+      
+      {/* Tag Merge Modal */}
+      <TagMergeModal
+        isOpen={showMergeModal}
+        onClose={() => setShowMergeModal(false)}
+        masterTag={selectedTag}
+        onMergeComplete={() => {
+          // Refresh tag data after merge
+          window.location.reload(); // Temporary - will improve this
         }}
       />
     </div>
