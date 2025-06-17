@@ -2,7 +2,30 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1920, height=1080, initial-scale=0.3, maximum-scale=2.0, user-scalable=yes" />
+    <meta name="viewport" content="width=1024, initial-scale=0.5, minimum-scale=0.25, maximum-scale=2.0, user-scalable=yes" />
+    <style>
+      /* Force desktop mode - override all mobile responsive styles */
+      * {
+        -webkit-text-size-adjust: none !important;
+        -moz-text-size-adjust: none !important;
+        -ms-text-size-adjust: none !important;
+        text-size-adjust: none !important;
+      }
+      
+      /* Ensure minimum content width for desktop layout */
+      body {
+        min-width: 1024px !important;
+        overflow-x: auto !important;
+      }
+      
+      /* Override any mobile-first responsive design */
+      @media screen and (max-width: 768px) {
+        body {
+          min-width: 1024px !important;
+          width: 1024px !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
