@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORCS Intelligence System - Portable</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f1419;
+            color: #e2e8f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr 350px;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            background: #0f1419;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        
+        .tag-panel {
+            background: #1e293b;
+            border-left: 1px solid #334155;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            background: #334155;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .file-item:hover {
+            background: #475569;
+        }
+        
+        .file-item.active {
+            background: #3b82f6;
+        }
+        
+        .tag-item {
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            background: #059669;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .tag-item.relationship {
+            background: #dc2626;
+        }
+        
+        .tag-item.attribute {
+            background: #7c3aed;
+        }
+        
+        .tag-item.comment {
+            background: #ea580c;
+        }
+        
+        .tag-item.kv_pair {
+            background: #0891b2;
+        }
+        
+        .content-area {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+        
+        .upload-area {
+            border: 2px dashed #334155;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        
+        .upload-area:hover {
+            border-color: #3b82f6;
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.25rem;
+            transition: background 0.2s;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        .input {
+            background: #334155;
+            border: 1px solid #475569;
+            color: #e2e8f0;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin: 0.25rem 0;
+            width: 100%;
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .selected-text {
+            background: #fbbf24;
+            color: #000;
+            cursor: pointer;
+        }
+        
+        .tag-highlight {
+            padding: 2px 4px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        
+        .tag-highlight.entity {
+            background: rgba(5, 150, 105, 0.3);
+            border: 1px solid #059669;
+        }
+        
+        .tag-highlight.relationship {
+            background: rgba(220, 38, 38, 0.3);
+            border: 1px solid #dc2626;
+        }
+        
+        .tag-highlight.attribute {
+            background: rgba(124, 58, 237, 0.3);
+            border: 1px solid #7c3aed;
+        }
+        
+        .tag-highlight.comment {
+            background: rgba(234, 88, 12, 0.3);
+            border: 1px solid #ea580c;
+        }
+        
+        .tag-highlight.kv_pair {
+            background: rgba(8, 145, 178, 0.3);
+            border: 1px solid #0891b2;
+        }
+        
+        .stats {
+            background: #334155;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .graph-area {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1rem;
+            height: 400px;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .similarity-match {
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid #fbbf24;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+        }
+        
+        h1, h2, h3 {
+            margin-bottom: 1rem;
+            color: #f1f5f9;
+        }
+        
+        .section {
+            margin-bottom: 2rem;
+        }
+        
+        .tag-form {
+            display: none;
+        }
+        
+        .tag-form.active {
+            display: block;
+            background: #334155;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Sidebar: File Manager -->
+        <div class="sidebar">
+            <div class="section">
+                <h3>Files</h3>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div>📁 Drop files here or click to upload</div>
+                    <div style="font-size: 0.875rem; color: #94a3b8; margin-top: 0.5rem;">
+                        Supports .txt and .csv files
+                    </div>
+                </div>
+                <input type="file" id="fileInput" style="display: none;" multiple accept=".txt,.csv">
+                <div id="fileList"></div>
+            </div>
+            
+            <div class="stats" id="stats">
+                <div>📊 System Stats</div>
+                <div id="statsContent">
+                    Files: 0 | Tags: 0
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="section">
+                <h2>ORCS Intelligence System</h2>
+                <div id="welcomeMessage" class="content-area">
+Welcome to the ORCS Intelligence System - Portable Edition
+
+This is a standalone version that runs entirely in your browser. No installation required.
+
+Features:
+• Upload and analyze text/CSV files
+• Create tags for entities, relationships, attributes
+• Track connections between intelligence elements
+• Generate ORCS cards with metadata
+• Search and cross-reference information
+
+To get started:
+1. Upload files using the sidebar
+2. Select text to create tags
+3. Build relationships between entities
+4. Export your analysis
+
+All data is stored locally in your browser.
+                </div>
+            </div>
+            
+            <div class="section" id="documentSection" style="display: none;">
+                <h3 id="documentTitle">Document Content</h3>
+                <div id="documentContent" class="content-area"></div>
+                
+                <div id="tagToolbar" style="display: none; background: #334155; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <div>Selected: "<span id="selectedText"></span>"</div>
+                    <div style="margin-top: 0.5rem;">
+                        <button class="btn" onclick="createTag('entity')">📍 Entity</button>
+                        <button class="btn" onclick="createTag('relationship')">🔗 Relationship</button>
+                        <button class="btn" onclick="createTag('attribute')">🏷️ Attribute</button>
+                        <button class="btn" onclick="createTag('comment')">💬 Comment</button>
+                        <button class="btn" onclick="createTag('kv_pair')">🔑 Key:Value</button>
+                        <button class="btn btn-danger" onclick="clearSelection()">❌ Clear</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section" id="graphSection">
+                <h3>Relationship Graph</h3>
+                <div class="graph-area" id="graphArea">
+                    <div style="text-align: center; padding-top: 150px; color: #64748b;">
+                        📊 Relationship graph will appear here as you create tags and connections
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Sidebar: Tags -->
+        <div class="tag-panel">
+            <div class="section">
+                <h3>Tags</h3>
+                <div id="tagList"></div>
+            </div>
+            
+            <div class="section">
+                <h3>Find Similar</h3>
+                <button class="btn" onclick="findSimilarTags()" style="width: 100%;">🔍 Find Duplicates</button>
+                <div id="similarTags"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tag Creation Modal -->
+    <div class="modal" id="tagModal">
+        <div class="modal-content">
+            <h3 id="tagModalTitle">Create Tag</h3>
+            <form id="tagForm">
+                <div>
+                    <label>Name:</label>
+                    <input type="text" id="tagName" class="input" required>
+                </div>
+                <div>
+                    <label>Type:</label>
+                    <select id="tagType" class="input">
+                        <option value="entity">Entity</option>
+                        <option value="relationship">Relationship</option>
+                        <option value="attribute">Attribute</option>
+                        <option value="comment">Comment</option>
+                        <option value="kv_pair">Key:Value Pair</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Description:</label>
+                    <textarea id="tagDescription" class="input" rows="3"></textarea>
+                </div>
+                <div>
+                    <label>Aliases (comma-separated):</label>
+                    <input type="text" id="tagAliases" class="input">
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button type="submit" class="btn">💾 Save Tag</button>
+                    <button type="button" class="btn btn-danger" onclick="closeTagModal()">❌ Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let files = {};
+        let tags = {};
+        let currentFile = null;
+        let selectedText = null;
+        let currentTagType = null;
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromStorage();
+            updateStats();
+            renderFileList();
+            renderTagList();
+            
+            // File upload handler
+            document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+            document.getElementById('tagForm').addEventListener('submit', handleTagSubmit);
+            
+            // Enable text selection
+            document.addEventListener('mouseup', handleTextSelection);
+        });
+        
+        // File management
+        function handleFileUpload(event) {
+            const fileList = event.target.files;
+            
+            for (let file of fileList) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fileId = generateId();
+                    const fileName = file.name;
+                    const content = e.target.result;
+                    
+                    files[fileId] = {
+                        id: fileId,
+                        name: fileName,
+                        content: content,
+                        created: new Date().toISOString(),
+                        tags: []
+                    };
+                    
+                    saveToStorage();
+                    renderFileList();
+                    updateStats();
+                };
+                reader.readAsText(file);
+            }
+        }
+        
+        function selectFile(fileId) {
+            currentFile = fileId;
+            const file = files[fileId];
+            
+            document.getElementById('documentTitle').textContent = file.name;
+            document.getElementById('documentContent').innerHTML = highlightTags(file.content, fileId);
+            document.getElementById('documentSection').style.display = 'block';
+            document.getElementById('welcomeMessage').style.display = 'none';
+            
+            // Update active file in sidebar
+            document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
+            document.querySelector(`[data-file-id="${fileId}"]`).classList.add('active');
+        }
+        
+        // Text selection and tagging
+        function handleTextSelection() {
+            const selection = window.getSelection();
+            const text = selection.toString().trim();
+            
+            if (text && currentFile) {
+                selectedText = {
+                    text: text,
+                    range: selection.getRangeAt(0)
+                };
+                
+                document.getElementById('selectedText').textContent = text;
+                document.getElementById('tagToolbar').style.display = 'block';
+            } else {
+                clearSelection();
+            }
+        }
+        
+        function clearSelection() {
+            selectedText = null;
+            document.getElementById('tagToolbar').style.display = 'none';
+            window.getSelection().removeAllRanges();
+        }
+        
+        function createTag(type) {
+            if (!selectedText || !currentFile) return;
+            
+            currentTagType = type;
+            document.getElementById('tagModalTitle').textContent = `Create ${type.charAt(0).toUpperCase() + type.slice(1)} Tag`;
+            document.getElementById('tagType').value = type;
+            document.getElementById('tagName').value = selectedText.text;
+            document.getElementById('tagModal').classList.add('active');
+        }
+        
+        function handleTagSubmit(event) {
+            event.preventDefault();
+            
+            if (!selectedText || !currentFile) return;
+            
+            const tagId = generateId();
+            const tagData = {
+                id: tagId,
+                name: document.getElementById('tagName').value,
+                type: document.getElementById('tagType').value,
+                description: document.getElementById('tagDescription').value,
+                aliases: document.getElementById('tagAliases').value.split(',').map(a => a.trim()).filter(a => a),
+                text: selectedText.text,
+                fileId: currentFile,
+                created: new Date().toISOString()
+            };
+            
+            tags[tagId] = tagData;
+            files[currentFile].tags.push(tagId);
+            
+            saveToStorage();
+            renderTagList();
+            updateStats();
+            selectFile(currentFile); // Refresh document with highlights
+            closeTagModal();
+            clearSelection();
+        }
+        
+        function closeTagModal() {
+            document.getElementById('tagModal').classList.remove('active');
+            document.getElementById('tagForm').reset();
+        }
+        
+        // Tag highlighting
+        function highlightTags(content, fileId) {
+            if (!files[fileId] || !files[fileId].tags) return content;
+            
+            let highlightedContent = content;
+            const fileTags = files[fileId].tags.map(tagId => tags[tagId]).filter(tag => tag);
+            
+            // Sort tags by text length (longest first) to avoid overlapping highlights
+            fileTags.sort((a, b) => b.text.length - a.text.length);
+            
+            fileTags.forEach(tag => {
+                const regex = new RegExp(escapeRegex(tag.text), 'gi');
+                highlightedContent = highlightedContent.replace(regex, 
+                    `<span class="tag-highlight ${tag.type}" title="${tag.name} (${tag.type})" onclick="selectTag('${tag.id}')">${tag.text}</span>`
+                );
+            });
+            
+            return highlightedContent;
+        }
+        
+        function selectTag(tagId) {
+            const tag = tags[tagId];
+            if (!tag) return;
+            
+            alert(`Tag: ${tag.name}\nType: ${tag.type}\nDescription: ${tag.description || 'No description'}\nAliases: ${tag.aliases.join(', ') || 'None'}`);
+        }
+        
+        // Similar tag detection
+        function findSimilarTags() {
+            const tagValues = Object.values(tags);
+            const similar = {};
+            
+            tagValues.forEach(tag1 => {
+                tagValues.forEach(tag2 => {
+                    if (tag1.id !== tag2.id && tag1.type === tag2.type) {
+                        const similarity = calculateSimilarity(tag1, tag2);
+                        if (similarity > 0.7) {
+                            if (!similar[tag1.id]) similar[tag1.id] = [];
+                            similar[tag1.id].push({ tag: tag2, similarity });
+                        }
+                    }
+                });
+            });
+            
+            renderSimilarTags(similar);
+        }
+        
+        function calculateSimilarity(tag1, tag2) {
+            const name1 = tag1.name.toLowerCase();
+            const name2 = tag2.name.toLowerCase();
+            
+            if (name1 === name2) return 1.0;
+            if (name1.includes(name2) || name2.includes(name1)) return 0.8;
+            
+            // Check aliases
+            const aliases1 = tag1.aliases.map(a => a.toLowerCase());
+            const aliases2 = tag2.aliases.map(a => a.toLowerCase());
+            
+            for (let alias1 of aliases1) {
+                if (aliases2.includes(alias1) || alias1.includes(name2) || name2.includes(alias1)) {
+                    return 0.9;
+                }
+            }
+            
+            return 0;
+        }
+        
+        function renderSimilarTags(similar) {
+            const container = document.getElementById('similarTags');
+            container.innerHTML = '';
+            
+            if (Object.keys(similar).length === 0) {
+                container.innerHTML = '<div style="color: #64748b; font-style: italic;">No similar tags found</div>';
+                return;
+            }
+            
+            Object.entries(similar).forEach(([tagId, matches]) => {
+                const tag = tags[tagId];
+                const div = document.createElement('div');
+                div.className = 'similarity-match';
+                div.innerHTML = `
+                    <div style="font-weight: bold;">${tag.name}</div>
+                    <div style="font-size: 0.875rem;">Similar to: ${matches.map(m => m.tag.name).join(', ')}</div>
+                    <button class="btn" onclick="mergeTags(['${tagId}', ${matches.map(m => `'${m.tag.id}'`).join(', ')}])" style="margin-top: 0.5rem;">🔗 Merge</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function mergeTags(tagIds) {
+            if (tagIds.length < 2) return;
+            
+            const masterTag = tags[tagIds[0]];
+            const mergeConfirm = confirm(`Merge ${tagIds.length} tags into "${masterTag.name}"?`);
+            
+            if (!mergeConfirm) return;
+            
+            // Combine aliases and update master tag
+            const allAliases = new Set(masterTag.aliases);
+            
+            tagIds.slice(1).forEach(tagId => {
+                const tag = tags[tagId];
+                tag.aliases.forEach(alias => allAliases.add(alias));
+                
+                // Remove merged tag from files
+                Object.values(files).forEach(file => {
+                    const index = file.tags.indexOf(tagId);
+                    if (index > -1) {
+                        file.tags.splice(index, 1);
+                        if (!file.tags.includes(masterTag.id)) {
+                            file.tags.push(masterTag.id);
+                        }
+                    }
+                });
+                
+                delete tags[tagId];
+            });
+            
+            masterTag.aliases = Array.from(allAliases);
+            
+            saveToStorage();
+            renderTagList();
+            updateStats();
+            if (currentFile) selectFile(currentFile);
+            findSimilarTags();
+        }
+        
+        // Rendering functions
+        function renderFileList() {
+            const container = document.getElementById('fileList');
+            container.innerHTML = '';
+            
+            Object.values(files).forEach(file => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.setAttribute('data-file-id', file.id);
+                div.innerHTML = `
+                    <div>${file.name}</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">${file.tags.length} tags</div>
+                `;
+                div.onclick = () => selectFile(file.id);
+                container.appendChild(div);
+            });
+        }
+        
+        function renderTagList() {
+            const container = document.getElementById('tagList');
+            container.innerHTML = '';
+            
+            Object.values(tags).forEach(tag => {
+                const div = document.createElement('div');
+                div.className = `tag-item ${tag.type}`;
+                div.innerHTML = `
+                    <div>${tag.name}</div>
+                    <div style="font-size: 0.75rem; opacity: 0.8;">${tag.type}</div>
+                `;
+                div.onclick = () => selectTag(tag.id);
+                container.appendChild(div);
+            });
+        }
+        
+        function updateStats() {
+            const fileCount = Object.keys(files).length;
+            const tagCount = Object.keys(tags).length;
+            
+            document.getElementById('statsContent').innerHTML = `Files: ${fileCount} | Tags: ${tagCount}`;
+        }
+        
+        // Storage functions
+        function saveToStorage() {
+            localStorage.setItem('orcs_files', JSON.stringify(files));
+            localStorage.setItem('orcs_tags', JSON.stringify(tags));
+        }
+        
+        function loadFromStorage() {
+            const storedFiles = localStorage.getItem('orcs_files');
+            const storedTags = localStorage.getItem('orcs_tags');
+            
+            if (storedFiles) files = JSON.parse(storedFiles);
+            if (storedTags) tags = JSON.parse(storedTags);
+        }
+        
+        // Utility functions
+        function generateId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+        
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+        
+        // Export functionality
+        function exportData() {
+            const data = {
+                files: files,
+                tags: tags,
+                exported: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'orcs-export.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Add export button to stats
+        document.getElementById('stats').innerHTML += '<button class="btn" onclick="exportData()" style="margin-top: 0.5rem; width: 100%;">💾 Export Data</button>';
+    </script>
+</body>
+</html>
