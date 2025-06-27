@@ -80,12 +80,9 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
 
   // Parse references to show file locations
   const parseReferences = (tag: Tag) => {
-    if (!tag.reference) return [];
+    if (!tag.references || tag.references.length === 0) return [];
     
-    // Handle multiple references if they're stored as array or comma-separated
-    const refs = Array.isArray(tag.reference) ? tag.reference : [tag.reference];
-    
-    return refs.map(ref => {
+    return tag.references.map((ref: string) => {
       // Parse filename@start-end or filename[row,col] format
       const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
       const csvMatch = ref.match(/^(.+?)\[(\d+),(\d+)\]$/);
