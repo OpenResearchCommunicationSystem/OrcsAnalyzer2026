@@ -78,6 +78,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
   };
 
+
+
   // Function to render content with tag highlighting
   const renderHighlightedContent = (content: string) => {
     if (!selectedFileData || !tags.length) {

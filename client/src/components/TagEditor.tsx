@@ -16,6 +16,7 @@ interface TagEditorProps {
   selectedTag: Tag | null;
   onTagUpdate: (tag: Tag) => void;
   onClose: () => void;
+  onReferenceClick?: (filename: string) => void;
 }
 
 export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps) {
