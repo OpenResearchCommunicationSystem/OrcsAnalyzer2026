@@ -84,6 +84,11 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
       return content;
     }
 
+    // Helper function to escape special regex characters
+    const escapeRegExp = (string: string) => {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+
     // Get tags that reference this file
     const fileTags = tags.filter(tag => {
       if (!tag.reference) return false;
@@ -104,17 +109,19 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     // Parse references and sort by start position (latest first to avoid offset issues)
     const tagSegments: TagSegment[] = fileTags
       .flatMap(tag => {
-        const references = tag.reference.split(',');
+        const references = tag.reference.split(',').map(ref => ref.trim());
         return references
           .filter(ref => ref.includes(selectedFileData.name))
           .map(ref => {
-            const match = ref.match(new RegExp(`${selectedFileData.name}@(\\d+)-(\\d+)`));
+            const match = ref.match(new RegExp(`${escapeRegExp(selectedFileData.name)}@(\\d+)-(\\d+)`));
             if (match) {
+              const start = parseInt(match[1]);
+              const end = parseInt(match[2]);
               return {
                 tag,
-                start: parseInt(match[1]),
-                end: parseInt(match[2]),
-                text: content.substring(parseInt(match[1]), parseInt(match[2]))
+                start,
+                end,
+                text: content.substring(start, end)
               };
             }
             return null;
