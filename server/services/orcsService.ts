@@ -220,34 +220,9 @@ export class OrcsService {
   }
 
   private async adjustOffsetsAfterDeletion(deletedTag: Tag): Promise<void> {
-    try {
-      const allTags = await this.getTags();
-      
-      // Group tags by file/card to process offset adjustments
-      const tagsByReference = new Map<string, Tag[]>();
-      
-      for (const tag of allTags) {
-        if (tag.id === deletedTag.id) continue; // Skip the tag being deleted
-        
-        for (const ref of tag.references || []) {
-          const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
-          if (atMatch) {
-            const referenceBase = atMatch[1]; // Could be filename or card UUID
-            if (!tagsByReference.has(referenceBase)) {
-              tagsByReference.set(referenceBase, []);
-            }
-            tagsByReference.get(referenceBase)!.push(tag);
-          }
-        }
-      }
-      
-      // Process each reference base's tags (works for both filenames and card UUIDs)
-      for (const [referenceBase, referenceTags] of tagsByReference) {
-        await this.adjustFileTagOffsets(referenceBase, referenceTags, deletedTag);
-      }
-    } catch (error) {
-      console.error('Failed to adjust offsets after deletion:', error);
-    }
+    // No longer needed since offsets are handled inside cards
+    // This method is kept for compatibility but does nothing
+    return;
   }
 
   private async adjustFileTagOffsets(referenceBase: string, tags: Tag[], deletedTag: Tag): Promise<void> {
@@ -644,21 +619,31 @@ export class OrcsService {
 
   private formatTagAsOrcs(tag: Tag): string {
     const lines = [
-      '=== ORCS TAG FILE ===',
+      '=== ORCS ENTITY ===',
+      'VERSION: 1.0',
       `UUID: ${tag.id}`,
-      `TYPE: ${tag.type}`,
+      `TAG_TYPE: ${tag.type}`,
       `NAME: ${tag.name}`,
-      `REFERENCES: ${tag.references.join(', ')}`,
       `CREATED: ${tag.created}`,
       `MODIFIED: ${tag.modified}`,
       '',
-      'ALIASES:',
+      'SEARCH_ALIASES:',
       ...tag.aliases.map(alias => `  - ${alias}`),
       '',
-      'KEY_VALUE_PAIRS:',
-      ...Object.entries(tag.keyValuePairs).map(([k, v]) => `${k}: ${v}`),
+      'CARD_REFERENCES:',
+      ...tag.references.map(ref => `  - ${ref}`),
       '',
     ];
+
+    if (tag.entityType) {
+      lines.splice(5, 0, `ENTITY_TYPE: ${tag.entityType}`);
+    }
+
+    if (Object.keys(tag.keyValuePairs).length > 0) {
+      lines.push('KEY_VALUE_PAIRS:');
+      lines.push(...Object.entries(tag.keyValuePairs).map(([k, v]) => `  ${k}: ${v}`));
+      lines.push('');
+    }
 
     if (tag.description) {
       lines.push('DESCRIPTION:');
@@ -666,7 +651,7 @@ export class OrcsService {
       lines.push('');
     }
 
-    lines.push('=== END ORCS TAG FILE ===');
+    lines.push('=== END ORCS ENTITY ===');
     
     return lines.join('\n');
   }

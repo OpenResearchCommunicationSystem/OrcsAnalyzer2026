@@ -43,25 +43,13 @@ export function TagCreationModal({
     }
   }, [isOpen, selectedText?.text]);
 
-  // Extract card UUID from card filename
-  const extractCardUuid = (filename: string): string | null => {
-    if (filename.includes('.card.txt')) {
-      // Extract UUID from card filename pattern: name_uuid.card.txt
-      const match = filename.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.card\.txt$/);
-      return match ? match[1] : null;
-    }
-    return null;
-  };
-
   const handleCreateTag = async () => {
     if (!selectedText || !identifier.trim()) {
       return;
     }
 
-    // Generate card UUID-based reference instead of filename-based
-    const cardUuid = extractCardUuid(selectedText.filename);
-    const referenceBase = cardUuid || selectedText.filename;
-    const reference = `${referenceBase}@${selectedText.startOffset}-${selectedText.endOffset}`;
+    // Generate card filename reference without offsets (handled inside card)
+    const reference = selectedText.filename;
     
     const tagData: InsertTag = {
       type: selectedType as any,
