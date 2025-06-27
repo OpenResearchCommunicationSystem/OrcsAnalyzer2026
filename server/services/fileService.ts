@@ -242,17 +242,16 @@ export class FileService {
     await this.ensureDirectories();
     
     try {
-      const rawFiles = await fs.readdir(RAW_DIR);
       const files: File[] = [];
       
-      // Process all files including metadata files
+      // Scan raw directory for main files and cards
+      const rawFiles = await fs.readdir(RAW_DIR);
       for (const filename of rawFiles) {
         if (filename === '.gitkeep') continue;
         
         const filepath = path.join(RAW_DIR, filename);
         const stats = await fs.stat(filepath);
         
-        // Use a consistent ID based on file path and modified time
         const id = crypto.createHash('md5').update(`${filepath}-${stats.mtime.getTime()}`).digest('hex');
         
         files.push({
@@ -265,6 +264,34 @@ export class FileService {
           modified: stats.mtime.toISOString(),
         });
       }
+      
+      // Scan entities directory for entity files
+      const entitiesDir = path.join(process.cwd(), 'user_data', 'entities');
+      try {
+        const entityFiles = await fs.readdir(entitiesDir);
+        for (const filename of entityFiles) {
+          if (filename === '.gitkeep') continue;
+          
+          const filepath = path.join(entitiesDir, filename);
+          const stats = await fs.stat(filepath);
+          
+          const id = crypto.createHash('md5').update(`${filepath}-${stats.mtime.getTime()}`).digest('hex');
+          
+          files.push({
+            id,
+            name: filename,
+            path: filepath,
+            type: 'entity',
+            size: stats.size,
+            created: stats.birthtime.toISOString(),
+            modified: stats.mtime.toISOString(),
+          });
+        }
+      } catch (error) {
+        // Entities directory might not exist or be empty
+      }
+      
+      // TODO: Add other tag directories (relationships, attributes, comments, kv_pairs)
       
       return files;
     } catch (error) {
