@@ -51,6 +51,54 @@ export function TagCreationModal({
     }
   }, [isOpen, selectedText?.text]);
 
+  // Find similar tags based on the current identifier
+  const findSimilarTags = () => {
+    if (!identifier.trim() || !allTags.length) return [];
+    
+    const inputName = identifier.toLowerCase().trim();
+    
+    return allTags
+      .map(tag => {
+        const tagName = tag.name.toLowerCase();
+        const tagAliases = tag.aliases?.map(a => a.toLowerCase()) || [];
+        let similarity = 0;
+        const matchReasons: string[] = [];
+        
+        // Exact name match
+        if (tagName === inputName) {
+          similarity += 100;
+          matchReasons.push("Exact match");
+        }
+        // Partial name match
+        else if (tagName.includes(inputName) || inputName.includes(tagName)) {
+          similarity += 75;
+          matchReasons.push("Partial match");
+        }
+        
+        // Alias matches
+        const aliasMatches = tagAliases.filter(alias => 
+          alias === inputName || alias.includes(inputName) || inputName.includes(alias)
+        );
+        if (aliasMatches.length > 0) {
+          similarity += 50;
+          matchReasons.push("Alias match");
+        }
+        
+        // Same type bonus
+        if (tag.type === selectedType) {
+          similarity += 25;
+          matchReasons.push("Same type");
+        }
+        
+        return { tag, similarity, matchReasons };
+      })
+      .filter(item => item.similarity > 0)
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, 3); // Show only top 3 matches
+  };
+
+  const similarTags = findSimilarTags();
+
   const handleCreateTag = async () => {
     if (!selectedText || !identifier.trim()) {
       return;
@@ -206,6 +254,35 @@ export function TagCreationModal({
               className="bg-gray-900 border-gray-600 focus:border-blue-500"
             />
           </div>
+
+          {/* Similar Tags Recommendations */}
+          {similarTags.length > 0 && (
+            <div className="bg-amber-900/20 border border-amber-600/30 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-medium text-amber-300">Similar tags found</span>
+              </div>
+              <div className="space-y-1">
+                {similarTags.map(({ tag, similarity, matchReasons }) => (
+                  <div key={tag.id} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs px-1 py-0 border-amber-500/50 text-amber-300"
+                      >
+                        {tag.type}
+                      </Badge>
+                      <span className="text-slate-300">{tag.name}</span>
+                    </div>
+                    <span className="text-amber-400 text-xs">{similarity}% match</span>
+                  </div>
+                ))}
+              </div>
+              <div className="text-xs text-amber-400/80 mt-2">
+                Consider using an existing tag or adding aliases to avoid duplicates
+              </div>
+            </div>
+          )}
 
           <div>
             <Label className="text-sm font-medium text-slate-300">Description (Optional)</Label>
