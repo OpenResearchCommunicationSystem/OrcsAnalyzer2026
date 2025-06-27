@@ -249,31 +249,31 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
           </div>
 
           {/* Action Buttons - Always Accessible */}
-          <div className="flex space-x-2 pt-4">
+          <div className="flex space-x-2 pt-3">
             <Button
               onClick={handleSave}
               disabled={isUpdating || !formData.name}
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 py-2 px-3"
             >
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-4 h-4 mr-1" />
               {isUpdating ? 'Saving...' : 'Save'}
             </Button>
             <Button
               onClick={() => setShowConnectionModal(true)}
               disabled={!selectedTag}
               variant="outline"
-              className="border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white"
+              className="border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white py-2 px-3"
             >
-              <Link className="w-4 h-4 mr-2" />
+              <Link className="w-4 h-4 mr-1" />
               Connect
             </Button>
             <Button
               onClick={handleDelete}
               disabled={isDeleting}
               variant="destructive"
-              className="flex-1"
+              className="flex-1 py-2 px-3"
             >
-              <Trash2 className="w-4 h-4 mr-2" />
+              <Trash2 className="w-4 h-4 mr-1" />
               {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
@@ -282,10 +282,10 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
           {selectedTag && (
             <Button
               variant="outline"
-              className="w-full border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white mt-4"
+              className="w-full border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white mt-3 py-2 px-3"
               onClick={() => setShowMergeModal(true)}
             >
-              <Search className="w-4 h-4 mr-2" />
+              <Search className="w-4 h-4 mr-1" />
               Find & Merge Similar Tags
             </Button>
           )}
