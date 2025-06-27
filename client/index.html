@@ -2,7 +2,42 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>ORCS Intelligence System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="description" content="Sophisticated intelligence analysis and document management system for analysts" />
+    <meta name="theme-color" content="#0f1419" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23528bff'><path d='M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z'/></svg>" />
+    <style>
+      /* Ensure full desktop layout */
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100vh;
+        overflow-x: auto;
+        background-color: hsl(222, 84%, 5%);
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      
+      /* Minimum width for desktop experience */
+      body {
+        min-width: 1200px;
+        min-height: 800px;
+      }
+      
+      #root {
+        width: 100%;
+        height: 100vh;
+        min-width: 1200px;
+        min-height: 800px;
+      }
+      
+      /* Prevent mobile-style scaling */
+      * {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

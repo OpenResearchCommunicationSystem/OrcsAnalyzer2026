@@ -2,6 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Desktop HD Layout Base */
+@layer base {
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  body {
+    font-feature-settings: "rlig" 1, "calt" 1;
+    min-width: 1200px;
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  /* High DPI display optimizations */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    body {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+  }
+  
+  /* Ensure desktop interface elements */
+  .desktop-layout {
+    min-width: 1200px;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+  }
+  
+  /* Prevent mobile UI patterns */
+  .no-mobile-touch {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Desktop scrollbars */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(222, 84%, 5%);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(217, 19%, 27%);
+    border-radius: 6px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(213, 94%, 68%);
+  }
+}
+
 :root {
   --background: hsl(240, 10%, 3.9%);
   --foreground: hsl(0, 0%, 98%);

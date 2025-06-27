@@ -118,7 +118,7 @@ export default function OrcsMain() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-slate-50">
+    <div className="desktop-layout h-screen flex flex-col bg-gray-900 text-slate-50">
       {/* Header */}
       <header style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-b border-gray-700 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -152,20 +152,22 @@ export default function OrcsMain() {
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar - File Management */}
-        <FileManagerSidebar
-          selectedFile={selectedFile}
-          onFileSelect={handleFileSelect}
-          searchQuery={searchQuery}
-          onTagClick={handleTagClick}
-        />
+      {/* Main Content Area - Optimized for HD Desktop */}
+      <div className="flex-1 flex overflow-hidden min-h-0">
+        {/* Left Sidebar - File Management (Fixed Width for Desktop) */}
+        <div className="w-72 min-w-72 flex-shrink-0">
+          <FileManagerSidebar
+            selectedFile={selectedFile}
+            onFileSelect={handleFileSelect}
+            searchQuery={searchQuery}
+            onTagClick={handleTagClick}
+          />
+        </div>
 
-        {/* Central Content Area */}
-        <div className="flex-1 flex flex-col">
+        {/* Central Content Area (Flexible Width) */}
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Document Header */}
-          <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-b border-gray-700 px-6 py-2 text-xs text-slate-400">
+          <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-b border-gray-700 px-6 py-2 text-xs text-slate-400 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <span>Document</span>
@@ -180,22 +182,24 @@ export default function OrcsMain() {
             </div>
           </div>
 
-          <DocumentViewer
-            selectedFile={selectedFile}
-            onTextSelection={handleTextSelection}
-            onTagClick={handleTagClick}
-            onFileNotFound={handleFileNotFound}
-          />
-          
-          <TagToolbar
-            selectedText={selectedText}
-            onCreateTag={handleCreateTag}
-            onClearSelection={() => setSelectedText(null)}
-          />
+          <div className="flex-1 flex flex-col min-h-0">
+            <DocumentViewer
+              selectedFile={selectedFile}
+              onTextSelection={handleTextSelection}
+              onTagClick={handleTagClick}
+              onFileNotFound={handleFileNotFound}
+            />
+            
+            <TagToolbar
+              selectedText={selectedText}
+              onCreateTag={handleCreateTag}
+              onClearSelection={() => setSelectedText(null)}
+            />
+          </div>
         </div>
 
-        {/* Right Sidebar - Graph & Tag Editor */}
-        <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="w-80 border-l border-gray-700 flex flex-col">
+        {/* Right Sidebar - Graph & Tag Editor (Fixed Width for Desktop) */}
+        <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="w-96 min-w-96 border-l border-gray-700 flex flex-col flex-shrink-0">
           {/* Tab Navigation */}
           <div className="border-b border-gray-700">
             <div className="flex">
