@@ -142,6 +142,7 @@ Changelog:
 - June 27, 2025. Implemented clickable tag navigation system - tags in documents open TagEditor, references in TagEditor navigate to files
 - June 27, 2025. Enhanced TagEditor with prominent name display, copyable UUID, scrollable content, and edit name modal
 - June 27, 2025. Redesigned aliases field as "Search Aliases" for finding untagged content in documents (not report aliases)
+- June 27, 2025. Streamlined TagEditor by removing redundant UUID, Name, and References fields - now only shown where needed
 ```
 
 ## Future Enhancements
