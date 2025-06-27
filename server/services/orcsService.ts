@@ -596,12 +596,41 @@ export class OrcsService {
         const cardPath = path.join(process.cwd(), 'user_data', 'raw', cardFilename);
         const cardContent = await fs.readFile(cardPath, 'utf-8');
         
-        // Remove the tag from TAG INDEX section
-        const tagIndexRegex = new RegExp(`\\[${tag.type}:${tag.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\]\\(${tag.id}\\)\\s*\n?`, 'g');
-        let updatedContent = cardContent.replace(tagIndexRegex, '');
+        // Split content into sections to handle them differently
+        const sections = cardContent.split('=== ORIGINAL CONTENT START ===');
+        if (sections.length < 2) {
+          console.warn(`Card ${cardFilename} does not have expected format, skipping tag removal`);
+          continue;
+        }
         
-        // Remove the tag from ORIGINAL CONTENT section
-        updatedContent = updatedContent.replace(tagIndexRegex, tag.name);
+        const beforeOriginalContent = sections[0];
+        const afterOriginalContentStart = sections[1];
+        const originalContentSections = afterOriginalContentStart.split('=== ORIGINAL CONTENT END ===');
+        
+        if (originalContentSections.length < 2) {
+          console.warn(`Card ${cardFilename} does not have expected format, skipping tag removal`);
+          continue;
+        }
+        
+        const originalContent = originalContentSections[0];
+        const afterOriginalContent = originalContentSections[1];
+        
+        // Create regex for this specific tag
+        const tagRegex = new RegExp(`\\[${tag.type}:${tag.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\]\\(${tag.id}\\)`, 'g');
+        
+        // In TAG INDEX and metadata sections: completely remove the tag
+        const cleanedBeforeContent = beforeOriginalContent.replace(tagRegex, '');
+        const cleanedAfterContent = afterOriginalContent.replace(tagRegex, '');
+        
+        // In ORIGINAL CONTENT section: replace tag with plain text to preserve content
+        const cleanedOriginalContent = originalContent.replace(tagRegex, tag.name);
+        
+        // Reconstruct the card content
+        const updatedContent = cleanedBeforeContent + 
+                              '=== ORIGINAL CONTENT START ===' + 
+                              cleanedOriginalContent + 
+                              '=== ORIGINAL CONTENT END ===' + 
+                              cleanedAfterContent;
         
         // Write the updated content back to the card
         await fs.writeFile(cardPath, updatedContent, 'utf-8');
