@@ -5,11 +5,12 @@ TAG_TYPE: entity
 NAME: Maria Lopez
 ENTITY_TYPE: person
 CREATED: 2025-06-27T10:33:51.723Z
-MODIFIED: 2025-06-27T10:33:51.723Z
+MODIFIED: 2025-06-27T11:08:03.433Z
 
 SEARCH_ALIASES:
 
 CARD_REFERENCES:
   - news_clip_2_4aebb51e-875a-4351-aba3-99174f17c394.card.txt
+  - beneficial_owners_dd246fd6-1602-4ef1-bf3b-2479ebfb341c.card.txt
 
 === END ORCS ENTITY ===

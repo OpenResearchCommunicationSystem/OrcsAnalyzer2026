@@ -30,9 +30,11 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     queryKey: ['/api/tags'],
   });
 
-  const { data: fileContent, isLoading: isContentLoading } = useQuery<{ content: string }>({
+  const { data: fileContent, isLoading: isContentLoading, refetch: refetchContent } = useQuery<{ content: string }>({
     queryKey: [`/api/files/${selectedFile}/content`],
     enabled: !!selectedFile,
+    retry: 3,
+    retryDelay: 200,
   });
 
   const { data: metadataResponse, isLoading: isMetadataLoading } = useQuery<{ metadata: string }>({
@@ -42,6 +44,17 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
 
   const selectedFileData = files.find(f => f.id === selectedFile);
   const fileType = selectedFileData?.type;
+
+  // Auto-refresh content when tags change to update highlighting
+  useEffect(() => {
+    if (selectedFile && fileContent) {
+      // Refresh content after tag operations to show updated highlighting
+      const timer = setTimeout(() => {
+        refetchContent();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [tags, selectedFile, refetchContent]);
 
   // Update metadata content when data loads
   useEffect(() => {
