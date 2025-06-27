@@ -226,50 +226,9 @@ export class OrcsService {
   }
 
   private async adjustFileTagOffsets(referenceBase: string, tags: Tag[], deletedTag: Tag): Promise<void> {
-    // Get deleted tag's references for this reference base (filename or card UUID)
-    const deletedRefs = (deletedTag.references || [])
-      .filter(ref => ref.includes(referenceBase))
-      .map(ref => {
-        const match = ref.match(/^(.+?)@(\d+)-(\d+)$/);
-        return match ? { start: parseInt(match[2]), end: parseInt(match[3]) } : null;
-      })
-      .filter(ref => ref !== null)
-      .sort((a, b) => a!.start - b!.start); // Sort by start position
-    
-    if (deletedRefs.length === 0) return;
-    
-    // Adjust offsets for remaining tags
-    for (const tag of tags) {
-      let needsUpdate = false;
-      const updatedRefs = tag.references?.map(ref => {
-        const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
-        if (atMatch && atMatch[1] === referenceBase) {
-          const start = parseInt(atMatch[2]);
-          const end = parseInt(atMatch[3]);
-          
-          // Calculate adjustment needed based on how many deletions occurred before this tag
-          let adjustment = 0;
-          for (const deletedRef of deletedRefs) {
-            if (deletedRef!.end <= start) {
-              // Deletion was completely before this tag
-              adjustment -= (deletedRef!.end - deletedRef!.start);
-            }
-          }
-          
-          if (adjustment !== 0) {
-            needsUpdate = true;
-            const newStart = Math.max(0, start + adjustment);
-            const newEnd = Math.max(newStart, end + adjustment);
-            return `${referenceBase}@${newStart}-${newEnd}`;
-          }
-        }
-        return ref;
-      }) || [];
-      
-      if (needsUpdate) {
-        await this.updateTag(tag.id, { references: updatedRefs });
-      }
-    }
+    // No longer needed since offsets are handled inside cards
+    // This method is kept for compatibility but does nothing
+    return;
   }
 
   private async findTagFile(tag: Tag): Promise<string | null> {
@@ -491,9 +450,9 @@ export class OrcsService {
         const tag1 = unconnectedEntities[i];
         const tag2 = unconnectedEntities[j];
         
-        // Check if they reference the same file
-        const file1 = tag1.references[0]?.split('@')[0] || tag1.references[0]?.split('[')[0];
-        const file2 = tag2.references[0]?.split('@')[0] || tag2.references[0]?.split('[')[0];
+        // Check if they reference the same file (no offsets needed)
+        const file1 = tag1.references[0];
+        const file2 = tag2.references[0];
         
         if (file1 === file2) {
           edges.push({
@@ -699,11 +658,18 @@ export class OrcsService {
           const refString = trimmed.startsWith('REFERENCES:') ? 
             trimmed.substring(11).trim() : 
             trimmed.substring(10).trim();
-          tag.references = refString.split(',').map(ref => ref.trim()).filter(ref => ref);
+          // Remove any offset portions from legacy references
+          tag.references = refString.split(',').map(ref => {
+            const cleanRef = ref.trim();
+            // Remove @offset-offset if present
+            return cleanRef.split('@')[0];
+          }).filter(ref => ref);
         }
       } else if (currentSection === 'card_references' && trimmed.startsWith('- ')) {
         if (!tag.references) tag.references = [];
-        tag.references.push(trimmed.substring(2).trim());
+        const ref = trimmed.substring(2).trim();
+        // Remove any offset portions from card references
+        tag.references.push(ref.split('@')[0]);
       } else if (trimmed.startsWith('CREATED:')) {
         tag.created = trimmed.substring(8).trim();
       } else if (trimmed.startsWith('MODIFIED:')) {

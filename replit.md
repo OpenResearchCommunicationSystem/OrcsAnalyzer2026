@@ -169,6 +169,9 @@ Changelog:
 - June 27, 2025. Updated parseTagFromOrcsFile() to handle TAG_TYPE, SEARCH_ALIASES, and CARD_REFERENCES in YAML list format
 - June 27, 2025. Fixed FileManagerSidebar to display tag files alongside cards for complete file visibility
 - June 27, 2025. Established standard entity format: === ORCS ENTITY === header, version field, consistent YAML lists throughout
+- June 27, 2025. SIMPLIFIED REFERENCE SYSTEM: Removed offset-based references (@10-18) since positioning is now handled inside card markup
+- June 27, 2025. Updated CARD_REFERENCES to point directly to card filenames without character position data
+- June 27, 2025. Eliminated offset adjustment system - no longer needed with card-based architecture
 ```
 
 ## Future Enhancements
