@@ -1,4 +1,4 @@
-# ORCS Metadata Card
+# ORCS Analysis Card: TechCorp AI Acquisition
 version: "2025.003"
 uuid: "b581bdea-4dbb-41d4-925b-6091f5ec8aff"
 source_file: "test_news.txt"
@@ -17,12 +17,27 @@ metadata:
   analyst: "john_smith"
   confidence: "high"
 
-tag_index:
-  - id: "tag_001"
-    type: "entity"
-    name: "TechCorp"
-    reference: "test_news.txt@0-8"
-  - id: "tag_002"
-    type: "entity"
-    name: "AI startup"
-    reference: "test_news.txt@45-55"
+---
+
+## Original Text
+
+BREAKING: TechCorp announces major acquisition of AI startup for .5B
+
+## Analysis
+
+This breaking news announcement reveals a significant strategic move by TechCorp into the artificial intelligence sector through a major acquisition valued at approximately $1.5 billion.
+
+Key strategic implications:
+- **Market expansion**: TechCorp is diversifying beyond core business into AI
+- **Financial commitment**: $1.5B represents substantial investment in AI capabilities
+- **Competitive positioning**: Acquisition suggests urgency to compete in AI market
+- **Integration potential**: Startup acquisition may provide rapid AI technology integration
+
+The announcement timing and "BREAKING" designation indicates this is recent, time-sensitive intelligence requiring immediate analysis and tracking.
+
+## Tagged Elements
+
+*Strategic analysis will be created as comment tags*
+*TechCorp and AI startup entities will be tagged separately*
+*Acquisition relationship will be tracked between entities*
+*Financial values and strategic attributes will be captured*

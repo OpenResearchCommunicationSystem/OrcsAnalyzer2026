@@ -1,4 +1,4 @@
-# ORCS Metadata Card
+# ORCS Analysis Card: Thomas Greene Board Appointment
 version: "2025.003"
 uuid: "e4b01400-1127-43ec-b4b3-ea495cd0dfe8"
 source_file: "social_post_1.txt"
@@ -17,9 +17,27 @@ metadata:
   analyst: ""
   confidence: ""
 
-tag_index: []
-  # Tags will be added here as:
-  # - id: "tag_id"
-  #   type: "entity"
-  #   name: "TagName"
-  #   reference: "social_post_1.txt[row,col]"
+---
+
+## Original Text
+
+LinkedIn Update — Thomas Greene just joined the board of directors at VisionEdge Analytics. He previously held executive roles at CloudVest Holdings and CyberNova.
+
+## Analysis
+
+This LinkedIn update reveals significant board movement by Thomas Greene, establishing his third known corporate governance position and demonstrating cross-industry executive influence.
+
+Career progression mapping:
+- **Current position**: Board Director at VisionEdge Analytics (new appointment)
+- **Previous roles**: Executive positions at CloudVest Holdings and CyberNova
+- **Board portfolio**: Multiple companies suggests investment/advisory expertise
+- **Network expansion**: LinkedIn announcement indicates public professional positioning
+
+The timing of this board appointment, combined with his previous roles at CloudVest Holdings and CyberNova, suggests Thomas Greene has developed a reputation as a strategic advisor across technology and analytics sectors.
+
+## Tagged Elements
+
+*Thomas Greene, VisionEdge Analytics, CloudVest Holdings, and CyberNova will be tagged as entities*
+*Board appointment relationship will link Greene to VisionEdge Analytics*
+*Previous executive roles will be captured as career progression attributes*
+*Professional network analysis will be tracked as strategic comments*
