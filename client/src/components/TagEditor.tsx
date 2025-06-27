@@ -278,6 +278,18 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
             </Button>
           </div>
 
+          {/* Find Similar Button */}
+          {selectedTag && (
+            <Button
+              variant="outline"
+              className="w-full border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white mt-4"
+              onClick={() => setShowMergeModal(true)}
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Find & Merge Similar Tags
+            </Button>
+          )}
+
           {/* Collapsible Middle Section - Tag Details */}
           <Collapsible defaultOpen>
             <CollapsibleTrigger className="flex items-center justify-between w-full text-left p-2 hover:bg-gray-800 rounded">
@@ -440,18 +452,6 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
                 ))}
               </CollapsibleContent>
             </Collapsible>
-          )}
-
-          {/* Find Similar Button */}
-          {selectedTag && (
-            <Button
-              variant="outline"
-              className="w-full border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white mt-4"
-              onClick={() => setShowMergeModal(true)}
-            >
-              <Search className="w-4 h-4 mr-2" />
-              Find & Merge Similar Tags
-            </Button>
           )}
 
             </CollapsibleContent>
