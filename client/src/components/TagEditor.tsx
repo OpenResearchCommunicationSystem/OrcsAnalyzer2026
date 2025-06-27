@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { X, Save, Trash2, Plus, Link, Search, ChevronDown, ChevronRight, FileText, Users, Edit2, Copy } from "lucide-react";
+import { X, Save, Trash2, Plus, Link, Search, ChevronDown, ChevronRight, FileText, Users, Edit2, Copy, RotateCcw } from "lucide-react";
 import { Tag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { TagConnectionModal } from "./TagConnectionModal";
@@ -519,6 +519,17 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               <CollapsibleContent className="p-2">
                 {selectedTag && (
                   <div className="space-y-2">
+                    {/* Fix References Button */}
+                    <Button
+                      variant="outline"
+                      className="w-full border-orange-600 text-orange-400 hover:bg-orange-600 hover:text-white py-2 px-3 mb-3"
+                      onClick={handleFixReferences}
+                      disabled={isUpdating}
+                    >
+                      <RotateCcw className="w-4 h-4 mr-1" />
+                      Fix Misaligned References
+                    </Button>
+                    
                     {parseReferences(selectedTag).map((ref, index) => (
                       <div 
                         key={index} 

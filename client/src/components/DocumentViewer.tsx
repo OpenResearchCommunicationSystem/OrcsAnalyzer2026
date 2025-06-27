@@ -213,28 +213,70 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   useEffect(() => {
     const handleMouseUp = () => {
       const selection = window.getSelection();
-      if (selection && selection.toString().trim().length > 0 && contentRef.current) {
+      if (selection && selection.toString().trim().length > 0 && contentRef.current && fileContent?.content) {
+        const selectedText = selection.toString();
         const range = selection.getRangeAt(0);
-        const text = selection.toString();
-        const startOffset = range.startOffset;
-        const endOffset = range.endOffset;
-
-        if (selectedFileData) {
-          const textSelection: TextSelection = {
-            text,
-            startOffset,
-            endOffset,
-            filename: selectedFileData.name,
-            reference: `${selectedFileData.name}@${startOffset}-${endOffset}`
-          };
-          onTextSelection(textSelection);
+        
+        // Calculate offset by counting characters from the beginning of the content element
+        const walker = document.createTreeWalker(
+          contentRef.current,
+          NodeFilter.SHOW_TEXT,
+          null
+        );
+        
+        let currentOffset = 0;
+        let startOffset = -1;
+        let node;
+        
+        // Walk through all text nodes to find the precise offset
+        while (node = walker.nextNode()) {
+          const nodeText = node.textContent || '';
+          
+          if (node === range.startContainer) {
+            startOffset = currentOffset + range.startOffset;
+            break;
+          }
+          
+          currentOffset += nodeText.length;
+        }
+        
+        if (startOffset !== -1 && selectedFileData) {
+          const endOffset = startOffset + selectedText.length;
+          
+          // Verify the selection matches the content at these offsets
+          const contentAtOffsets = fileContent.content.substring(startOffset, endOffset);
+          
+          if (contentAtOffsets === selectedText) {
+            const textSelection: TextSelection = {
+              text: selectedText,
+              startOffset,
+              endOffset,
+              filename: selectedFileData.name,
+              reference: `${selectedFileData.name}@${startOffset}-${endOffset}`
+            };
+            onTextSelection(textSelection);
+          } else {
+            // If offsets don't match, try to find the text in the content
+            const actualStartIndex = fileContent.content.indexOf(selectedText);
+            if (actualStartIndex !== -1) {
+              const actualEndIndex = actualStartIndex + selectedText.length;
+              const textSelection: TextSelection = {
+                text: selectedText,
+                startOffset: actualStartIndex,
+                endOffset: actualEndIndex,
+                filename: selectedFileData.name,
+                reference: `${selectedFileData.name}@${actualStartIndex}-${actualEndIndex}`
+              };
+              onTextSelection(textSelection);
+            }
+          }
         }
       }
     };
 
     document.addEventListener('mouseup', handleMouseUp);
     return () => document.removeEventListener('mouseup', handleMouseUp);
-  }, [selectedFileData, onTextSelection]);
+  }, [selectedFileData, onTextSelection, fileContent?.content]);
 
   // Handle clicks on highlighted tags
   useEffect(() => {
