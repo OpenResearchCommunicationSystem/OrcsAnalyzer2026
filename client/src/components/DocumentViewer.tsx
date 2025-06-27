@@ -173,10 +173,14 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
       return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     };
 
-    // Get tags that reference this file
+    // Get tags that reference this file (check both card UUID and filename)
+    const cardUuid = extractCardUuid(selectedFileData.name);
     const fileTags = tags.filter(tag => {
       if (!tag.references || tag.references.length === 0) return false;
-      return tag.references.some(ref => ref.includes(selectedFileData.name));
+      return tag.references.some(ref => {
+        // Check if reference matches card UUID or filename
+        return ref.includes(selectedFileData.name) || (cardUuid && ref.includes(cardUuid));
+      });
     });
 
     if (fileTags.length === 0) {
@@ -280,16 +284,29 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
 
   const handleCellSelection = (row: number, col: number, cellValue: string) => {
     if (selectedFileData && cellValue.trim().length > 0) {
+      // Extract card UUID from filename for card-based references
+      const cardUuid = extractCardUuid(selectedFileData.name);
+      
       const textSelection: TextSelection = {
         text: cellValue,
         startOffset: 0,
         endOffset: cellValue.length,
         filename: selectedFileData.name,
-        reference: `${selectedFileData.name}[${row},${col}]`
+        reference: cardUuid ? `${cardUuid}[${row},${col}]` : `${selectedFileData.name}[${row},${col}]`
       };
       onTextSelection(textSelection);
       setSelectedCell({ row, col });
     }
+  };
+
+  // Extract card UUID from card filename
+  const extractCardUuid = (filename: string): string | null => {
+    if (filename.includes('.card.txt')) {
+      // Extract UUID from card filename pattern: name_uuid.card.txt
+      const match = filename.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.card\.txt$/);
+      return match ? match[1] : null;
+    }
+    return null;
   };
 
   useEffect(() => {
@@ -329,13 +346,17 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
           // Verify the selection matches the content at these offsets
           const contentAtOffsets = displayData.content.substring(startOffset, endOffset);
           
+          // Extract card UUID for card-based references
+          const cardUuid = extractCardUuid(selectedFileData.name);
+          const referenceBase = cardUuid || selectedFileData.name;
+          
           if (contentAtOffsets === selectedText) {
             const textSelection: TextSelection = {
               text: selectedText,
               startOffset,
               endOffset,
               filename: selectedFileData.name,
-              reference: `${selectedFileData.name}@${startOffset}-${endOffset}`
+              reference: `${referenceBase}@${startOffset}-${endOffset}`
             };
             onTextSelection(textSelection);
           } else {
@@ -348,7 +369,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
                 startOffset: actualStartIndex,
                 endOffset: actualEndIndex,
                 filename: selectedFileData.name,
-                reference: `${selectedFileData.name}@${actualStartIndex}-${actualEndIndex}`
+                reference: `${referenceBase}@${actualStartIndex}-${actualEndIndex}`
               };
               onTextSelection(textSelection);
             }
