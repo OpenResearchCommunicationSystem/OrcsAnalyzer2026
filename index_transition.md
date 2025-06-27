@@ -44,23 +44,34 @@ Purpose: Index cards containing this entity
 Content: Search aliases, entity type, description, KVP, card references
 ```
 
-### Proposed Card Format
+### Implemented Card Format ✓ COMPLETED
 ```markdown
-# Analysis Card: Document Name
-UUID: card-uuid-here
-SOURCE_HASH: sha256-of-original
-SOURCE_FILE: original_document.txt
-CREATED: timestamp
-MODIFIED: timestamp
+=== ORCS CARD === 
+version: "2025.003"
+uuid: "card-uuid-here"
+source_file: "original_document.txt"
+source_reference: ""
+classification: "Proprietary Information"
+handling:
+  - "Copyright 2025 TechWatch Intelligence"
+  - "Distribution: Internal Use Only"
+created: "timestamp"
+modified: "timestamp"
+source_hash: "sha256-of-original"
 
-## Original Content Extract
+=== TAG INDEX START === 
+
+=== TAG INDEX END ===
+
+=== ORIGINAL CONTENT START ===
 [Preserved original text section being analyzed]
+=== ORIGINAL CONTENT END ===
 
 ## Analysis
-The company [TechCorp](entity:techcorp-uuid) announced their new [AI platform](entity:platform-uuid) 
-designed for [healthcare applications](attribute:healthcare-focus-uuid).
+The company [entity:TechCorp](uuid) announced their new [entity:AI platform](uuid) 
+designed for [attribute:healthcare applications](uuid).
 
-This establishes a [develops](relationship:develops-uuid) relationship between TechCorp and the AI platform.
+This establishes a [relationship:develops](uuid) relationship between TechCorp and the AI platform.
 
 ## Key Findings
 - Market expansion into healthcare sector
@@ -90,14 +101,22 @@ DIRECT_RELATIONSHIPS:
 
 ## Transition Strategy
 
-### Phase 1: Dual System Implementation (Weeks 1-2)
+### Phase 1: Dual System Implementation ✓ COMPLETED
 **Objective**: Add card-centric workflow alongside existing system
 
-**Technical Tasks**:
-1. Create card creation workflow from selected source text
-2. Implement markdown editor with entity linking
-3. Build card indexing system
-4. Maintain existing tag highlighting for reference
+**Technical Tasks**: ✓ COMPLETED
+1. ✓ Create card creation workflow from selected source text
+2. ✓ Implement markdown tag processing with entity linking
+3. ✓ Build card content extraction system
+4. ✓ Maintain existing tag highlighting for reference
+
+**Implemented Features**:
+- Clear delimiter-based card structure (`=== ORIGINAL CONTENT START/END ===`)
+- DocumentViewer extracts original content from cards
+- Markdown tag format: `[entity:TechCorp](uuid)`
+- Color-coded tag highlighting by type
+- Source file type detection from card metadata
+- File sidebar prioritizes cards over original files
 
 **User Experience**:
 - Keep current interface functional
@@ -194,24 +213,53 @@ tags_index: {
 4. **User Training**: Clear documentation and examples
 5. **Incremental Approach**: File-by-file or tag-by-tag migration options
 
+## Current Implementation Status (June 27, 2025)
+
+### ✓ COMPLETED - Phase 1: Card-Centric Foundation
+**DocumentViewer Transformation**:
+- Extracts original content using `=== ORIGINAL CONTENT START/END ===` delimiters
+- Detects source file type (.txt/.csv) from card metadata `source_file:` field
+- Processes markdown tags with format: `[entity:TechCorp](uuid)`
+- Applies color-coded highlighting: entity (blue), relationship (green), attribute (yellow), comment (purple), kv_pair (orange)
+- Maintains CSV table rendering and cell selection for card-embedded data
+
+**File Management System**:
+- Sidebar defaults to showing cards, hides UUID from display names
+- Toggle button: "Show/Hide Original Files" 
+- Clean card names: `news_clip_1.card.txt` instead of UUID versions
+- Cards prioritized over original files in interface
+
+**Card Structure Standardization**:
+- Clear delimiter sections for metadata, tag index, and original content
+- Consistent ORCS metadata format with version, UUID, source tracking
+- Ready for tag storage in TAG INDEX sections
+
+### 🔄 IN PROGRESS - Phase 2: Tag Integration
+**Next Steps**:
+1. Update tag creation workflow to reference cards instead of original files
+2. Implement tag storage within card TAG INDEX sections
+3. Build card-to-card relationship mapping through markdown links
+4. Add error handling for missing content with re-import option
+5. Create unified search across card content and embedded tags
+
 ## Implementation Priority
 
-### Immediate (Phase 1)
-- Card creation from text selection
-- Basic markdown editor with entity linking
-- Card file management
-- Dual-system UI
+### Immediate (Current Phase 2)
+- Tag creation integration with card system
+- Card TAG INDEX section functionality
+- Error handling for missing content scenarios
+- Re-import workflow for incomplete cards
 
 ### Short-term (Phases 2-3)
-- Enhanced indexing system
-- Migration tools
-- Cross-card relationships
-- Export capabilities
+- Enhanced indexing system for card-based tags
+- Migration tools for existing tag files
+- Cross-card relationships via markdown links
+- Export capabilities preserving card structure
 
 ### Long-term (Phase 4+)
 - Unified card-first interface
-- Advanced search and filtering
-- Performance optimization
+- Advanced search and filtering across cards
+- Performance optimization for large card collections
 - Mobile/offline capabilities
 
 ## Success Metrics

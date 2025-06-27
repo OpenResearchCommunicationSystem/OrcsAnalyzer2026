@@ -107,8 +107,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
 
   // Detect and process markdown tags in content
   const processMarkdownTags = (content: string): string => {
-    // Look for markdown-style tags: [text](entity:uuid) or [text](relationship:uuid)
-    return content.replace(/\[([^\]]+)\]\(([^:]+):([^)]+)\)/g, (match, text, type, uuid) => {
+    // Look for markdown-style tags: [entity:TechCorp](uuid) format
+    return content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, (match, type, text, uuid) => {
       const colorClass = getTagColorClass(type);
       return `<span class="${colorClass}" data-tag-id="${uuid}" data-tag-type="${type}">${text}</span>`;
     });

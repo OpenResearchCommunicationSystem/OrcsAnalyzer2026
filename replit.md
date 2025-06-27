@@ -155,6 +155,9 @@ Changelog:
 - June 27, 2025. CARD STRUCTURE REDESIGN: Implemented clear delimiter-based card format with "=== ORIGINAL CONTENT START/END ===" markers
 - June 27, 2025. Updated DocumentViewer to extract and display only original content in primary panel using delimiter parsing
 - June 27, 2025. Modified FileManagerSidebar to show cards by default, hide UUID from display names, and toggle original files visibility
+- June 27, 2025. COMPLETED CARD-CENTRIC FOUNDATION: DocumentViewer now extracts original content from cards, detects source file type from metadata, processes markdown tags with format [entity:TechCorp](uuid)
+- June 27, 2025. Implemented color-coded tag highlighting system for card content: entity (blue), relationship (green), attribute (yellow), comment (purple), kv_pair (orange)
+- June 27, 2025. Finalized card-first interface with clean file names, prioritized card display, and backward compatibility for missing content scenarios
 ```
 
 ## Future Enhancements
