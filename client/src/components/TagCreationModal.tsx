@@ -32,7 +32,7 @@ export function TagCreationModal({
   const [selectedType, setSelectedType] = useState(tagType);
   const [entityType, setEntityType] = useState('');
 
-  const { createTag, isCreating } = useTagOperations();
+  const { createTag, updateTag, isCreating } = useTagOperations();
 
   // Fetch all tags for similarity detection
   const { data: allTags = [] } = useQuery<TagType[]>({
@@ -125,6 +125,30 @@ export function TagCreationModal({
       setDescription('');
     } catch (error) {
       console.error('Failed to create tag:', error);
+    }
+  };
+
+  const handleSelectExistingTag = async (existingTag: TagType) => {
+    if (!selectedText) {
+      return;
+    }
+
+    // Add the current document reference to the existing tag
+    const reference = selectedText.filename;
+    const updatedReferences = existingTag.references.includes(reference) 
+      ? existingTag.references 
+      : [...existingTag.references, reference];
+
+    try {
+      // Update the existing tag with new reference
+      await updateTag(existingTag.id, { references: updatedReferences });
+      
+      onTagCreated();
+      onClose(); // Close the modal after successful selection
+      setIdentifier('');
+      setDescription('');
+    } catch (error) {
+      console.error('Failed to update existing tag:', error);
     }
   };
 
@@ -264,7 +288,11 @@ export function TagCreationModal({
               </div>
               <div className="space-y-1">
                 {similarTags.map(({ tag, similarity, matchReasons }) => (
-                  <div key={tag.id} className="flex items-center justify-between text-xs">
+                  <button
+                    key={tag.id}
+                    onClick={() => handleSelectExistingTag(tag)}
+                    className="w-full flex items-center justify-between text-xs p-2 rounded hover:bg-amber-800/20 transition-colors border border-transparent hover:border-amber-500/30"
+                  >
                     <div className="flex items-center gap-2">
                       <Badge 
                         variant="outline" 
@@ -274,12 +302,15 @@ export function TagCreationModal({
                       </Badge>
                       <span className="text-slate-300">{tag.name}</span>
                     </div>
-                    <span className="text-amber-400 text-xs">{similarity}% match</span>
-                  </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-amber-400 text-xs">{similarity}% match</span>
+                      <span className="text-xs text-slate-400">Click to use</span>
+                    </div>
+                  </button>
                 ))}
               </div>
               <div className="text-xs text-amber-400/80 mt-2">
-                Consider using an existing tag or adding aliases to avoid duplicates
+                Click on a similar tag to use it instead of creating a duplicate
               </div>
             </div>
           )}
