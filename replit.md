@@ -144,6 +144,9 @@ Changelog:
 - June 27, 2025. Redesigned aliases field as "Search Aliases" for finding untagged content in documents (not report aliases)
 - June 27, 2025. Streamlined TagEditor by removing redundant UUID, Name, and References fields - now only shown where needed
 - June 27, 2025. Reorganized TagEditor layout: Search Aliases at top, action buttons always accessible, collapsible Tag Details middle section, expandable KVP/References at bottom with vertical scroll
+- June 27, 2025. Fixed critical text selection offset calculation bug that caused misaligned tag highlighting using TreeWalker API
+- June 27, 2025. Added "Fix Misaligned References" feature in References section to recalculate and repair broken tag offset positions
+- June 27, 2025. Fixed TagCreationModal not closing after successful tag creation
 ```
 
 ## Future Enhancements

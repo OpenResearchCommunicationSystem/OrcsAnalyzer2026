@@ -131,6 +131,58 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
     });
   };
 
+  const handleFixReferences = async () => {
+    if (!selectedTag) return;
+    
+    try {
+      // Get all files to check reference alignment
+      const filesResponse = await fetch('/api/files');
+      const files = await filesResponse.json();
+      
+      const fixedReferences: string[] = [];
+      
+      for (const ref of selectedTag.references || []) {
+        const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
+        if (atMatch) {
+          const filename = atMatch[1];
+          const file = files.find((f: any) => f.name === filename);
+          
+          if (file) {
+            // Get file content
+            const contentResponse = await fetch(`/api/files/${file.id}/content`);
+            const { content } = await contentResponse.json();
+            
+            // Try to find the tag name in the content
+            const tagNameIndex = content.indexOf(selectedTag.name);
+            if (tagNameIndex !== -1) {
+              const newRef = `${filename}@${tagNameIndex}-${tagNameIndex + selectedTag.name.length}`;
+              fixedReferences.push(newRef);
+            } else {
+              // Keep original reference if can't find the text
+              fixedReferences.push(ref);
+            }
+          } else {
+            // Keep original reference if file not found
+            fixedReferences.push(ref);
+          }
+        } else {
+          // Keep non-text references as-is
+          fixedReferences.push(ref);
+        }
+      }
+      
+      // Update the tag with fixed references
+      const updates = { references: fixedReferences };
+      updateTag(selectedTag.id, updates);
+      
+      // Update local form data
+      setFormData(prev => ({ ...prev, references: fixedReferences }));
+      
+    } catch (error) {
+      console.error('Failed to fix references:', error);
+    }
+  };
+
   const handleSave = () => {
     if (selectedTag && formData.name && formData.type) {
       updateTag(selectedTag.id, formData);
