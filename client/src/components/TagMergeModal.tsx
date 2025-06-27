@@ -61,6 +61,14 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
   // Reference analysis for tagged/untagged instances
   const { data: referenceAnalysis, isLoading: isAnalysisLoading } = useReferenceAnalysis(masterTag, aliasSettings);
 
+  // Helper function to clean up filenames for display
+  const getDisplayName = (filename: string): string => {
+    // Remove UUID from filename for clean display
+    const name = filename.replace(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/g, '').replace(/[_-]+/g, ' ').trim();
+    // Remove file extensions and clean up
+    return name.replace(/\.(card|entity|relate|attrib|comment|kv)\.txt$/i, '').replace(/^[\s_-]+|[\s_-]+$/g, '') || filename;
+  };
+
   // Parse references to show file locations
   const parseReferences = (tag: Tag) => {
     if (!tag.references || tag.references.length === 0) return [];
@@ -470,7 +478,7 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center text-slate-400">
                           <FileText className="w-3 h-3 mr-1" />
-                          {ref.filename}
+                          {getDisplayName(ref.filename)}
                         </div>
                         <div className="flex items-center text-slate-500">
                           <MapPin className="w-3 h-3 mr-1" />
@@ -527,13 +535,13 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
                       </div>
                       
                       <div className="text-sm text-slate-300 mb-2 bg-gray-800/50 p-2 rounded border-l-2 border-amber-500/30">
-                        "{ref.context.length > 200 ? ref.context.substring(0, 200) + '...' : ref.context}"
+                        "{ref.context}"
                       </div>
                       
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center text-slate-400 text-xs">
                           <FileText className="w-3 h-3 mr-1" />
-                          {ref.filename}
+                          {getDisplayName(ref.filename)}
                         </div>
                         <div className="flex items-center text-slate-500 text-xs">
                           <MapPin className="w-3 h-3 mr-1" />
