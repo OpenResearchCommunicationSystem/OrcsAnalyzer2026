@@ -591,6 +591,52 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               </CollapsibleContent>
             </Collapsible>
 
+            {/* Similar Tags Section */}
+            {selectedTag && similarTags.length > 0 && (
+              <Collapsible open={showSimilarTags} onOpenChange={setShowSimilarTags}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full text-left p-2 hover:bg-gray-800 rounded">
+                  <div className="flex items-center">
+                    <Users className="w-4 h-4 mr-2 text-amber-400" />
+                    <span className="text-sm font-medium text-amber-300">Similar Tags ({similarTags.length})</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-slate-400" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-2 p-2">
+                  <div className="text-sm text-amber-200 mb-2">
+                    These tags might be duplicates that could be merged:
+                  </div>
+                  {similarTags.map((tag) => (
+                    <div key={tag.id} className="bg-amber-900/20 border border-amber-600/30 p-3 rounded hover:bg-amber-900/30 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="font-medium text-amber-200">{tag.name}</div>
+                          <div className="text-sm text-amber-300">
+                            {tag.entityType} • {parseReferences(tag).length} reference(s)
+                          </div>
+                          {tag.aliases && tag.aliases.length > 0 && (
+                            <div className="text-xs text-amber-400 mt-1">
+                              Aliases: {tag.aliases.join(', ')}
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-amber-600 text-amber-400 hover:bg-amber-600 hover:text-white ml-2"
+                          onClick={() => {
+                            // Open merge modal with this tag pre-selected
+                            setShowMergeModal(true);
+                          }}
+                        >
+                          Merge
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
             {/* References Section */}
             <Collapsible>
               <CollapsibleTrigger className="flex items-center justify-between w-full text-left p-2 hover:bg-gray-800 rounded">

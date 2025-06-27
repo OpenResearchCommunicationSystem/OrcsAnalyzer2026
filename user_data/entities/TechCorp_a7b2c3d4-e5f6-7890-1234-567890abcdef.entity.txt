@@ -1,27 +1,23 @@
-=== ORCS TAG FILE ===
+=== ORCS ENTITY ===
+VERSION: 1.0
 UUID: a7b2c3d4-e5f6-7890-1234-567890abcdef
-TYPE: entity
+TAG_TYPE: entity
 NAME: TechCorp
-REFERENCES: news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt
+ENTITY_TYPE: organization
 CREATED: 2025-06-27T15:30:00.000Z
-MODIFIED: 2025-06-27T09:13:09.550Z
+MODIFIED: 2025-06-27T09:51:59.353Z
 
-ALIASES:
+SEARCH_ALIASES:
   - tech corp
   - technology corporation
   - techcorp inc
   - tc
   - tech corporation
 
-KEY_VALUE_PAIRS:
-founded: 2020
-headquarters: Silicon Valley, CA
-market_cap: 15.2B
-employees: 3500+
-ceo: John Smith
-VP: Lisa Lu
+CARD_REFERENCES:
+  - news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt
 
 DESCRIPTION:
 Technology corporation specializing in artificial intelligence and healthcare technology solutions
 
-=== END ORCS TAG FILE ===
+=== END ORCS ENTITY ===
