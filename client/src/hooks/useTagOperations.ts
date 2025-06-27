@@ -17,15 +17,23 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Only invalidate metadata queries - user can manually refresh document content
+      // Invalidate all relevant queries including document content
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       
+      // Invalidate all file content and metadata queries to refresh document highlighting
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0] as string;
+          return key.includes('/api/files/') && (key.includes('/content') || key.includes('/metadata'));
+        }
+      });
+      
       toast({
         title: "Tag created successfully",
-        description: "Click Refresh in the document viewer to see updated highlighting",
+        description: "Document highlighting will update automatically",
       });
     },
     onError: (error) => {
@@ -43,15 +51,23 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Only invalidate metadata queries - user can manually refresh document content
+      // Invalidate all relevant queries including document content
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       
+      // Invalidate all file content and metadata queries to refresh document highlighting
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0] as string;
+          return key.includes('/api/files/') && (key.includes('/content') || key.includes('/metadata'));
+        }
+      });
+      
       toast({
         title: "Tag updated successfully",
-        description: "Click Refresh in the document viewer to see updated highlighting",
+        description: "Document highlighting will update automatically",
       });
     },
     onError: (error) => {
@@ -69,15 +85,23 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Only invalidate metadata queries - user can manually refresh document content
+      // Invalidate all relevant queries including document content
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       
+      // Invalidate all file content and metadata queries to refresh document highlighting
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0] as string;
+          return key.includes('/api/files/') && (key.includes('/content') || key.includes('/metadata'));
+        }
+      });
+      
       toast({
         title: "Tag deleted successfully",
-        description: "Click Refresh in the document viewer to see updated highlighting",
+        description: "Document highlighting will update automatically",
       });
     },
     onError: (error) => {
