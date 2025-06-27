@@ -34,7 +34,13 @@ export interface ReferenceAnalysis {
   totalUntaggedCount: number;
 }
 
-export function useReferenceAnalysis(targetTag: Tag | null) {
+interface AliasSettings {
+  similaritySearch: boolean;
+  documentSearch: boolean;
+  repositorySearch: boolean;
+}
+
+export function useReferenceAnalysis(targetTag: Tag | null, aliasSettings?: AliasSettings) {
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ['/api/files'],
   });
@@ -73,7 +79,7 @@ export function useReferenceAnalysis(targetTag: Tag | null) {
 
   // Analyze references when data is available
   const analysisResult = useQuery({
-    queryKey: ['/api/reference-analysis', targetTag?.id, fileContents.data],
+    queryKey: ['/api/reference-analysis', targetTag?.id, fileContents.data, aliasSettings],
     queryFn: async (): Promise<ReferenceAnalysis> => {
       if (!targetTag || !fileContents.data) {
         console.log('Analysis skipped - missing data:', { targetTag: !!targetTag, fileContents: !!fileContents.data });
@@ -85,8 +91,8 @@ export function useReferenceAnalysis(targetTag: Tag | null) {
         };
       }
 
-      console.log('Starting analysis for:', targetTag.name);
-      const result = analyzeReferences(targetTag, fileContents.data, files, tags);
+      console.log('Starting analysis for:', targetTag.name, 'with alias settings:', aliasSettings);
+      const result = analyzeReferences(targetTag, fileContents.data, files, tags, aliasSettings);
       console.log('Analysis result:', result);
       return result;
     },

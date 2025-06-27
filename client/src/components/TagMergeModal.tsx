@@ -5,6 +5,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { 
   Search, 
   Users, 
@@ -16,7 +18,10 @@ import {
   X,
   Eye,
   Target,
-  MapPin
+  MapPin,
+  Settings,
+  ToggleLeft,
+  ToggleRight
 } from "lucide-react";
 import { Tag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
@@ -39,6 +44,11 @@ interface SimilarTag {
 export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: TagMergeModalProps) {
   const [selectedForMerge, setSelectedForMerge] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState("similar-tags");
+  const [aliasSettings, setAliasSettings] = useState({
+    similaritySearch: true,    // For Similar Tags comparison
+    documentSearch: true,      // For single document reference search
+    repositorySearch: false    // For repository-wide reference search
+  });
   
   const queryClient = useQueryClient();
   const { updateTag } = useTagOperations();
@@ -49,7 +59,7 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
   });
 
   // Reference analysis for tagged/untagged instances
-  const { data: referenceAnalysis, isLoading: isAnalysisLoading } = useReferenceAnalysis(masterTag);
+  const { data: referenceAnalysis, isLoading: isAnalysisLoading } = useReferenceAnalysis(masterTag, aliasSettings);
 
   // Parse references to show file locations
   const parseReferences = (tag: Tag) => {
@@ -110,15 +120,17 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
           matchReasons.push("Partial name match");
         }
         
-        // Alias matches
-        const aliasMatches = tagAliases.filter(alias => 
-          masterAliases.includes(alias) || 
-          alias.includes(masterName) ||
-          masterName.includes(alias)
-        );
-        if (aliasMatches.length > 0) {
-          similarity += 50 * aliasMatches.length;
-          matchReasons.push(`Alias match: ${aliasMatches.join(', ')}`);
+        // Alias matches - only if similarity search aliases are enabled
+        if (aliasSettings.similaritySearch) {
+          const aliasMatches = tagAliases.filter(alias => 
+            masterAliases.includes(alias) || 
+            alias.includes(masterName) ||
+            masterName.includes(alias)
+          );
+          if (aliasMatches.length > 0) {
+            similarity += 50 * aliasMatches.length;
+            matchReasons.push(`Alias match: ${aliasMatches.join(', ')}`);
+          }
         }
         
         // Same type and entity type
