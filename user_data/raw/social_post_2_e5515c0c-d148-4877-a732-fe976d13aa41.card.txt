@@ -1,19 +1,19 @@
 # ORCS Metadata Card
 version: "2025.003"
-uuid: "01db2080-1069-4966-b0f0-ac5765cdeb21"
-source_file: "social_post_1.txt"
+uuid: "e5515c0c-d148-4877-a732-fe976d13aa41"
+source_file: "social_post_2.txt"
 source_reference: ""  # External URL or reference
 classification: "Proprietary Information"
 handling:
   - "Copyright 2025 TechWatch Intelligence"
   - "Distribution: Internal Use Only"
-created: "2025-06-15T05:32:28.135Z"
-modified: "2025-06-15T05:32:28.135Z"
-source_hash: "sha256:fb55a6e8a3b5293db0e9456bc4ffbeb9f0b01fbb65d9031e1a60604b3138bed6"
+created: "2025-06-15T05:32:33.675Z"
+modified: "2025-06-15T05:32:33.675Z"
+source_hash: "sha256:740c7909e777bd6abcd8b0f5a0868e1899a164a41496d454f371fa2137c7c674"
 
 metadata:
   file_type: "txt"
-  file_size: 166
+  file_size: 157
   analyst: ""
   confidence: ""
 
@@ -22,4 +22,4 @@ tag_index: []
   # - id: "tag_id"
   #   type: "entity"
   #   name: "TagName"
-  #   reference: "social_post_1.txt[row,col]"
+  #   reference: "social_post_2.txt[row,col]"

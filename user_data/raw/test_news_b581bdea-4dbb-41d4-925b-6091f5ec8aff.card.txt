@@ -1,6 +1,6 @@
 # ORCS Metadata Card
 version: "2025.003"
-uuid: "test-123-456-789"
+uuid: "b581bdea-4dbb-41d4-925b-6091f5ec8aff"
 source_file: "test_news.txt"
 source_reference: "https://techcorp.com/press-releases/ai-acquisition"
 classification: "Proprietary Information"

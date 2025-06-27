@@ -149,20 +149,29 @@ export class FileService {
 
   private async migrateMetadataFile(originalFilename: string, oldPath: string, content: string): Promise<void> {
     try {
-      const metadataId = uuidv4();
       const baseName = path.parse(originalFilename).name;
+      
+      // Check if ANY .card.txt file already exists for this base name
+      try {
+        const files = await fs.readdir(RAW_DIR);
+        const existingCardFile = files.find(file => 
+          file.startsWith(baseName) && file.endsWith('.card.txt')
+        );
+        
+        if (existingCardFile) {
+          // Card file already exists, just remove old .yaml.txt file
+          await fs.unlink(oldPath);
+          console.log(`Removed legacy file: ${path.basename(oldPath)} (card file already exists)`);
+          return;
+        }
+      } catch {
+        // Directory read failed, proceed with migration
+      }
+      
+      // Create new card file
+      const metadataId = uuidv4();
       const newFilename = `${baseName}_${metadataId}.card.txt`;
       const newPath = path.join(RAW_DIR, newFilename);
-      
-      // Check if new file already exists
-      try {
-        await fs.access(newPath);
-        // New file exists, just remove old one
-        await fs.unlink(oldPath);
-        return;
-      } catch {
-        // New file doesn't exist, proceed with migration
-      }
       
       // Update the UUID in the content
       const updatedContent = content.replace(/uuid: "[^"]*"/, `uuid: "${metadataId}"`);
