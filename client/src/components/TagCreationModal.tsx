@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,18 @@ export function TagCreationModal({
   const [entityType, setEntityType] = useState('');
 
   const { createTag, isCreating } = useTagOperations();
+
+  // Auto-populate identifier with selected text when modal opens
+  useEffect(() => {
+    if (isOpen && selectedText?.text) {
+      setIdentifier(selectedText.text);
+    } else if (!isOpen) {
+      // Reset form when modal closes
+      setIdentifier('');
+      setDescription('');
+      setEntityType('');
+    }
+  }, [isOpen, selectedText?.text]);
 
   const handleCreateTag = async () => {
     if (!selectedText || !identifier.trim()) {
