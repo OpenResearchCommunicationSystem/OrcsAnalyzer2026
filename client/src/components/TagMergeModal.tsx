@@ -327,7 +327,8 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
           <TabsContent value="similar-tags" className="mt-4">
             <ScrollArea className="h-[500px] pr-4">
               <div className="space-y-4">
-                {/* Master Tag Display */}
+                {/* PHASE 4: OLD Master Tag Display - COMMENTED OUT */}
+                {/* 
                 <div className="bg-blue-900/30 border border-blue-600/50 p-4 rounded-lg">
                   <div className="flex items-center mb-2">
                     <CheckCircle className="w-5 h-5 text-blue-400 mr-2" />
@@ -352,6 +353,7 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
                 </div>
                 
                 <Separator className="bg-gray-700" />
+                */}
                 
                 {/* Similar Tags */}
                 {similarTags.length > 0 ? (
