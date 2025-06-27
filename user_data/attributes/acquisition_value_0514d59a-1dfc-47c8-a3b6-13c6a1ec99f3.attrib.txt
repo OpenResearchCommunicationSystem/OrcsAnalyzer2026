@@ -2,7 +2,7 @@
 UUID: 0514d59a-1dfc-47c8-a3b6-13c6a1ec99f3
 TYPE: attribute
 NAME: acquisition_value
-REFERENCE: test_news.txt@60-65
+REFERENCES: test_news.txt@60-65
 CREATED: 2025-06-15T05:38:30.814Z
 MODIFIED: 2025-06-15T05:38:30.814Z
 

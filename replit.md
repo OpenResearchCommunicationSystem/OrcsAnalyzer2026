@@ -136,6 +136,8 @@ Changelog:
 - June 27, 2025. Implemented Wikipedia-style file extensions (.entity.txt, .relate.txt, .attrib.txt, .comment.txt, .kv.txt)
 - June 27, 2025. Added UUID-based ORCS cards with .card.txt extension replacing .yaml.txt
 - June 27, 2025. Completed location-agnostic file system - tags and cards can be moved anywhere and system finds them
+- June 27, 2025. Fixed array-based reference system migration - all tag files updated from REFERENCE: to REFERENCES: format
+- June 27, 2025. Resolved tag highlighting issues caused by comma-separated reference strings in merged tags
 ```
 
 ## Future Enhancements
