@@ -118,15 +118,32 @@ export class OrcsService {
 
   private async migrateTagFile(tag: Tag, oldFilepath: string): Promise<void> {
     try {
+      // Check if new file already exists to avoid duplicate migration
+      const newExtension = this.getFileExtension(tag.type);
+      const newFilename = `${tag.name}_${tag.id}.${newExtension}`;
+      const newFilepath = path.join(path.dirname(oldFilepath), newFilename);
+      
+      try {
+        await fs.access(newFilepath);
+        // New file exists, just remove old one silently
+        await fs.unlink(oldFilepath);
+        return;
+      } catch {
+        // New file doesn't exist, proceed with migration
+      }
+      
       // Save with new extension
       await this.saveTagToFile(tag);
       
       // Remove old .orcs file
       await fs.unlink(oldFilepath);
       
-      console.log(`Migrated tag file: ${path.basename(oldFilepath)} -> ${tag.name}_${tag.id}.${this.getFileExtension(tag.type)}`);
+      console.log(`Migrated tag file: ${path.basename(oldFilepath)} -> ${newFilename}`);
     } catch (error) {
-      console.error(`Failed to migrate tag file ${oldFilepath}:`, error);
+      // Only log error if it's not a "file not found" error (migration already completed)
+      if (error.code !== 'ENOENT') {
+        console.error(`Failed to migrate tag file ${oldFilepath}:`, error);
+      }
     }
   }
 
