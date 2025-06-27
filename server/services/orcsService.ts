@@ -608,8 +608,11 @@ export class OrcsService {
         tag.type = trimmed.substring(5).trim() as TagType;
       } else if (trimmed.startsWith('NAME:')) {
         tag.name = trimmed.substring(5).trim();
-      } else if (trimmed.startsWith('REFERENCE:')) {
-        tag.reference = trimmed.substring(10).trim();
+      } else if (trimmed.startsWith('REFERENCE:') || trimmed.startsWith('REFERENCES:')) {
+        const refString = trimmed.startsWith('REFERENCES:') ? 
+          trimmed.substring(11).trim() : 
+          trimmed.substring(10).trim();
+        tag.references = refString.split(',').map(ref => ref.trim()).filter(ref => ref);
       } else if (trimmed.startsWith('CREATED:')) {
         tag.created = trimmed.substring(8).trim();
       } else if (trimmed.startsWith('MODIFIED:')) {
@@ -631,7 +634,7 @@ export class OrcsService {
     }
 
     // Validate required fields
-    if (tag.id && tag.type && tag.name && tag.reference && tag.created && tag.modified) {
+    if (tag.id && tag.type && tag.name && tag.references && tag.references.length > 0 && tag.created && tag.modified) {
       return tag as Tag;
     }
     

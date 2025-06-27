@@ -46,11 +46,9 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
 
   // Parse references to show file locations
   const parseReferences = (tag: Tag) => {
-    if (!tag.reference) return [];
+    if (!tag.references || tag.references.length === 0) return [];
     
-    const refs = Array.isArray(tag.reference) ? tag.reference : [tag.reference];
-    
-    return refs.map(ref => {
+    return tag.references.map((ref: string) => {
       const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
       const csvMatch = ref.match(/^(.+?)\[(\d+),(\d+)\]$/);
       

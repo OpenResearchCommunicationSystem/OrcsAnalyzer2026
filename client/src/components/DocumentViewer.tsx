@@ -458,10 +458,12 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
         // Filter tags to only show those that reference the current file
         const currentFileName = selectedFileData?.name;
         const fileSpecificTags = tags.filter(tag => {
-          if (!currentFileName || !tag.reference) return false;
+          if (!currentFileName || !tag.references || tag.references.length === 0) return false;
           // Check if tag references this file (handle both @offset and [row,col] formats)
-          return tag.reference.startsWith(currentFileName + '@') || 
-                 tag.reference.startsWith(currentFileName + '[');
+          return tag.references.some(ref => 
+            ref.startsWith(currentFileName + '@') || 
+            ref.startsWith(currentFileName + '[')
+          );
         });
         
         return fileSpecificTags.length > 0 && selectedFile && (
@@ -477,7 +479,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
                   <span className={`text-${tag.type === 'entity' ? 'green' : tag.type === 'relationship' ? 'amber' : 'purple'}-400`}>
                     {tag.type}:{tag.name}
                   </span>
-                  <span className="text-slate-400">{tag.reference}</span>
+                  <span className="text-slate-400">{tag.references.join(', ')}</span>
                   {tag.aliases.length > 0 && (
                     <span className="text-slate-500">[{tag.aliases.join(', ')}]</span>
                   )}
