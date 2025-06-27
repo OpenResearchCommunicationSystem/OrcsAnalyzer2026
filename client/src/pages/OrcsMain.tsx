@@ -61,6 +61,18 @@ export default function OrcsMain() {
     setActiveTab('tagEditor');
   };
 
+  const handleFileNotFound = (staleFileId: string) => {
+    // When a file becomes invalid after tag operations, find the best replacement
+    const cardFiles = files.filter(f => f.name.includes('.card.txt'));
+    if (cardFiles.length > 0) {
+      // Select the first card file as replacement
+      setSelectedFile(cardFiles[0].id);
+    } else {
+      // No card files available, clear selection
+      setSelectedFile(null);
+    }
+  };
+
   const handleReferenceClick = (filename: string) => {
     // Find the file by name and select it
     const matchingFile = files.find(file => file.name === filename);

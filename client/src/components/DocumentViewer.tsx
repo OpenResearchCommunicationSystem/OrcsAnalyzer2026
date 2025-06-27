@@ -13,9 +13,10 @@ interface DocumentViewerProps {
   selectedFile: string | null;
   onTextSelection: (selection: TextSelection) => void;
   onTagClick: (tag: Tag) => void;
+  onFileNotFound?: (staleFileId: string) => void;
 }
 
-export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: DocumentViewerProps) {
+export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFileNotFound }: DocumentViewerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [metadataContent, setMetadataContent] = useState<string>('');
@@ -30,23 +31,68 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     queryKey: ['/api/tags'],
   });
 
-  const { data: fileContent, isLoading: isContentLoading, refetch: refetchContent } = useQuery<{ content: string }>({
-    queryKey: [`/api/files/${selectedFile}/content`],
-    enabled: !!selectedFile,
-    retry: 3,
+  // Auto-resolve stale file references by finding current file with similar name
+  const resolvedFileId = selectedFile && files.length > 0 ? (() => {
+    const currentFile = files.find(f => f.id === selectedFile);
+    if (currentFile) return selectedFile;
+    
+    // If selected file doesn't exist, try to find a similar card file
+    const selectedFileData = files.find(f => f.id === selectedFile);
+    if (!selectedFileData) {
+      // Look for card files with similar base names
+      const cardFiles = files.filter(f => f.name.includes('.card.txt'));
+      if (cardFiles.length > 0) {
+        // Return the first card file as fallback
+        return cardFiles[0].id;
+      }
+    }
+    return selectedFile;
+  })() : selectedFile;
+
+  const { data: fileContent, isLoading: isContentLoading, refetch: refetchContent, error: contentError } = useQuery<{ content: string }>({
+    queryKey: [`/api/files/${resolvedFileId}/content`],
+    enabled: !!resolvedFileId,
+    retry: (failureCount, error: any) => {
+      // If we get 404, don't retry - the file doesn't exist
+      if (error?.status === 404) return false;
+      return failureCount < 3;
+    },
     retryDelay: 200,
   });
 
-  const { data: metadataResponse, isLoading: isMetadataLoading } = useQuery<{ metadata: string }>({
-    queryKey: [`/api/files/${selectedFile}/metadata`],
-    enabled: !!selectedFile,
+  const { data: metadataResponse, isLoading: isMetadataLoading, error: metadataError } = useQuery<{ metadata: string }>({
+    queryKey: [`/api/files/${resolvedFileId}/metadata`],
+    enabled: !!resolvedFileId,
+    retry: (failureCount, error: any) => {
+      if (error?.status === 404) return false;
+      return failureCount < 3;
+    },
   });
 
-  const selectedFileData = files.find(f => f.id === selectedFile);
+  const selectedFileData = files.find(f => f.id === resolvedFileId);
   const fileType = selectedFileData?.type;
 
-  // Listen for tag changes but rely on gentle refetch from useTagOperations
-  // This ensures highlighting updates without aggressive cache invalidation
+  // Detect when selected file becomes invalid and notify parent
+  useEffect(() => {
+    if (selectedFile && files.length > 0) {
+      const fileExists = files.some(f => f.id === selectedFile);
+      if (!fileExists && onFileNotFound) {
+        onFileNotFound(selectedFile);
+      }
+    }
+  }, [files, selectedFile, onFileNotFound]);
+
+  // Handle 404 errors by notifying parent component
+  useEffect(() => {
+    if (contentError && selectedFile && onFileNotFound) {
+      // Check if error is a 404 by examining the error message or response
+      const isNotFoundError = contentError.message?.includes('404') || 
+                              contentError.message?.includes('Not found');
+      if (isNotFoundError) {
+        onFileNotFound(selectedFile);
+      }
+    }
+  }, [contentError, selectedFile, onFileNotFound]);
 
   // Update metadata content when data loads
   useEffect(() => {
