@@ -146,7 +146,7 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
         
         return { tag, similarity, matchReasons };
       })
-      .filter(item => item.similarity > 0)
+      .filter(item => item.similarity >= 100)
       .sort((a, b) => b.similarity - a.similarity);
   };
 
@@ -369,7 +369,9 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
                         className={`border rounded-lg p-4 cursor-pointer transition-colors ${
                           selectedForMerge.has(tag.id)
                             ? 'bg-amber-900/30 border-amber-600/50'
-                            : 'bg-gray-800/50 border-gray-600 hover:border-amber-600/30'
+                            : similarity >= 100 
+                              ? 'bg-amber-900/20 border-amber-600/30 hover:border-amber-600/50'
+                              : 'bg-gray-800/50 border-gray-600 hover:border-amber-600/30'
                         }`}
                         onClick={() => toggleTagSelection(tag.id)}
                       >
@@ -377,9 +379,11 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
                           <div className="flex-1">
                             <div className="flex items-center">
                               <div className="font-medium text-slate-200">{tag.name}</div>
-                              <Badge className="ml-2 bg-amber-600 text-amber-100">
-                                {similarity}% match
-                              </Badge>
+                              {similarity >= 100 && (
+                                <Badge className="ml-2 bg-amber-600 text-amber-100">
+                                  Perfect Match
+                                </Badge>
+                              )}
                             </div>
                             
                             <div className="text-sm text-slate-400 mt-1">
@@ -391,7 +395,7 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
                                 <div className="text-xs text-slate-400 mb-1">Aliases:</div>
                                 <div className="flex flex-wrap gap-1">
                                   {tag.aliases.map(alias => (
-                                    <Badge key={alias} variant="outline" className="text-xs">
+                                    <Badge key={alias} variant="outline" className="text-xs border-amber-600/50 text-amber-300">
                                       {alias}
                                     </Badge>
                                   ))}
@@ -400,22 +404,9 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
                             )}
                             
                             <div className="mt-2">
-                              <div className="text-xs text-slate-400 mb-1">Match reasons:</div>
+                              <div className="text-xs text-slate-400 mb-1">Match reason:</div>
                               <div className="text-xs text-amber-400">
                                 {matchReasons.join(' • ')}
-                              </div>
-                            </div>
-                            
-                            {/* Show references */}
-                            <div className="mt-2">
-                              <div className="text-xs text-slate-400 mb-1">References:</div>
-                              <div className="space-y-1">
-                                {parseReferences(tag).map((ref, idx) => (
-                                  <div key={idx} className="text-xs bg-gray-700 p-2 rounded">
-                                    <div className="text-slate-300">{ref.filename}</div>
-                                    <div className="text-slate-500">{ref.location}</div>
-                                  </div>
-                                ))}
                               </div>
                             </div>
                           </div>
