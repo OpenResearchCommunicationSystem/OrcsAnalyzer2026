@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { X, Save, Trash2, Plus, Link, Search, ChevronDown, ChevronRight, FileText, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { X, Save, Trash2, Plus, Link, Search, ChevronDown, ChevronRight, FileText, Users, Edit2, Copy } from "lucide-react";
 import { Tag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { TagConnectionModal } from "./TagConnectionModal";
@@ -27,6 +28,8 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
   const [showMergeModal, setShowMergeModal] = useState(false);
   const [showReferences, setShowReferences] = useState(false);
   const [showSimilarTags, setShowSimilarTags] = useState(false);
+  const [showEditNameModal, setShowEditNameModal] = useState(false);
+  const [editingName, setEditingName] = useState('');
   
   const { updateTag, deleteTag, isUpdating, isDeleting } = useTagOperations();
 
@@ -78,6 +81,24 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
   };
 
   const similarTags = findSimilarTags();
+
+  const copyUUID = async () => {
+    if (selectedTag?.id) {
+      await navigator.clipboard.writeText(selectedTag.id);
+    }
+  };
+
+  const handleEditName = () => {
+    setEditingName(formData.name || '');
+    setShowEditNameModal(true);
+  };
+
+  const saveNameEdit = () => {
+    if (editingName.trim()) {
+      setFormData(prev => ({ ...prev, name: editingName.trim() }));
+    }
+    setShowEditNameModal(false);
+  };
 
   // Parse references to show file locations
   const parseReferences = (tag: Tag) => {
