@@ -20,6 +20,9 @@ export function useTagOperations() {
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Invalidate all file content queries to refresh document viewer
+      queryClient.invalidateQueries({ type: 'all' });
       toast({
         title: "Tag created successfully",
         description: "The tag has been saved as an ORCS file",
@@ -42,6 +45,14 @@ export function useTagOperations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Invalidate all file content queries to refresh document viewer
+      queryClient.invalidateQueries({ 
+        predicate: (query) => 
+          query.queryKey[0]?.toString().includes('/api/files/') && 
+          query.queryKey[0]?.toString().includes('/content')
+      });
       toast({
         title: "Tag updated successfully",
       });

@@ -180,6 +180,9 @@ Changelog:
 - June 27, 2025. FIXED TAG DELETION CARD CLEANUP: Added removeTagFromCards() function to clean up card content when tags are deleted
 - June 27, 2025. Tags now properly removed from both TAG INDEX and ORIGINAL CONTENT sections when deleted from TagEditor
 - June 27, 2025. Replaced markdown tags with plain text in card content during tag deletion to maintain content integrity
+- June 27, 2025. INTERACTIVE SIMILAR TAGS: Converted tag recommendations from display-only to clickable buttons in TagCreationModal
+- June 27, 2025. Users can now select existing tags instead of creating duplicates, automatically adding document references
+- June 27, 2025. Cleaned up FileManagerSidebar to hide tag files from main display while preserving cross-directory search functionality
 ```
 
 ## Future Enhancements
