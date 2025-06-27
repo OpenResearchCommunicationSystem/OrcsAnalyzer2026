@@ -279,23 +279,35 @@ Changelog:
 - General user workflows
 
 ### File System Resilience Policy
-**Core Principle**: Never depend solely on filenames for system functionality. Always implement content-based fallbacks.
+**Core Principle**: Never depend solely on filenames for system functionality. Always implement graduated fallback strategies.
+
+**Three-Tier Lookup Strategy**:
+1. **Tier 1 - Default Location**: Look for correct filename with UUID in expected directory
+2. **Tier 2 - Repository-Wide**: Search entire repository for filename containing the UUID
+3. **Tier 3 - Content Search**: Scan ORCS file contents for matching UUID in file headers
+4. **Recovery Offer**: Prompt user to rename and relocate file to default position
 
 **Implementation Requirements**:
-1. **Primary Lookup**: Attempt filename-based UUID extraction first (performance optimization)
-2. **Fallback Strategy**: When filename lookup fails, scan file contents for UUID
-3. **Search Scope**: Limit content scanning to ORCS file types (.card.txt, .entity.txt, .relate.txt, .attrib.txt, .comment.txt, .kv.txt)
-4. **Caching**: Maintain UUID→filepath mapping that updates during file operations
-5. **User Experience**: Silent recovery with optional notification of filename repair
+- **Performance Optimization**: Each tier only executes if previous tier fails
+- **Search Scope**: Tier 3 limited to ORCS file types (.card.txt, .entity.txt, .relate.txt, .attrib.txt, .comment.txt, .kv.txt)
+- **Caching**: Maintain UUID→filepath mapping updated during successful lookups
+- **User Experience**: Silent progression through tiers with optional recovery notification
+
+**Recovery Process**:
+When Tier 3 succeeds but file is misplaced:
+- Show user: "Found [EntityName] in unexpected location: [current path]"
+- Offer: "Move to standard location: [expected path]?"
+- Execute: Rename and move file to proper directory structure
+- Update: Refresh internal caches and references
 
 **Resilience Scenarios**:
-- User renames files manually
-- Filename corruption during transfer
-- UUID extraction from filename fails
-- File moved between directories
-- Multiple files with same base name
+- User renames files manually → Tier 2 catches
+- Filename corruption during transfer → Tier 3 content search
+- UUID extraction from filename fails → Content-based recovery
+- File moved between directories → Repository-wide search
+- Multiple files with same base name → Content validation
 
-**Error Handling**: System should gracefully degrade, never crash due to filename issues. Always provide meaningful error messages when both filename and content searches fail.
+**Error Handling**: System should gracefully degrade through all three tiers. Only show error when all strategies fail, with specific guidance on manual resolution.
 
 ## User Preferences
 
