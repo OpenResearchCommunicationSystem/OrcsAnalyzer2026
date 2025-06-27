@@ -289,6 +289,23 @@ The system transitioned to a card-centric model where:
 
 *Note: All tag types use consistent color schema and markdown patterns. Migration follows entity tag proven approach.*
 
+## Content Standards and Clean Architecture
+
+### Clean Content Architecture (Reference: [clean-content-architecture.md](./clean-content-architecture.md))
+**Critical Foundation**: All search and discovery operations must maintain strict content/metadata separation to prevent contamination loops and ensure accurate results.
+
+#### Interactive Tag Standards
+- **Tag Buttons**: Tagged text functions as proper clickable buttons with hover/focus states
+- **Event Delegation**: Document-level click handling ensures reliable tag interaction
+- **Visual Feedback**: Z-index positioning and transition effects for professional interface
+- **Accessibility**: Focus rings and keyboard navigation support
+
+#### Content Extraction Standards
+- **Source Boundaries**: Only content between `=== ORIGINAL CONTENT START ===` and `=== ORIGINAL CONTENT END ===` delimiters
+- **Metadata Exclusion**: Tag files (.entity.txt, .relate.txt, etc.) excluded from reference analysis
+- **Contamination Prevention**: ContentExtractor utility validates clean content system-wide
+- **CSV Cell Selection**: Clean text extraction using data-raw-text attributes
+
 ### Cross-Reference
 *For detailed knowledge organization patterns, see: [knowledge-management-architecture.md](./knowledge-management-architecture.md)*
 

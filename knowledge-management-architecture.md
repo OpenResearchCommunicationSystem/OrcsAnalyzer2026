@@ -651,7 +651,29 @@ CARD_REFERENCES:
 
 ---
 
+## Content Standards and Clean Architecture
+
+### Clean Content Architecture (Reference: [clean-content-architecture.md](./clean-content-architecture.md))
+**Foundation Requirement**: All knowledge management operations must maintain strict content/metadata separation to ensure accurate entity-relationship modeling and prevent data contamination.
+
+#### Interactive Knowledge Navigation
+- **Tag Buttons**: Entity and relationship tags function as clickable navigation elements
+- **Cross-References**: Seamless navigation between related entities and documents
+- **Visual Indicators**: Color-coded tag types with consistent hover/focus feedback
+- **Accessibility**: Full keyboard navigation and screen reader support
+
+#### Card Structure Standards
+- **Content Boundaries**: Original content preserved between delimiter markers
+- **Metadata Isolation**: Tag files (.entity.txt, .relate.txt, etc.) separate from source content
+- **Clean Extraction**: ContentExtractor utility prevents metadata contamination in displays
+- **CSV Integration**: Structured data tables maintain clean cell selection and tagging
+
+### Cross-Reference
+*For detailed search and discovery patterns, see: [search-and-discovery-framework.md](./search-and-discovery-framework.md)*
+
+---
+
 *Created: December 27, 2025*
-*Updated: December 27, 2025 - Integrated Index Transition Documentation*
+*Updated: December 27, 2025 - Added Clean Content Architecture Standards*
 *Industry Standards: Knowledge Management, Semantic Web, Intelligence Analysis*
 *Architecture Status: Foundation Phase Complete - Entity Knowledge Baseline Established*

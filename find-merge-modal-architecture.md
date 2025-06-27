@@ -406,5 +406,34 @@ queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
 
 ---
 
+## Content Standards and Clean Architecture
+
+### Clean Content Architecture (Reference: [clean-content-architecture.md](./clean-content-architecture.md))
+**Critical Integration**: Find & Merge operations require clean content extraction to prevent metadata contamination during reference analysis and ensure accurate similarity matching.
+
+#### Reference Analysis Standards
+- **Content Boundaries**: Analysis limited to content between delimiter markers in .card.txt files
+- **Metadata Exclusion**: Tag files (.entity.txt, .relate.txt, etc.) excluded from reference scanning
+- **Clean Text Processing**: ContentExtractor utility prevents metadata contamination in similarity calculations
+- **CSV Cell Analysis**: Structured data analysis uses clean cell content for accurate matching
+
+#### Interactive Tag Integration
+- **Clickable References**: Tagged references in analysis results function as navigation buttons
+- **Visual Feedback**: Hover states and focus indicators for all interactive elements
+- **Event Delegation**: Document-level click handling ensures reliable tag interaction
+- **Accessibility**: Full keyboard navigation and screen reader support
+
+#### Similarity Detection Standards
+- **Clean Content Comparison**: Only source document content used for similarity calculations
+- **Context Preservation**: Reference snippets extracted from clean content sections
+- **Contamination Prevention**: Metadata artifacts filtered from analysis results
+- **Consistent Display**: All content displays follow clean content architecture standards
+
+### Cross-Reference
+*For detailed knowledge management patterns, see: [knowledge-management-architecture.md](./knowledge-management-architecture.md)*
+*For search operation standards, see: [search-and-discovery-framework.md](./search-and-discovery-framework.md)*
+
+---
+
 *Generated: December 27, 2025*
-*Updated: December 27, 2025 - UI Standards Implementation Complete*
+*Updated: December 27, 2025 - Added Clean Content Architecture Standards*
