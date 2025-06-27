@@ -152,6 +152,9 @@ Changelog:
 - June 27, 2025. MAJOR TRANSITION: Created new card-centric architecture with embedded original text/tables
 - June 27, 2025. Backed up existing cards as .backup files and created new enhanced cards with markdown analysis sections
 - June 27, 2025. Cards now contain: original content + structured analysis + tagged elements planning (analysis becomes comment tags)
+- June 27, 2025. CARD STRUCTURE REDESIGN: Implemented clear delimiter-based card format with "=== ORIGINAL CONTENT START/END ===" markers
+- June 27, 2025. Updated DocumentViewer to extract and display only original content in primary panel using delimiter parsing
+- June 27, 2025. Modified FileManagerSidebar to show cards by default, hide UUID from display names, and toggle original files visibility
 ```
 
 ## Future Enhancements

@@ -14,7 +14,7 @@ interface FileManagerSidebarProps {
 }
 
 export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, onTagClick }: FileManagerSidebarProps) {
-  const [showMetadata, setShowMetadata] = useState(false);
+  const [showOriginals, setShowOriginals] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['raw']));
   const { stats }: { stats?: Stats } = useTagOperations();
   const { deleteFile, isDeleting } = useFileOperations();
@@ -37,12 +37,12 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
     ? (searchResults || [])
     : files;
 
-  // Filter files based on metadata toggle
-  const rawFiles = filteredFiles.filter(file => file.type === 'txt' || file.type === 'csv');
-  const metadataFiles = filteredFiles.filter(file => file.type === 'metadata');
+  // Separate card files from original files
+  const cardFiles = filteredFiles.filter(file => file.name.includes('.card.txt'));
+  const originalFiles = filteredFiles.filter(file => (file.type === 'txt' || file.type === 'csv') && !file.name.includes('.card.txt'));
   
-  // Show raw files and conditionally show metadata files
-  const displayFiles = showMetadata ? [...rawFiles, ...metadataFiles] : rawFiles;
+  // Show cards by default, originals only when toggled
+  const displayFiles = showOriginals ? [...cardFiles, ...originalFiles] : cardFiles;
 
   const tagCounts = stats?.tagCounts || {};
 
@@ -63,6 +63,16 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
       newExpanded.add(folderName);
     }
     setExpandedFolders(newExpanded);
+  };
+
+  // Clean display name by removing UUID from card files
+  const getDisplayName = (fileName: string): string => {
+    if (fileName.includes('.card.txt')) {
+      // Remove UUID pattern (8-4-4-4-12 characters) from card filenames
+      // Example: "news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt" becomes "news_clip_1.card.txt"
+      return fileName.replace(/_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/, '');
+    }
+    return fileName;
   };
 
   const handleDeleteFile = async (fileId: string, fileName: string, event: React.MouseEvent) => {
@@ -92,11 +102,11 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowMetadata(!showMetadata)}
+            onClick={() => setShowOriginals(!showOriginals)}
             className="text-blue-400 hover:text-blue-300"
           >
             <Eye className="w-4 h-4 mr-1" />
-            {showMetadata ? 'Hide' : 'Show'} Metadata
+            {showOriginals ? 'Hide' : 'Show'} Original Files
           </Button>
         </div>
         
@@ -166,7 +176,7 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
                           ) : (
                             <FileText className="w-4 h-4 text-blue-400 mr-2" />
                           )}
-                          <span>{file.name}</span>
+                          <span>{getDisplayName(file.name)}</span>
                         </div>
                         <Button
                           variant="ghost"
