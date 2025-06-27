@@ -17,26 +17,15 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Only invalidate metadata queries, keep file content stable
+      // Only invalidate metadata queries - user can manually refresh document content
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      
-      // Gentle refetch of file list and content without breaking cache
-      queryClient.refetchQueries({ queryKey: ['/api/files'] });
-      setTimeout(() => {
-        queryClient.refetchQueries({ 
-          predicate: (query) => {
-            const key = query.queryKey[0]?.toString() || '';
-            return key.includes('/content');
-          },
-          type: 'active'
-        });
-      }, 200);
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       
       toast({
         title: "Tag created successfully",
-        description: "The tag has been saved as an ORCS file",
+        description: "Click Refresh in the document viewer to see updated highlighting",
       });
     },
     onError: (error) => {
@@ -54,25 +43,15 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Only invalidate metadata queries, keep file content stable
+      // Only invalidate metadata queries - user can manually refresh document content
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      
-      // Gentle refetch of file list and content without breaking cache
-      queryClient.refetchQueries({ queryKey: ['/api/files'] });
-      setTimeout(() => {
-        queryClient.refetchQueries({ 
-          predicate: (query) => {
-            const key = query.queryKey[0]?.toString() || '';
-            return key.includes('/content');
-          },
-          type: 'active'
-        });
-      }, 200);
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       
       toast({
         title: "Tag updated successfully",
+        description: "Click Refresh in the document viewer to see updated highlighting",
       });
     },
     onError: (error) => {
@@ -90,25 +69,15 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Only invalidate metadata queries, keep file content stable
+      // Only invalidate metadata queries - user can manually refresh document content
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      
-      // Gentle refetch of file list and content without breaking cache
-      queryClient.refetchQueries({ queryKey: ['/api/files'] });
-      setTimeout(() => {
-        queryClient.refetchQueries({ 
-          predicate: (query) => {
-            const key = query.queryKey[0]?.toString() || '';
-            return key.includes('/content');
-          },
-          type: 'active'
-        });
-      }, 200);
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       
       toast({
         title: "Tag deleted successfully",
+        description: "Click Refresh in the document viewer to see updated highlighting",
       });
     },
     onError: (error) => {

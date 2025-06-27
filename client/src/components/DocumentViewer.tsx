@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Table, Save, FileText } from 'lucide-react';
+import { Edit, Table, Save, FileText, RefreshCw } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { Tag, TextSelection, File } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
@@ -615,6 +615,19 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-slate-400 font-sans text-xs uppercase tracking-wide">ORCS Metadata</h3>
             <div className="flex items-center space-x-2">
+              <Button
+                onClick={() => {
+                  refetchContent();
+                  queryClient.refetchQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
+                }}
+                variant="ghost"
+                size="sm"
+                className="text-slate-400 hover:text-slate-200"
+                title="Refresh document content and highlighting"
+              >
+                <RefreshCw className="w-3 h-3 mr-1" />
+                Refresh
+              </Button>
               <Button
                 onClick={() => setShowMetadataForm(true)}
                 variant="ghost"
