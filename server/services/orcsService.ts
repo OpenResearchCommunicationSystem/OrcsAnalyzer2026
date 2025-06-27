@@ -70,18 +70,25 @@ export class OrcsService {
 
   async getTags(): Promise<Tag[]> {
     const tags: Tag[] = [];
+    const processedFiles = new Set<string>(); // Avoid processing same file twice
     
-    for (const [type, dir] of Object.entries(TAG_DIRECTORIES)) {
+    // Wikipedia approach: Search ALL directories for tag files, regardless of location
+    for (const dir of Object.values(TAG_DIRECTORIES)) {
       try {
         const files = await fs.readdir(dir);
         for (const filename of files) {
           if (filename === '.gitkeep') continue;
           
-          // Support both new extensions and legacy .orcs files
-          const isValidTagFile = this.isValidTagFile(filename, type as TagType);
-          if (!isValidTagFile) continue;
-          
           const filepath = path.join(dir, filename);
+          
+          // Skip if we've already processed this file (avoid duplicates)
+          if (processedFiles.has(filepath)) continue;
+          processedFiles.add(filepath);
+          
+          // Check if it's any type of tag file (regardless of directory)
+          const isAnyTagFile = this.isAnyTagFile(filename);
+          if (!isAnyTagFile) continue;
+          
           const content = await fs.readFile(filepath, 'utf-8');
           const tag = this.parseTagFromOrcsFile(content);
           if (tag) {
@@ -99,6 +106,15 @@ export class OrcsService {
     }
     
     return tags;
+  }
+
+  private isAnyTagFile(filename: string): boolean {
+    // Check if file matches any tag type extension
+    const allExtensions = [
+      'entity.txt', 'relate.txt', 'attrib.txt', 'comment.txt', 'kv.txt', 'orcs'
+    ];
+    
+    return allExtensions.some(ext => filename.endsWith('.' + ext));
   }
 
   private isValidTagFile(filename: string, tagType: TagType): boolean {
