@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function OrcsMain() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [selectedDocumentPattern, setSelectedDocumentPattern] = useState<string | null>(null);
   const [selectedText, setSelectedText] = useState<TextSelection | null>(null);
   const [activeTab, setActiveTab] = useState<'graph' | 'tagEditor'>('tagEditor');
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
@@ -62,40 +63,44 @@ export default function OrcsMain() {
   };
 
   const handleFileNotFound = (staleFileId: string) => {
-    // When a file becomes invalid after tag operations, find the corresponding card file
-    // We need to identify which document was being viewed and find its current card file
+    // When a card file becomes invalid after tag operations, find the updated version
+    // Use the stored document pattern to find the correct replacement
     
-    // First, try to find the stale file in our current files list
-    // If it doesn't exist, we need to match by document name pattern
-    
-    // Look at the currently selected file data to understand what document we're in
-    const currentlySelectedData = files.find(f => f.id === selectedFile);
-    
-    if (currentlySelectedData && currentlySelectedData.name.includes('.card.txt')) {
-      // We're already looking at a card file, but it became stale
-      // Extract the base document name (e.g., "social_post_1" from "social_post_1_uuid.card.txt")
-      const baseNameMatch = currentlySelectedData.name.match(/^([^_]+(?:_[^_]+)*?)_[a-f0-9-]+\.card\.txt$/);
-      if (baseNameMatch) {
-        const baseName = baseNameMatch[1];
-        
-        // Find the current card file for this same document
-        const updatedCardFile = files.find(f => 
-          f.name.includes('.card.txt') && 
-          f.name.startsWith(baseName + '_') &&
-          f.id !== staleFileId // Don't select the same stale file
-        );
-        
-        if (updatedCardFile) {
-          setSelectedFile(updatedCardFile.id);
-          return;
-        }
+    if (selectedDocumentPattern) {
+      // Find the current card file matching our document pattern
+      const matchingCardFile = files.find(f => 
+        f.name.includes('.card.txt') && 
+        f.name.startsWith(selectedDocumentPattern) &&
+        f.id !== staleFileId
+      );
+      
+      if (matchingCardFile) {
+        setSelectedFile(matchingCardFile.id);
+        return;
       }
     }
     
-    // Fallback: if we can't find a specific match, don't switch documents
-    // Just clear the selection to avoid confusion
+    // Fallback: clear selection if we can't find the right document
     setSelectedFile(null);
-    console.warn('Could not resolve stale file reference, clearing selection');
+    setSelectedDocumentPattern(null);
+  };
+
+  // Enhanced file selection that tracks document pattern
+  const handleFileSelect = (fileId: string | null) => {
+    setSelectedFile(fileId);
+    
+    if (fileId) {
+      const file = files.find(f => f.id === fileId);
+      if (file && file.name.includes('.card.txt')) {
+        // Extract document pattern (e.g., "social_post_1" from "social_post_1_uuid.card.txt")
+        const baseNameMatch = file.name.match(/^([^_]+(?:_[^_]+)*?)_[a-f0-9-]+\.card\.txt$/);
+        if (baseNameMatch) {
+          setSelectedDocumentPattern(baseNameMatch[1]);
+        }
+      }
+    } else {
+      setSelectedDocumentPattern(null);
+    }
   };
 
   const handleReferenceClick = (filename: string) => {
@@ -152,7 +157,7 @@ export default function OrcsMain() {
         {/* Left Sidebar - File Management */}
         <FileManagerSidebar
           selectedFile={selectedFile}
-          onFileSelect={setSelectedFile}
+          onFileSelect={handleFileSelect}
           searchQuery={searchQuery}
           onTagClick={handleTagClick}
         />
