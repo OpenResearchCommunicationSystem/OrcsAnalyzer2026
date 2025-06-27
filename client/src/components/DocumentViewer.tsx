@@ -353,8 +353,24 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     return null;
   };
 
+  // Track if we're clicking on a tag to prevent text selection interference
+  const [isTagClick, setIsTagClick] = useState(false);
+
   useEffect(() => {
+    const handleMouseDown = (event: MouseEvent) => {
+      // Check if the mousedown is on a tag element
+      const target = event.target as HTMLElement;
+      const tagElement = target.closest('[data-tag-id]');
+      setIsTagClick(!!tagElement);
+    };
+
     const handleMouseUp = () => {
+      // Don't process text selection if we clicked on a tag
+      if (isTagClick) {
+        setIsTagClick(false);
+        return;
+      }
+
       const selection = window.getSelection();
       if (selection && selection.toString().trim().length > 0 && contentRef.current && fileContent?.content) {
         const selectedText = selection.toString();
@@ -422,37 +438,40 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       }
     };
 
+    document.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('mouseup', handleMouseUp);
-    return () => document.removeEventListener('mouseup', handleMouseUp);
-  }, [selectedFileData, onTextSelection, fileContent?.content]);
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [selectedFileData, onTextSelection, fileContent?.content, isTagClick]);
 
   // Handle clicks on highlighted tags
   useEffect(() => {
     const handleTagClick = (event: MouseEvent) => {
-      console.log('Click detected on:', event.target);
       const target = event.target as HTMLElement;
       const tagElement = target.closest('[data-tag-id]');
       
-      console.log('Tag element found:', tagElement);
-      
       if (tagElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        
         const tagId = tagElement.getAttribute('data-tag-id');
-        console.log('Tag ID:', tagId);
         const tag = tags.find(t => t.id === tagId);
-        console.log('Tag found:', tag);
+        
         if (tag) {
-          event.preventDefault();
-          event.stopPropagation();
+          // Clear any text selection that might interfere
+          window.getSelection()?.removeAllRanges();
           onTagClick(tag);
         }
       }
     };
 
     if (contentRef.current) {
-      contentRef.current.addEventListener('click', handleTagClick);
+      contentRef.current.addEventListener('click', handleTagClick, { capture: true });
       return () => {
         if (contentRef.current) {
-          contentRef.current.removeEventListener('click', handleTagClick);
+          contentRef.current.removeEventListener('click', handleTagClick, { capture: true });
         }
       };
     }
