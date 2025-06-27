@@ -78,6 +78,90 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
   };
 
+  // Function to render content with tag highlighting
+  const renderHighlightedContent = (content: string) => {
+    if (!selectedFileData || !tags.length) {
+      return content;
+    }
+
+    // Get tags that reference this file
+    const fileTags = tags.filter(tag => {
+      if (!tag.reference) return false;
+      return tag.reference.includes(selectedFileData.name);
+    });
+
+    if (fileTags.length === 0) {
+      return content;
+    }
+
+    type TagSegment = {
+      tag: Tag;
+      start: number;
+      end: number;
+      text: string;
+    };
+
+    // Parse references and sort by start position (latest first to avoid offset issues)
+    const tagSegments: TagSegment[] = fileTags
+      .flatMap(tag => {
+        const references = tag.reference.split(',');
+        return references
+          .filter(ref => ref.includes(selectedFileData.name))
+          .map(ref => {
+            const match = ref.match(new RegExp(`${selectedFileData.name}@(\\d+)-(\\d+)`));
+            if (match) {
+              return {
+                tag,
+                start: parseInt(match[1]),
+                end: parseInt(match[2]),
+                text: content.substring(parseInt(match[1]), parseInt(match[2]))
+              };
+            }
+            return null;
+          })
+          .filter((segment): segment is TagSegment => segment !== null);
+      })
+      .sort((a, b) => b.start - a.start); // Sort by start position (descending)
+
+    let highlightedContent = content;
+
+    // Apply highlights from end to beginning to maintain character positions
+    tagSegments.forEach(segment => {
+      const tagType = segment.tag.type;
+      const tagName = segment.tag.name;
+      const beforeText = highlightedContent.substring(0, segment.start);
+      const taggedText = highlightedContent.substring(segment.start, segment.end);
+      const afterText = highlightedContent.substring(segment.end);
+
+      const highlightClass = getTagHighlightClass(tagType);
+      const highlightedSpan = `<span class="${highlightClass}" data-tag-id="${segment.tag.id}" data-tag-name="${tagName}" title="${tagName} (${tagType})" style="cursor: pointer;">${taggedText}</span>`;
+
+      highlightedContent = beforeText + highlightedSpan + afterText;
+    });
+
+    return <div dangerouslySetInnerHTML={{ __html: highlightedContent }} />;
+  };
+
+  // Get CSS classes for tag highlighting
+  const getTagHighlightClass = (tagType: string) => {
+    const baseClasses = "px-1 py-0.5 rounded-sm border transition-colors hover:opacity-80";
+    
+    switch (tagType) {
+      case 'entity':
+        return `${baseClasses} bg-green-900/30 border-green-600 text-green-300`;
+      case 'relationship':
+        return `${baseClasses} bg-red-900/30 border-red-600 text-red-300`;
+      case 'attribute':
+        return `${baseClasses} bg-purple-900/30 border-purple-600 text-purple-300`;
+      case 'comment':
+        return `${baseClasses} bg-orange-900/30 border-orange-600 text-orange-300`;
+      case 'kv_pair':
+        return `${baseClasses} bg-cyan-900/30 border-cyan-600 text-cyan-300`;
+      default:
+        return `${baseClasses} bg-gray-900/30 border-gray-600 text-gray-300`;
+    }
+  };
+
   // CSV parsing function
   const parseCSV = (csvText: string): string[][] => {
     const lines = csvText.trim().split('\n');
@@ -144,6 +228,31 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     return () => document.removeEventListener('mouseup', handleMouseUp);
   }, [selectedFileData, onTextSelection]);
 
+  // Handle clicks on highlighted tags
+  useEffect(() => {
+    const handleTagClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const tagElement = target.closest('[data-tag-id]');
+      
+      if (tagElement) {
+        const tagId = tagElement.getAttribute('data-tag-id');
+        const tag = tags.find(t => t.id === tagId);
+        if (tag) {
+          onTagClick(tag);
+        }
+      }
+    };
+
+    if (contentRef.current) {
+      contentRef.current.addEventListener('click', handleTagClick);
+      return () => {
+        if (contentRef.current) {
+          contentRef.current.removeEventListener('click', handleTagClick);
+        }
+      };
+    }
+  }, [tags, onTagClick]);
+
   const renderContent = () => {
 
     if (!selectedFile) {
@@ -199,7 +308,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
             style={{ userSelect: 'text' }}
           >
             <div className="text-slate-300 mb-4 whitespace-pre-wrap">
-              {fileContent.content}
+              {renderHighlightedContent(fileContent.content)}
             </div>
           </div>
         </>

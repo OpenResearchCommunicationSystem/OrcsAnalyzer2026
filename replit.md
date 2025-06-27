@@ -130,6 +130,9 @@ Changelog:
 - June 16, 2025. Added professional metadata form with classification levels and handling instructions
 - June 16, 2025. Fixed metadata saving issues and file locking problems with form-based approach
 - June 16, 2025. Implemented safe handling instruction add/remove with bounds checking
+- June 27, 2025. Fixed complete tag merge functionality with proper backend implementation
+- June 27, 2025. Added auto-populate identifier field in tag creation modal with selected text
+- June 27, 2025. Implemented comprehensive tag highlighting in document viewer with color-coded types
 ```
 
 ## Future Enhancements
