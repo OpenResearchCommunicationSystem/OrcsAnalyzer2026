@@ -154,6 +154,7 @@ export default function OrcsMain() {
             selectedFile={selectedFile}
             onTextSelection={handleTextSelection}
             onTagClick={handleTagClick}
+            onFileNotFound={handleFileNotFound}
           />
           
           <TagToolbar
