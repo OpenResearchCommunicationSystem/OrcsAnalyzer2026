@@ -155,8 +155,17 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
 
   // Function to render content with tag highlighting
   const renderHighlightedContent = (content: string) => {
+    // First, process markdown tags
+    let processedContent = processMarkdownTags(content);
+    
     if (!selectedFileData || !tags.length) {
-      return content;
+      // Return processed content with line breaks converted to JSX
+      return processedContent.split('\n').map((line, index) => (
+        <span key={index}>
+          {index > 0 && <br />}
+          <span dangerouslySetInnerHTML={{ __html: line }} />
+        </span>
+      ));
     }
 
     // Helper function to escape special regex characters
