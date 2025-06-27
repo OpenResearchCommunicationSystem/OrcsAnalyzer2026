@@ -183,6 +183,13 @@ Changelog:
 - June 27, 2025. INTERACTIVE SIMILAR TAGS: Converted tag recommendations from display-only to clickable buttons in TagCreationModal
 - June 27, 2025. Users can now select existing tags instead of creating duplicates, automatically adding document references
 - June 27, 2025. Cleaned up FileManagerSidebar to hide tag files from main display while preserving cross-directory search functionality
+- June 27, 2025. MANUAL REFRESH SYSTEM: Replaced problematic automatic refresh with reliable manual refresh button in DocumentViewer
+- June 27, 2025. Added refresh button between ORCS Metadata and Edit button to update document content and tag highlighting
+- June 27, 2025. Removed automatic document refresh from tag operations to prevent race conditions and 404 errors
+- June 27, 2025. Toast messages now remind users to click refresh button after tag operations for updated highlighting
+- June 27, 2025. DEPLOYMENT STRATEGY CHANGE: Moved from embedded D3.js to manual library creation approach for portable HTML
+- June 27, 2025. Users now create d3.v7.min.js file from provided d3.v7.min.js.txt source when deploying offline version
+- June 27, 2025. Portable HTML file expects d3.v7.min.js to be placed in same directory as orcs-portable.html for offline functionality
 ```
 
 ## Future Enhancements

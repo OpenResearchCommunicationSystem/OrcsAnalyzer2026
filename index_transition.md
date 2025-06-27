@@ -252,6 +252,20 @@ tags_index: {
 - Consistent ORCS metadata format with version, UUID, source tracking
 - Ready for tag storage in TAG INDEX sections
 
+### ✓ COMPLETED - Phase 1.5: User Interface Stability
+**Manual Refresh System Implementation**:
+- Added reliable manual refresh button in DocumentViewer between ORCS Metadata and Edit button
+- Removed problematic automatic refresh system that caused race conditions and 404 errors
+- Users now click refresh button after tag operations to see updated highlighting
+- Toast notifications guide users to use manual refresh for immediate visual updates
+- Eliminated cascading failures from automatic content reloading
+
+**Interactive Tag Selection System**:
+- Converted tag recommendations from display-only to clickable buttons in TagCreationModal
+- Users can select existing tags instead of creating duplicates
+- Automatically adds document references when selecting existing tags
+- Improved tag file organization by hiding individual tag files from main display
+
 ### 🔄 IN PROGRESS - Phase 2: Tag Integration
 **Next Steps**:
 1. Update tag creation workflow to reference cards instead of original files
@@ -259,6 +273,7 @@ tags_index: {
 3. Build card-to-card relationship mapping through markdown links
 4. Add error handling for missing content with re-import option
 5. Create unified search across card content and embedded tags
+6. Embed D3.js library properly in portable HTML file for offline functionality
 
 ## Implementation Priority
 
