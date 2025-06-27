@@ -154,7 +154,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     // Look for markdown-style tags: [entity:TechCorp](uuid) format
     return content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, (match, type, text, uuid) => {
       const colorClass = getTagColorClass(type);
-      return `<span class="${colorClass}" data-tag-id="${uuid}" data-tag-type="${type}" style="cursor: pointer;">${text}</span>`;
+      return `<button class="${colorClass} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50" data-tag-id="${uuid}" data-tag-type="${type}" type="button" style="cursor: pointer; border: none; font: inherit; padding: 2px 4px; position: relative; z-index: 10;">${text}</button>`;
     });
   };
 
@@ -446,35 +446,41 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     };
   }, [selectedFileData, onTextSelection, fileContent?.content, isTagClick]);
 
-  // Handle clicks on highlighted tags
+  // Handle clicks on highlighted tags with improved event delegation
   useEffect(() => {
-    const handleTagClick = (event: MouseEvent) => {
+    const handleTagClick = (event: Event) => {
       const target = event.target as HTMLElement;
-      const tagElement = target.closest('[data-tag-id]');
       
-      if (tagElement) {
-        event.preventDefault();
-        event.stopPropagation();
+      // Check if clicked element is a tag button or contains tag data
+      if (target.hasAttribute('data-tag-id') || target.closest('[data-tag-id]')) {
+        const tagElement = target.hasAttribute('data-tag-id') ? target : target.closest('[data-tag-id]') as HTMLElement;
         
-        const tagId = tagElement.getAttribute('data-tag-id');
-        const tag = tags.find(t => t.id === tagId);
-        
-        if (tag) {
-          // Clear any text selection that might interfere
-          window.getSelection()?.removeAllRanges();
-          onTagClick(tag);
+        if (tagElement) {
+          event.preventDefault();
+          event.stopPropagation();
+          
+          const tagId = tagElement.getAttribute('data-tag-id');
+          const tag = tags.find(t => t.id === tagId);
+          
+          if (tag) {
+            // Clear any text selection that might interfere
+            window.getSelection()?.removeAllRanges();
+            setIsTagClick(true);
+            onTagClick(tag);
+            
+            // Reset tag click flag after a short delay
+            setTimeout(() => setIsTagClick(false), 100);
+          }
         }
       }
     };
 
-    if (contentRef.current) {
-      contentRef.current.addEventListener('click', handleTagClick, { capture: true });
-      return () => {
-        if (contentRef.current) {
-          contentRef.current.removeEventListener('click', handleTagClick, { capture: true });
-        }
-      };
-    }
+    // Use document-level event delegation for more reliable click handling
+    document.addEventListener('click', handleTagClick, { capture: true });
+    
+    return () => {
+      document.removeEventListener('click', handleTagClick, { capture: true });
+    };
   }, [tags, onTagClick]);
 
   const renderContent = () => {

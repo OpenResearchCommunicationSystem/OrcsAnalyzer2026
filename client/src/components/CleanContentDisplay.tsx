@@ -46,34 +46,47 @@ export function CleanContentDisplay({
     // Look for markdown-style tags: [entity:TechCorp](uuid) format
     return content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, (match, type, text, uuid) => {
       const colorClass = getTagColorClass(type);
-      return `<span class="${colorClass}" data-tag-id="${uuid}" data-tag-type="${type}" style="cursor: pointer;">${text}</span>`;
+      return `<button class="${colorClass} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50" data-tag-id="${uuid}" data-tag-type="${type}" type="button" style="cursor: pointer; border: none; font: inherit; padding: 2px 4px; position: relative; z-index: 10;">${text}</button>`;
     });
   };
 
-  // Handle tag clicks
+  // Handle tag clicks with improved event delegation
   useEffect(() => {
-    if (!contentRef.current || !onTagClick) return;
+    if (!onTagClick || tags.length === 0) return;
 
     const handleTagClick = (event: Event) => {
       const target = event.target as HTMLElement;
-      const tagId = target.getAttribute('data-tag-id');
-      const tagType = target.getAttribute('data-tag-type');
       
-      if (tagId && tags.length > 0) {
-        const tag = tags.find(t => t.id === tagId);
-        if (tag) {
-          onTagClick(tag);
+      // Check if clicked element is within our content area
+      if (!contentRef.current?.contains(target)) return;
+      
+      // Check if clicked element is a tag button or contains tag data
+      if (target.hasAttribute('data-tag-id') || target.closest('[data-tag-id]')) {
+        const tagElement = target.hasAttribute('data-tag-id') ? target : target.closest('[data-tag-id]') as HTMLElement;
+        
+        if (tagElement) {
+          event.preventDefault();
+          event.stopPropagation();
+          
+          const tagId = tagElement.getAttribute('data-tag-id');
+          const tag = tags.find(t => t.id === tagId);
+          
+          if (tag) {
+            // Clear any text selection that might interfere
+            window.getSelection()?.removeAllRanges();
+            onTagClick(tag);
+          }
         }
       }
     };
 
-    const tagElements = contentRef.current.querySelectorAll('[data-tag-id]');
-    tagElements.forEach(el => el.addEventListener('click', handleTagClick));
+    // Use document-level event delegation for more reliable click handling
+    document.addEventListener('click', handleTagClick, { capture: true });
 
     return () => {
-      tagElements.forEach(el => el.removeEventListener('click', handleTagClick));
+      document.removeEventListener('click', handleTagClick, { capture: true });
     };
-  }, [content, onTagClick, tags]);
+  }, [onTagClick, tags]);
 
   // Handle text selection for tagging
   useEffect(() => {

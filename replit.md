@@ -205,6 +205,9 @@ Changelog:
 - December 27, 2025. CRITICAL CSV FIX: Fixed table cell selection to return clean text instead of HTML markup and CSS class names
 - December 27, 2025. Implemented data-raw-text attributes for CSV cells to preserve original content during tag highlighting
 - December 27, 2025. Enhanced CleanContentDisplay with intelligent CSV cell detection and clean text extraction
+- December 27, 2025. INTERACTIVE TAG BUTTONS: Converted tagged text from spans to proper button elements with hover/focus states
+- December 27, 2025. Improved tag click handling with document-level event delegation for reliable hyperlink-style behavior
+- December 27, 2025. Added z-index positioning and transition effects to ensure tags function as interactive buttons throughout system
 ```
 
 ## Future Enhancements
