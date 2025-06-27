@@ -88,7 +88,7 @@ The company [entity:TechCorp](uuid-reference) announced their new platform.
 | **Entity** | Green | `bg-green-500/20 text-green-300 border-green-500/30` | Organizations, people, locations, objects |
 | **Relationship** | Orange | `bg-orange-500/20 text-orange-300 border-orange-500/30` | Connections between entities |
 | **Attribute** | Purple | `bg-purple-500/20 text-purple-300 border-purple-500/30` | Properties and characteristics |
-| **Comment** | Blue | `bg-blue-500/20 text-blue-300 border-blue-500/30` | Analysis and observations |
+| **Comment** | Blue | `bg-blue-500/20 text-blue-300 border-blue-500/30` | **Analyst notes and observations** |
 | **Key-Value** | Amber | `bg-amber-500/20 text-amber-300 border-amber-500/30` | Structured data pairs |
 
 #### Pending Tag Type Migrations
@@ -119,7 +119,7 @@ Following intelligence community standards:
 - **Entity**: Discrete objects (persons, organizations, locations, events)
 - **Relationship**: Connections between entities
 - **Attribute**: Properties and characteristics
-- **Comment**: Analysis and observations
+- **Comment**: **Analyst notes and observations** (Critical for production and sharing workflows)
 - **Key-Value Pair**: Structured metadata
 
 ##### Schema Implementation
@@ -295,19 +295,61 @@ Following generic corporate/proprietary marking standards:
 - **Format**: ISO 8601 UTC timestamps
 - **Enhancement**: Needs access tracking and retention policies
 
+### Analyst Attribution and User Management
+
+#### Comment Tag Attribution Requirements
+**Critical for Production and Sharing**: Comment tags represent analyst notes and observations that must be properly attributed for professional intelligence workflows.
+
+##### User UUID Management
+**Industry Standard**: RFC 4122 compliant user identification with privacy controls
+- **User UUID**: Persistent analyst identification for comment tag attribution
+- **Privacy Options**: User-configurable visibility controls
+  - **Default Mode**: User UUID embedded in comment tags for internal tracking
+  - **Anonymous Mode**: User can opt for random UUID generation on export
+  - **Organizational Mode**: Admin-controlled UUID policies per organization requirements
+
+##### Implementation Requirements
+```typescript
+// Future Enhancement: User Schema
+userSchema = {
+  uuid: UUID (persistent analyst identifier),
+  displayName: string (optional public name),
+  organizationId: UUID (optional organization grouping),
+  privacySettings: {
+    attributeComments: boolean (show/hide authorship),
+    exportAnonymization: boolean (randomize UUID on export),
+    organizationVisibility: enum ['internal', 'external', 'restricted']
+  }
+}
+
+// Comment Tag Enhanced Schema
+commentTagSchema = {
+  // ... existing tag fields ...
+  authorUUID: UUID (analyst who created comment),
+  createdBy: string (optional display name),
+  attribution: enum ['attributed', 'anonymous', 'organization']
+}
+```
+
+##### Professional Workflow Integration
+- **Internal Production**: Comments properly attributed for quality assurance and responsibility tracking
+- **External Sharing**: Export options allow anonymization while preserving analytical integrity
+- **Organizational Control**: Admin policies can mandate attribution levels for different classification levels
+
 ### Version Control and Change Management
 
 #### Change Tracking Standards
-**Industry Standard**: Audit trail and provenance tracking
+**Industry Standard**: Audit trail and provenance tracking with analyst attribution
 
 ##### Change Types
 - **Content Changes**: Substantive information updates
 - **Metadata Changes**: Classification or handling updates
 - **Relationship Changes**: Connection additions/removals
 - **Structure Changes**: Format or organization modifications
+- **Comment Attribution**: Analyst note creation and modification tracking
 
 ##### Audit Requirements
-- **Who**: User identification (future enhancement)
+- **Who**: User UUID identification (required for comment tags)
 - **What**: Specific changes made
 - **When**: Precise timestamp
 - **Why**: Change justification (optional)
@@ -603,6 +645,8 @@ CARD_REFERENCES:
 - **Entity Knowledge Structure**: Fully implemented with card-centric architecture
 - **Tag Color Schema**: Complete visual identity system defined
 - **Card Format**: Standardized structure with metadata, index, content, and analysis sections
+- **Comment Tag Requirements**: Analyst attribution system documented for production workflows
+- **User UUID Management**: Privacy-configurable analyst identification requirements specified
 - **Pending Tag Migrations**: Relationship, attribute, comment, key-value following entity patterns
 
 ---
