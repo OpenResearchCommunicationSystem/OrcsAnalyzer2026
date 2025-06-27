@@ -208,8 +208,8 @@ export class OrcsService {
       return false;
     }
 
-    // Before deleting, adjust offsets for all other tags affected by this deletion
-    await this.adjustOffsetsAfterDeletion(tag);
+    // Remove tag from all card content before deleting the tag file
+    await this.removeTagFromCards(tag);
 
     // Try to find and delete the tag file using Wikipedia approach - search everywhere
     const filepath = await this.findTagFile(tag);
@@ -585,6 +585,31 @@ export class OrcsService {
     }
 
     return updatedMasterTag;
+  }
+
+  async removeTagFromCards(tag: Tag): Promise<void> {
+    // Remove tag from all card files that reference it
+    for (const cardFilename of tag.references || []) {
+      if (!cardFilename.includes('.card.txt')) continue;
+      
+      try {
+        const cardPath = path.join(process.cwd(), 'user_data', 'raw', cardFilename);
+        const cardContent = await fs.readFile(cardPath, 'utf-8');
+        
+        // Remove the tag from TAG INDEX section
+        const tagIndexRegex = new RegExp(`\\[${tag.type}:${tag.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\]\\(${tag.id}\\)\\s*\n?`, 'g');
+        let updatedContent = cardContent.replace(tagIndexRegex, '');
+        
+        // Remove the tag from ORIGINAL CONTENT section
+        updatedContent = updatedContent.replace(tagIndexRegex, tag.name);
+        
+        // Write the updated content back to the card
+        await fs.writeFile(cardPath, updatedContent, 'utf-8');
+        console.log(`Removed tag ${tag.name} from card: ${cardFilename}`);
+      } catch (error) {
+        console.error(`Failed to remove tag from card ${cardFilename}:`, error);
+      }
+    }
   }
 
   private async updateCardContent(tag: Tag): Promise<void> {
