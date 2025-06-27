@@ -227,17 +227,47 @@ files.forEach(file => analyzeForReferences(file)); // Includes .entity.txt files
 - Proper metadata file rejection
 - Delimiter-based extraction reliability
 - Fallback behavior verification
+- CSV cell selection returns clean text (not HTML markup)
 
 ### Integration Tests
 - End-to-end clean content display
 - Tag highlighting consistency
 - Search index purity (no metadata contamination)
 - Reference analysis source file filtering
+- CSV table cell selection extracts raw text values
 
 ### Performance Tests
 - Large document extraction speed
 - Memory usage with complex tag highlighting
 - Search index efficiency
+
+## CSV Text Selection Standards
+
+### Problem: HTML Contamination in CSV Selection
+When users select content in CSV tables with tag highlighting, the selection can include CSS class names and HTML artifacts instead of clean text content.
+
+### Solution: Raw Text Data Attributes
+- Store original cell content in `data-raw-text` attributes
+- Detect table cell selections and extract clean text
+- Fall back to HTML cleaning for multi-cell selections
+
+### Implementation:
+```typescript
+// CSV cell with raw text preservation
+<td 
+  className="border px-3 py-2 text-slate-400"
+  data-raw-text={cellContent}
+  dangerouslySetInnerHTML={{ __html: processMarkdownTags(cellContent) }}
+/>
+
+// Selection handler extracts clean text
+if (startCell && endCell && startCell === endCell) {
+  const rawText = startCell.getAttribute('data-raw-text');
+  if (rawText) {
+    selectedText = rawText; // Use clean text, not HTML
+  }
+}
+```
 
 ## Migration Strategy
 

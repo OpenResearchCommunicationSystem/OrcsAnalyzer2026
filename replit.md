@@ -202,6 +202,9 @@ Changelog:
 - December 27, 2025. Created CleanContentDisplay component with official ORCS color schema and contamination validation
 - December 27, 2025. Established clean-content-architecture.md with comprehensive standards for preventing metadata loops
 - December 27, 2025. Updated reference analysis to use ContentExtractor - ensures only source documents are analyzed, never metadata files
+- December 27, 2025. CRITICAL CSV FIX: Fixed table cell selection to return clean text instead of HTML markup and CSS class names
+- December 27, 2025. Implemented data-raw-text attributes for CSV cells to preserve original content during tag highlighting
+- December 27, 2025. Enhanced CleanContentDisplay with intelligent CSV cell detection and clean text extraction
 ```
 
 ## Future Enhancements

@@ -84,7 +84,41 @@ export function CleanContentDisplay({
       if (!selection || selection.rangeCount === 0) return;
 
       const range = selection.getRangeAt(0);
-      const selectedText = selection.toString().trim();
+      let selectedText = selection.toString().trim();
+      
+      // For CSV tables, check if selection is within a table cell and extract clean text
+      const startContainer = range.startContainer;
+      const endContainer = range.endContainer;
+      
+      // Find the closest table cell for both start and end
+      const getTableCell = (node: Node): HTMLTableCellElement | null => {
+        let current = node.nodeType === Node.TEXT_NODE ? node.parentElement : node as Element;
+        while (current && current !== contentRef.current) {
+          if (current.tagName === 'TD' || current.tagName === 'TH') {
+            return current as HTMLTableCellElement;
+          }
+          current = current.parentElement;
+        }
+        return null;
+      };
+      
+      const startCell = getTableCell(startContainer);
+      const endCell = getTableCell(endContainer);
+      
+      // If selection is within a single table cell, use the raw text data
+      if (startCell && endCell && startCell === endCell) {
+        const rawText = startCell.getAttribute('data-raw-text');
+        if (rawText) {
+          selectedText = rawText;
+        }
+      } else {
+        // Clean up selected text - remove HTML artifacts and class names
+        selectedText = selectedText
+          .replace(/<[^>]*>/g, '') // Remove HTML tags
+          .replace(/class="[^"]*"/g, '') // Remove class attributes
+          .replace(/\s+/g, ' ') // Normalize whitespace
+          .trim();
+      }
       
       if (selectedText.length === 0) return;
 
@@ -124,8 +158,10 @@ export function CleanContentDisplay({
       if (startOffset >= 0 && endOffset >= 0) {
         const textSelection: TextSelection = {
           text: selectedText,
-          start: startOffset,
-          end: endOffset
+          startOffset: startOffset,
+          endOffset: endOffset,
+          filename: '', // Will be set by parent component
+          reference: '' // Will be set by parent component
         };
         
         onTextSelection(textSelection);
@@ -156,6 +192,7 @@ export function CleanContentDisplay({
                 <th 
                   key={index} 
                   className="border border-slate-600 px-3 py-2 text-left text-slate-300 font-medium"
+                  data-raw-text={header}
                   dangerouslySetInnerHTML={{ __html: processMarkdownTags(header) }}
                 />
               ))}
@@ -168,6 +205,7 @@ export function CleanContentDisplay({
                   <td 
                     key={cellIndex}
                     className="border border-slate-600 px-3 py-2 text-slate-400"
+                    data-raw-text={cell}
                     dangerouslySetInnerHTML={{ __html: processMarkdownTags(cell) }}
                   />
                 ))}
