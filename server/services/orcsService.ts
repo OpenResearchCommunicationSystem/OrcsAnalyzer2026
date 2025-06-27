@@ -223,8 +223,8 @@ export class OrcsService {
     try {
       const allTags = await this.getTags();
       
-      // Group tags by file to process offset adjustments
-      const tagsByFile = new Map<string, Tag[]>();
+      // Group tags by file/card to process offset adjustments
+      const tagsByReference = new Map<string, Tag[]>();
       
       for (const tag of allTags) {
         if (tag.id === deletedTag.id) continue; // Skip the tag being deleted
@@ -232,28 +232,28 @@ export class OrcsService {
         for (const ref of tag.references || []) {
           const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
           if (atMatch) {
-            const filename = atMatch[1];
-            if (!tagsByFile.has(filename)) {
-              tagsByFile.set(filename, []);
+            const referenceBase = atMatch[1]; // Could be filename or card UUID
+            if (!tagsByReference.has(referenceBase)) {
+              tagsByReference.set(referenceBase, []);
             }
-            tagsByFile.get(filename)!.push(tag);
+            tagsByReference.get(referenceBase)!.push(tag);
           }
         }
       }
       
-      // Process each file's tags
-      for (const [filename, fileTags] of tagsByFile) {
-        await this.adjustFileTagOffsets(filename, fileTags, deletedTag);
+      // Process each reference base's tags (works for both filenames and card UUIDs)
+      for (const [referenceBase, referenceTags] of tagsByReference) {
+        await this.adjustFileTagOffsets(referenceBase, referenceTags, deletedTag);
       }
     } catch (error) {
       console.error('Failed to adjust offsets after deletion:', error);
     }
   }
 
-  private async adjustFileTagOffsets(filename: string, tags: Tag[], deletedTag: Tag): Promise<void> {
-    // Get deleted tag's references for this file
+  private async adjustFileTagOffsets(referenceBase: string, tags: Tag[], deletedTag: Tag): Promise<void> {
+    // Get deleted tag's references for this reference base (filename or card UUID)
     const deletedRefs = (deletedTag.references || [])
-      .filter(ref => ref.includes(filename))
+      .filter(ref => ref.includes(referenceBase))
       .map(ref => {
         const match = ref.match(/^(.+?)@(\d+)-(\d+)$/);
         return match ? { start: parseInt(match[2]), end: parseInt(match[3]) } : null;
@@ -268,7 +268,7 @@ export class OrcsService {
       let needsUpdate = false;
       const updatedRefs = tag.references?.map(ref => {
         const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
-        if (atMatch && atMatch[1] === filename) {
+        if (atMatch && atMatch[1] === referenceBase) {
           const start = parseInt(atMatch[2]);
           const end = parseInt(atMatch[3]);
           
@@ -285,7 +285,7 @@ export class OrcsService {
             needsUpdate = true;
             const newStart = Math.max(0, start + adjustment);
             const newEnd = Math.max(newStart, end + adjustment);
-            return `${filename}@${newStart}-${newEnd}`;
+            return `${referenceBase}@${newStart}-${newEnd}`;
           }
         }
         return ref;
