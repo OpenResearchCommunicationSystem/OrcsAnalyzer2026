@@ -5,7 +5,7 @@ TAG_TYPE: entity
 NAME: TechCorp
 ENTITY_TYPE: organization
 CREATED: 2025-06-27T15:30:00.000Z
-MODIFIED: 2025-06-27T09:51:59.353Z
+MODIFIED: 2025-06-27T09:54:39.566Z
 
 SEARCH_ALIASES:
   - tech corp
@@ -16,6 +16,7 @@ SEARCH_ALIASES:
 
 CARD_REFERENCES:
   - news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt
+  - test_news_b581bdea-4dbb-41d4-925b-6091f5ec8aff.card.txt
 
 DESCRIPTION:
 Technology corporation specializing in artificial intelligence and healthcare technology solutions

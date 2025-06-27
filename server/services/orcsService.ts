@@ -27,6 +27,10 @@ export class OrcsService {
     };
 
     await this.saveTagToFile(tag);
+    
+    // Update card content with new tag markup
+    await this.updateCardContent(tag);
+    
     return tag;
   }
 
@@ -568,12 +572,117 @@ export class OrcsService {
       }
     }
 
+    // Update card content with merged tag references
+    await this.updateCardContent(updatedMasterTag);
+
     // Delete the merged tags
     for (const tagId of tagIdsToMerge) {
       await this.deleteTag(tagId);
     }
 
     return updatedMasterTag;
+  }
+
+  private async updateCardContent(tag: Tag): Promise<void> {
+    try {
+      // Update all cards referenced by this tag
+      for (const cardRef of tag.references || []) {
+        const cardPath = path.join(process.cwd(), 'user_data', 'raw', cardRef);
+        
+        try {
+          const cardContent = await fs.readFile(cardPath, 'utf-8');
+          const updatedContent = this.insertTagIntoCard(cardContent, tag);
+          await fs.writeFile(cardPath, updatedContent, 'utf-8');
+        } catch (error) {
+          console.error(`Failed to update card content for ${cardRef}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update card content:', error);
+    }
+  }
+
+  private insertTagIntoCard(cardContent: string, tag: Tag): string {
+    const lines = cardContent.split('\n');
+    let tagIndexStart = -1;
+    let tagIndexEnd = -1;
+    let originalContentStart = -1;
+    let originalContentEnd = -1;
+
+    // Find the boundaries of different sections
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line === '=== TAG INDEX START ===') {
+        tagIndexStart = i;
+      } else if (line === '=== TAG INDEX END ===') {
+        tagIndexEnd = i;
+      } else if (line === '=== ORIGINAL CONTENT START ===') {
+        originalContentStart = i;
+      } else if (line === '=== ORIGINAL CONTENT END ===') {
+        originalContentEnd = i;
+      }
+    }
+
+    if (tagIndexStart === -1 || tagIndexEnd === -1 || originalContentStart === -1 || originalContentEnd === -1) {
+      return cardContent; // Return unchanged if structure is not found
+    }
+
+    // Extract current content between ORIGINAL CONTENT markers
+    const currentContent = lines.slice(originalContentStart + 1, originalContentEnd).join('\n');
+    
+    // Check if content already has markdown tags for this tag ID
+    if (currentContent.includes(`](${tag.id})`)) {
+      return cardContent; // Already tagged
+    }
+    
+    // Generate tag markup for the content
+    const taggedContent = this.generateTagMarkup(currentContent, tag);
+    
+    // Update TAG INDEX section
+    const existingTagIndex = lines.slice(tagIndexStart + 1, tagIndexEnd).filter(line => line.trim());
+    const newTagEntry = `[${tag.type}:${tag.name}](${tag.id})`;
+    if (!existingTagIndex.includes(newTagEntry)) {
+      existingTagIndex.push(newTagEntry);
+    }
+    
+    // Build new card content with updated TAG INDEX and marked content
+    const newLines = [
+      ...lines.slice(0, tagIndexStart + 1),
+      ...existingTagIndex,
+      ...lines.slice(tagIndexEnd, originalContentStart + 1),
+      taggedContent,
+      ...lines.slice(originalContentEnd)
+    ];
+
+    return newLines.join('\n');
+  }
+
+  private generateTagMarkup(content: string, tag: Tag): string {
+    let markedContent = content;
+    
+    // Find occurrences of the tag name and its aliases in the content
+    const searchTerms = [tag.name, ...(tag.aliases || [])];
+    
+    for (const term of searchTerms) {
+      // Escape special regex characters and create case-insensitive regex
+      const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escapedTerm}\\b`, 'gi');
+      
+      // Only replace if not already tagged with any tag ID
+      markedContent = markedContent.replace(regex, (match) => {
+        // Don't replace if already inside markdown tag syntax
+        const beforeMatch = markedContent.substring(0, markedContent.indexOf(match));
+        const afterMatch = markedContent.substring(markedContent.indexOf(match) + match.length);
+        
+        if (beforeMatch.includes('[') && afterMatch.startsWith('](')) {
+          return match; // Already tagged
+        }
+        
+        return `[${tag.type}:${match}](${tag.id})`;
+      });
+    }
+    
+    return markedContent;
   }
 
   private formatTagAsOrcs(tag: Tag): string {
