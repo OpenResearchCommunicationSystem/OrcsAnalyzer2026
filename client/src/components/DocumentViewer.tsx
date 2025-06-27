@@ -79,6 +79,40 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
   };
 
+  // Extract original content from card file
+  const extractOriginalContent = (cardContent: string): string => {
+    // Look for the "## Original" section (could be "## Original CSV Data", "## Original Content", etc.)
+    const originalSectionMatch = cardContent.match(/^## Original[^\n]*\n([\s\S]*?)(?=\n## |$)/m);
+    
+    if (originalSectionMatch) {
+      return originalSectionMatch[1].trim();
+    }
+    
+    // Fallback: look for content after the metadata section (after ---)
+    const contentAfterMetadata = cardContent.split('---\n')[1];
+    if (contentAfterMetadata) {
+      // Extract everything before "## Analysis" section
+      const beforeAnalysis = contentAfterMetadata.split(/\n## Analysis/)[0].trim();
+      // Remove any remaining section headers like "## Original CSV Data"
+      return beforeAnalysis.replace(/^## [^\n]*\n/, '').trim();
+    }
+    
+    return cardContent;
+  };
+
+  // Check if current file is a card file and extract original content
+  const getDisplayContent = (): string => {
+    if (!fileContent?.content) return '';
+    
+    // If this is a card file (.card.txt), extract the original content section
+    if (selectedFileData?.name.includes('.card.txt')) {
+      return extractOriginalContent(fileContent.content);
+    }
+    
+    // Otherwise, display the full content
+    return fileContent.content;
+  };
+
 
 
   // Function to render content with tag highlighting
@@ -359,7 +393,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
             style={{ userSelect: 'text' }}
           >
             {renderContentWithTables(
-              fileContent.content,
+              getDisplayContent(),
               renderHighlightedContent,
               (row: number, col: number, content: string) => {
                 if (selectedFileData) {

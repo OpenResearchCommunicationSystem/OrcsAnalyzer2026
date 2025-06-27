@@ -24,6 +24,19 @@ Content: Markdown with embedded original text + analysis
 Format: Standard markdown with UUID references
 ```
 
+### Two-Panel Display Architecture
+**Panel 1 (Primary View)**: Clean original content extracted from card's "Original Content" section
+- Displays HTML-rendered tables, formatted text, clean presentation
+- Tag highlighting overlays for visual analysis
+- Same user experience as before - select text, click cells, create tags
+- Content sourced from card's embedded original data section
+
+**Panel 2 (Metadata/Analysis View)**: Full ORCS card structure
+- Complete card with metadata, analysis sections, tagged elements planning
+- Raw markdown for editing analysis and metadata
+- "Sausage making" view where users see/edit the structured format
+- Source of truth for all card data
+
 ### Tag Files as Cross-Card Indexes
 ```
 Structure: entities/TechCorp_uuid.entity.txt
