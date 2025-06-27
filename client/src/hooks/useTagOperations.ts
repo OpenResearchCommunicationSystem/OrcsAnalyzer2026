@@ -17,12 +17,8 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
-      // Invalidate all file content queries to refresh document viewer
-      queryClient.invalidateQueries({ type: 'all' });
+      // Invalidate all queries to ensure document viewer refreshes
+      queryClient.invalidateQueries();
       toast({
         title: "Tag created successfully",
         description: "The tag has been saved as an ORCS file",
@@ -43,16 +39,8 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
-      // Invalidate all file content queries to refresh document viewer
-      queryClient.invalidateQueries({ 
-        predicate: (query) => 
-          query.queryKey[0]?.toString().includes('/api/files/') && 
-          query.queryKey[0]?.toString().includes('/content')
-      });
+      // Invalidate all queries to ensure document viewer refreshes
+      queryClient.invalidateQueries();
       toast({
         title: "Tag updated successfully",
       });
@@ -75,6 +63,9 @@ export function useTagOperations() {
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Invalidate all queries to refresh document viewer
+      queryClient.invalidateQueries();
       toast({
         title: "Tag deleted successfully",
       });
