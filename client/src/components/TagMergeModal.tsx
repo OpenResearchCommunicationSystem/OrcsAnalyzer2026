@@ -208,6 +208,18 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
           </DialogTitle>
         </DialogHeader>
         
+        {/* PHASE 1: Master Dummy Card - Placeholder for positioning test */}
+        <div className="bg-blue-900/30 border border-blue-600/50 p-4 rounded-lg mb-4">
+          <div className="flex items-center mb-2">
+            <CheckCircle className="w-5 h-5 text-blue-400 mr-2" />
+            <span className="font-semibold text-blue-200">DUMMY - Master Tag Position Test</span>
+          </div>
+          <div className="text-slate-200 font-medium">Placeholder Card</div>
+          <div className="text-sm text-slate-400 mt-1">
+            This is where the master tag will be displayed
+          </div>
+        </div>
+        
         {/* Alias Toggle Controls */}
         <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-4 mb-4">
           <div className="flex items-center mb-3">
