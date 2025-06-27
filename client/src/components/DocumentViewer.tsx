@@ -149,13 +149,52 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     return { filename: '', type: null };
   };
 
-  // Detect and process markdown tags in content
-  const processMarkdownTags = (content: string): string => {
-    // Look for markdown-style tags: [entity:TechCorp](uuid) format
-    return content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, (match, type, text, uuid) => {
+  // Process markdown tags and return array of React elements
+  const processMarkdownTagsToReact = (content: string) => {
+    const parts = [];
+    let lastIndex = 0;
+    const tagRegex = /\[([^:]+):([^\]]+)\]\(([^)]+)\)/g;
+    let match;
+
+    while ((match = tagRegex.exec(content)) !== null) {
+      // Add text before the tag
+      if (match.index > lastIndex) {
+        parts.push(content.slice(lastIndex, match.index));
+      }
+
+      // Add the tag as a clickable React element
+      const [fullMatch, type, text, uuid] = match;
       const colorClass = getTagColorClass(type);
-      return `<span class="${colorClass}" data-tag-id="${uuid}" data-tag-type="${type}" style="cursor: pointer;">${text}</span>`;
-    });
+      
+      parts.push(
+        <span
+          key={`tag-${uuid}-${match.index}`}
+          className={colorClass}
+          data-tag-id={uuid}
+          data-tag-type={type}
+          style={{ cursor: 'pointer' }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const tag = tags.find(t => t.id === uuid);
+            if (tag) {
+              onTagClick(tag);
+            }
+          }}
+        >
+          {text}
+        </span>
+      );
+
+      lastIndex = tagRegex.lastIndex;
+    }
+
+    // Add remaining text
+    if (lastIndex < content.length) {
+      parts.push(content.slice(lastIndex));
+    }
+
+    return parts;
   };
 
   // Get CSS class for tag type colors - Official ORCS Color Schema
@@ -179,11 +218,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       const originalContent = extractOriginalContent(fileContent.content);
       const sourceInfo = getSourceFileInfo(fileContent.content);
       
-      // Process markdown tags in the content for highlighting
-      const processedContent = processMarkdownTags(originalContent);
-      
       return { 
-        content: processedContent, 
+        content: originalContent, // Return raw content without processing for React rendering
         sourceType: sourceInfo.type 
       };
     }
@@ -197,108 +233,19 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
 
 
 
-  // Function to render content with tag highlighting
+  // Function to render content with tag highlighting using React elements
   const renderHighlightedContent = (content: string) => {
-    // First, process markdown tags
-    let processedContent = processMarkdownTags(content);
-    
-    if (!selectedFileData || !tags.length) {
-      // Return processed content with line breaks converted to JSX
-      return processedContent.split('\n').map((line, index) => (
-        <span key={index}>
-          {index > 0 && <br />}
-          <span dangerouslySetInnerHTML={{ __html: line }} />
-        </span>
-      ));
-    }
-
-    // Helper function to escape special regex characters
-    const escapeRegExp = (string: string) => {
-      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    };
-
-    // Get tags that reference this file (check both card UUID and filename)
-    const cardUuid = extractCardUuid(selectedFileData.name);
-    const fileTags = tags.filter(tag => {
-      if (!tag.references || tag.references.length === 0) return false;
-      return tag.references.some(ref => {
-        // Check if reference matches card UUID or filename
-        return ref.includes(selectedFileData.name) || (cardUuid && ref.includes(cardUuid));
-      });
-    });
-
-    if (fileTags.length === 0) {
-      return content;
-    }
-
-    type TagSegment = {
-      tag: Tag;
-      start: number;
-      end: number;
-      text: string;
-    };
-
-    // Parse references and sort by start position (latest first to avoid offset issues)
-    const tagSegments: TagSegment[] = fileTags
-      .flatMap(tag => {
-        return tag.references
-          .filter((ref: string) => ref.includes(selectedFileData.name))
-          .map((ref: string) => {
-            const match = ref.match(new RegExp(`${escapeRegExp(selectedFileData.name)}@(\\d+)-(\\d+)`));
-            if (match) {
-              const start = parseInt(match[1]);
-              const end = parseInt(match[2]);
-              return {
-                tag,
-                start,
-                end,
-                text: content.substring(start, end)
-              };
-            }
-            return null;
-          })
-          .filter((segment): segment is TagSegment => segment !== null);
-      })
-      .sort((a, b) => b.start - a.start); // Sort by start position (descending)
-
-    let highlightedContent = content;
-
-    // Apply highlights from end to beginning to maintain character positions
-    tagSegments.forEach(segment => {
-      const tagType = segment.tag.type;
-      const tagName = segment.tag.name;
-      const beforeText = highlightedContent.substring(0, segment.start);
-      const taggedText = highlightedContent.substring(segment.start, segment.end);
-      const afterText = highlightedContent.substring(segment.end);
-
-      const highlightClass = getTagHighlightClass(tagType);
-      const highlightedSpan = `<span class="${highlightClass}" data-tag-id="${segment.tag.id}" data-tag-name="${tagName}" title="${tagName} (${tagType})" style="cursor: pointer;">${taggedText}</span>`;
-
-      highlightedContent = beforeText + highlightedSpan + afterText;
-    });
-
-    return <div dangerouslySetInnerHTML={{ __html: highlightedContent }} />;
+    // Process markdown tags and convert to React elements
+    const lines = content.split('\n');
+    return lines.map((line, lineIndex) => (
+      <span key={lineIndex}>
+        {lineIndex > 0 && <br />}
+        {processMarkdownTagsToReact(line)}
+      </span>
+    ));
   };
 
-  // Get CSS classes for tag highlighting
-  const getTagHighlightClass = (tagType: string) => {
-    const baseClasses = "px-1 py-0.5 rounded-sm border transition-colors hover:opacity-80";
-    
-    switch (tagType) {
-      case 'entity':
-        return `${baseClasses} bg-green-900/30 border-green-600 text-green-300`;
-      case 'relationship':
-        return `${baseClasses} bg-red-900/30 border-red-600 text-red-300`;
-      case 'attribute':
-        return `${baseClasses} bg-purple-900/30 border-purple-600 text-purple-300`;
-      case 'comment':
-        return `${baseClasses} bg-orange-900/30 border-orange-600 text-orange-300`;
-      case 'kv_pair':
-        return `${baseClasses} bg-cyan-900/30 border-cyan-600 text-cyan-300`;
-      default:
-        return `${baseClasses} bg-gray-900/30 border-gray-600 text-gray-300`;
-    }
-  };
+
 
   // CSV parsing function
   const parseCSV = (csvText: string): string[][] => {
@@ -426,37 +373,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     return () => document.removeEventListener('mouseup', handleMouseUp);
   }, [selectedFileData, onTextSelection, fileContent?.content]);
 
-  // Handle clicks on highlighted tags
-  useEffect(() => {
-    const handleTagClick = (event: MouseEvent) => {
-      console.log('Click detected on:', event.target);
-      const target = event.target as HTMLElement;
-      const tagElement = target.closest('[data-tag-id]');
-      
-      console.log('Tag element found:', tagElement);
-      
-      if (tagElement) {
-        const tagId = tagElement.getAttribute('data-tag-id');
-        console.log('Tag ID:', tagId);
-        const tag = tags.find(t => t.id === tagId);
-        console.log('Tag found:', tag);
-        if (tag) {
-          event.preventDefault();
-          event.stopPropagation();
-          onTagClick(tag);
-        }
-      }
-    };
-
-    if (contentRef.current) {
-      contentRef.current.addEventListener('click', handleTagClick);
-      return () => {
-        if (contentRef.current) {
-          contentRef.current.removeEventListener('click', handleTagClick);
-        }
-      };
-    }
-  }, [tags, onTagClick]);
+  // Tag clicks are now handled directly by React onClick handlers in processMarkdownTagsToReact
 
   const renderContent = () => {
 
