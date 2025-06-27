@@ -144,16 +144,31 @@ const FILE_PATTERNS = {
 
 **Extraction Rule**: Only content between `ORIGINAL CONTENT` delimiters is used for display and search.
 
-### Tag Highlighting Standards
+### Interactive Tag Button Standards
 
-**Official ORCS Color Schema**:
-- Entity: `bg-green-500/20 text-green-300 border-green-500/30`
-- Relationship: `bg-orange-500/20 text-orange-300 border-orange-500/30`
-- Attribute: `bg-purple-500/20 text-purple-300 border-purple-500/30`
-- Comment: `bg-blue-500/20 text-blue-300 border-blue-500/30`
-- Key-Value: `bg-amber-500/20 text-amber-300 border-amber-500/30`
+**Implementation**: Tags function as proper interactive buttons, not passive highlights
 
-**Markdown Tag Format**: `[type:DisplayName](uuid)`
+**Button Element Requirements**:
+- HTML Element: `<button>` elements with proper attributes
+- Accessibility: Focus rings, keyboard navigation, screen reader support
+- Visual States: Hover opacity transitions and focus indicators
+- Z-Index: Positioned with `z-index: 10` for reliable click handling
+- Event Handling: Document-level delegation with capture phase
+
+**Official ORCS Color Schema with Interactive States**:
+- Entity: `bg-green-500/20 text-green-300 border-green-500/30 hover:opacity-80 focus:ring-2 focus:ring-blue-400`
+- Relationship: `bg-orange-500/20 text-orange-300 border-orange-500/30 hover:opacity-80 focus:ring-2 focus:ring-blue-400`
+- Attribute: `bg-purple-500/20 text-purple-300 border-purple-500/30 hover:opacity-80 focus:ring-2 focus:ring-blue-400`
+- Comment: `bg-blue-500/20 text-blue-300 border-blue-500/30 hover:opacity-80 focus:ring-2 focus:ring-blue-400`
+- Key-Value: `bg-amber-500/20 text-amber-300 border-amber-500/30 hover:opacity-80 focus:ring-2 focus:ring-blue-400`
+
+**Markdown Tag Format**: `[type:DisplayName](uuid)` → Converted to interactive buttons during rendering
+
+**Event Management**:
+- Document-level click handling prevents interference with text selection
+- Tag click flag prevents event conflicts during user interaction
+- Clear text selections when tags are clicked for clean UX
+- Consistent behavior across DocumentViewer and CleanContentDisplay components
 
 ### Error Handling
 
