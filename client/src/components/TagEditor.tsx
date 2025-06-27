@@ -537,7 +537,47 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
                 <ChevronDown className="h-4 w-4 text-slate-400" />
               </CollapsibleTrigger>
               <CollapsibleContent className="p-2">
-                <div className="text-xs text-slate-400">KVP functionality will be moved here</div>
+                <div className="space-y-2">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Key"
+                      value={newKey}
+                      onChange={(e) => setNewKey(e.target.value)}
+                      className="flex-1 bg-gray-800 border-gray-600 focus:border-blue-500"
+                    />
+                    <Input
+                      placeholder="Value"
+                      value={newValue}
+                      onChange={(e) => setNewValue(e.target.value)}
+                      className="flex-1 bg-gray-800 border-gray-600 focus:border-blue-500"
+                    />
+                    <Button
+                      onClick={handleAddKeyValue}
+                      className="bg-blue-600 hover:bg-blue-700"
+                      size="sm"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  {formData.keyValuePairs && Object.entries(formData.keyValuePairs).length > 0 && (
+                    <div className="space-y-1">
+                      {Object.entries(formData.keyValuePairs).map(([key, value]) => (
+                        <div key={key} className="flex items-center justify-between bg-gray-800 p-2 rounded text-xs">
+                          <span><strong>{key}:</strong> {value}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveKeyValue(key)}
+                            className="text-red-400 hover:text-red-300 p-1 h-auto"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </CollapsibleContent>
             </Collapsible>
 
@@ -548,7 +588,25 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
                 <ChevronDown className="h-4 w-4 text-slate-400" />
               </CollapsibleTrigger>
               <CollapsibleContent className="p-2">
-                <div className="text-xs text-slate-400">References functionality will be moved here</div>
+                {selectedTag && (
+                  <div className="space-y-2">
+                    {parseReferences(selectedTag).map((ref, index) => (
+                      <div 
+                        key={index} 
+                        className="bg-gray-800 p-3 rounded border border-gray-600 cursor-pointer hover:bg-gray-700 transition-colors"
+                        onClick={() => onReferenceClick?.(ref.filename)}
+                        title={`Click to open ${ref.filename}`}
+                      >
+                        <div className="font-medium text-slate-200 hover:text-blue-300">{ref.filename}</div>
+                        <div className="text-sm text-slate-400">{ref.location}</div>
+                        <div className="text-xs text-slate-500 capitalize">{ref.type} file</div>
+                      </div>
+                    ))}
+                    {parseReferences(selectedTag).length === 0 && (
+                      <div className="text-slate-400 text-sm italic">No references found</div>
+                    )}
+                  </div>
+                )}
               </CollapsibleContent>
             </Collapsible>
           </div>
