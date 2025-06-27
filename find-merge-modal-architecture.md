@@ -183,14 +183,22 @@ For each file:
     </DialogHeader>
 ```
 
+#### Master Tag Display (Permanent Position)
+**Lines**: 211-232
+- **Position**: Top of modal, below header, above all other content
+- **Visibility**: Always visible regardless of active tab
+- **Styling**: Blue theme (`bg-blue-900/30 border-blue-600/50`)
+- **Content**: Tag name, entity type, reference count, aliases display
+- **Purpose**: Persistent reference point for merge operations
+
 #### Alias Toggle Controls
-**Lines**: 211-285
+**Lines**: 234-308
 - Three toggle switches for different alias contexts
 - Visual display of current aliases
 - Responsive grid layout (1 column mobile, 3 columns desktop)
 
 #### Tab System
-**Lines**: 287-300
+**Lines**: 311-325
 ```typescript
 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
   <TabsList className="grid w-full grid-cols-3 bg-gray-800">
@@ -203,8 +211,8 @@ For each file:
 ### Tab Content Sections
 
 #### Similar Tags Tab
-**Lines**: 302-400+
-- Master tag display (blue background)
+**Lines**: 327-400+
+- ~~Master tag display~~ (Removed - now permanent at top)
 - List of similar tags with scoring
 - Checkbox selection for merge candidates
 - Match reason display
@@ -337,19 +345,46 @@ queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
 - **Merge Operation Failures**: Error responses to frontend
 - **Data Validation**: Zod schema validation
 
+## Implementation Notes & Changes
+
+### Recent Architectural Updates (December 27, 2025)
+
+#### Master Tag Repositioning Project
+**Completed**: 4-phase implementation moving master tag display to permanent position
+
+**Phase 1**: Created dummy placeholder card for positioning verification
+**Phase 2**: Duplicated master tag content from Similar Tags tab to top position
+**Phase 3**: Verified all functionality correctly uses `masterTag` prop (no code changes needed)
+**Phase 4**: Commented out original master tag display in Similar Tags tab
+
+**Result**: Master tag information now appears permanently at top of modal, immune to tab switching, providing consistent reference point for all operations.
+
+#### Key Architectural Insights
+- **Data Flow**: All modal functionality reads from `masterTag` prop, not visual displays
+- **Visual Separation**: Master tag displays are purely presentational
+- **No Functional Dependencies**: Merge operations, similarity analysis, and reference analysis all use `masterTag` directly
+
+#### Line Number Updates Post-Implementation
+- **Master Tag Display**: Lines 211-232 (permanent top position)
+- **Alias Toggle Controls**: Lines 234-308
+- **Tab System**: Lines 311-325
+- **Similar Tags Tab**: Lines 327+ (master tag display removed)
+
 ## Future Extension Points
 
 ### Modular Architecture
 - **Hook Separation**: Reference analysis is isolated and reusable
 - **Component Composition**: Modal structure easily modified
 - **Configuration Options**: Alias settings demonstrate extensibility
+- **Master Tag Pattern**: Permanent positioning approach can be replicated in other modals
 
 ### Potential Enhancements
 - **Custom Scoring Algorithms**: Similarity calculation is isolated
 - **Additional Analysis Types**: Reference analysis framework is extensible
 - **UI Customization**: Tab system and layout are flexible
+- **Master Tag Extensions**: Could add edit capabilities, additional metadata display
 
 ---
 
 *Generated: December 27, 2025*
-*Phase 0 Documentation Complete*
+*Updated: December 27, 2025 - Master Tag Repositioning Complete*
