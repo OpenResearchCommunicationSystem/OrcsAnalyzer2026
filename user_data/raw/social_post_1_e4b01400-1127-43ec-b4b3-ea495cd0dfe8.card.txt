@@ -12,9 +12,12 @@ modified: "2025-06-15T05:32:28.135Z"
 source_hash: "sha256:fb55a6e8a3b5293db0e9456bc4ffbeb9f0b01fbb65d9031e1a60604b3138bed6"
 
 === TAG INDEX START === 
-
+[entity:Thomas Greene](a804c126-4d2b-463f-8b64-d4e70a4932ab)
+[entity:VisionEdge Analytics](6feadafb-cf0f-4711-a47f-26d08e12fa9f)
+[entity:CloudVest](4057a24c-dd6a-4a78-b9c1-9e6606869275)
+[entity:CyberNova](03fd1c2f-831e-453d-aad7-5fabfcf0f140)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
-LinkedIn Update — Thomas Greene just joined the board of directors at VisionEdge Analytics. He previously held executive roles at CloudVest Holdings and CyberNova.
+LinkedIn Update — [entity:Thomas Greene](a804c126-4d2b-463f-8b64-d4e70a4932ab) just joined the board of directors at [entity:VisionEdge Analytics](6feadafb-cf0f-4711-a47f-26d08e12fa9f). He previously held executive roles at [entity:CloudVest](4057a24c-dd6a-4a78-b9c1-9e6606869275) Holdings and [entity:CyberNova](03fd1c2f-831e-453d-aad7-5fabfcf0f140).
 === ORIGINAL CONTENT END ===

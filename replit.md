@@ -172,6 +172,9 @@ Changelog:
 - June 27, 2025. SIMPLIFIED REFERENCE SYSTEM: Removed offset-based references (@10-18) since positioning is now handled inside card markup
 - June 27, 2025. Updated CARD_REFERENCES to point directly to card filenames without character position data
 - June 27, 2025. Eliminated offset adjustment system - no longer needed with card-based architecture
+- June 27, 2025. COMPLETED CSV TAGGING SYSTEM: Full support for tagging CSV content with proper markdown insertion into card files
+- June 27, 2025. CSV tags appear in both TAG INDEX and ORIGINAL CONTENT sections with format [entity:Name](uuid)
+- June 27, 2025. Verified end-to-end CSV workflow: selection → tag creation → card content update → visual highlighting
 ```
 
 ## Future Enhancements

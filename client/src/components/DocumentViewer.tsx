@@ -563,11 +563,12 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
                               isSelected ? 'bg-blue-900 border border-blue-500' : ''
                             }`}
                             onClick={() => handleCellSelection(rowIndex, colIndex, cellValue)}
-                            title={cellValue}
+                            title={cellValue.replace(/<[^>]*>/g, '')} // Strip HTML for tooltip
                           >
-                            <div className="max-w-xs truncate">
-                              {cellValue}
-                            </div>
+                            <div 
+                              className="max-w-xs truncate"
+                              dangerouslySetInnerHTML={{ __html: cellValue }}
+                            />
                           </td>
                         );
                       })}
