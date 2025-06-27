@@ -143,6 +143,7 @@ Changelog:
 - June 27, 2025. Enhanced TagEditor with prominent name display, copyable UUID, scrollable content, and edit name modal
 - June 27, 2025. Redesigned aliases field as "Search Aliases" for finding untagged content in documents (not report aliases)
 - June 27, 2025. Streamlined TagEditor by removing redundant UUID, Name, and References fields - now only shown where needed
+- June 27, 2025. Reorganized TagEditor layout: Search Aliases at top, action buttons always accessible, collapsible Tag Details middle section, expandable KVP/References at bottom with vertical scroll
 ```
 
 ## Future Enhancements
