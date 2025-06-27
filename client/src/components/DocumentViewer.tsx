@@ -197,6 +197,10 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
 
 
 
+
+
+
+
   // Function to render content with tag highlighting
   const renderHighlightedContent = (content: string) => {
     // First, process markdown tags
@@ -545,8 +549,14 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
 
           <div 
             ref={contentRef}
-            className="text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text text-slate-300 mb-4"
-            style={{ userSelect: 'text' }}
+            className="text-sm leading-relaxed bg-gray-800 p-6 rounded-lg border border-gray-700 select-text text-slate-300 mb-4 min-h-96 max-w-none"
+            style={{ 
+              userSelect: 'text',
+              wordBreak: 'break-word',
+              whiteSpace: 'pre-wrap',
+              fontSize: '14px',
+              lineHeight: '1.7'
+            }}
           >
             {renderContentWithTables(
               displayData.content,
@@ -677,8 +687,9 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   };
 
   return (
-    <div className="flex-1 bg-gray-900 p-6 overflow-y-auto">
-      {renderContent()}
+    <div className="flex-1 bg-gray-900 p-6 overflow-y-auto min-h-0">
+      <div className="max-w-none w-full">
+        {renderContent()}</div>
       
       {/* Metadata Panel */}
       {selectedFile && (
