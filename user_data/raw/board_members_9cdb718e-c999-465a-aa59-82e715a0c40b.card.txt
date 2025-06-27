@@ -1,6 +1,6 @@
 # ORCS Metadata Card
 version: "2025.003"
-uuid: "6c4b82c9-1b53-4447-95cd-c0e8b8cae897"
+uuid: "9cdb718e-c999-465a-aa59-82e715a0c40b"
 source_file: "board_members.csv"
 source_reference: ""  # External URL or reference
 classification: "Proprietary Information"
