@@ -200,6 +200,9 @@ export class OrcsService {
       return false;
     }
 
+    // Before deleting, adjust offsets for all other tags affected by this deletion
+    await this.adjustOffsetsAfterDeletion(tag);
+
     // Try to find and delete the tag file using Wikipedia approach - search everywhere
     const filepath = await this.findTagFile(tag);
     if (!filepath) {
@@ -213,6 +216,84 @@ export class OrcsService {
     } catch (error) {
       console.error(`Failed to delete tag file: ${filepath}`, error);
       return false;
+    }
+  }
+
+  private async adjustOffsetsAfterDeletion(deletedTag: Tag): Promise<void> {
+    try {
+      const allTags = await this.getTags();
+      
+      // Group tags by file to process offset adjustments
+      const tagsByFile = new Map<string, Tag[]>();
+      
+      for (const tag of allTags) {
+        if (tag.id === deletedTag.id) continue; // Skip the tag being deleted
+        
+        for (const ref of tag.references || []) {
+          const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
+          if (atMatch) {
+            const filename = atMatch[1];
+            if (!tagsByFile.has(filename)) {
+              tagsByFile.set(filename, []);
+            }
+            tagsByFile.get(filename)!.push(tag);
+          }
+        }
+      }
+      
+      // Process each file's tags
+      for (const [filename, fileTags] of tagsByFile) {
+        await this.adjustFileTagOffsets(filename, fileTags, deletedTag);
+      }
+    } catch (error) {
+      console.error('Failed to adjust offsets after deletion:', error);
+    }
+  }
+
+  private async adjustFileTagOffsets(filename: string, tags: Tag[], deletedTag: Tag): Promise<void> {
+    // Get deleted tag's references for this file
+    const deletedRefs = (deletedTag.references || [])
+      .filter(ref => ref.includes(filename))
+      .map(ref => {
+        const match = ref.match(/^(.+?)@(\d+)-(\d+)$/);
+        return match ? { start: parseInt(match[2]), end: parseInt(match[3]) } : null;
+      })
+      .filter(ref => ref !== null)
+      .sort((a, b) => a!.start - b!.start); // Sort by start position
+    
+    if (deletedRefs.length === 0) return;
+    
+    // Adjust offsets for remaining tags
+    for (const tag of tags) {
+      let needsUpdate = false;
+      const updatedRefs = tag.references?.map(ref => {
+        const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
+        if (atMatch && atMatch[1] === filename) {
+          const start = parseInt(atMatch[2]);
+          const end = parseInt(atMatch[3]);
+          
+          // Calculate adjustment needed based on how many deletions occurred before this tag
+          let adjustment = 0;
+          for (const deletedRef of deletedRefs) {
+            if (deletedRef!.end <= start) {
+              // Deletion was completely before this tag
+              adjustment -= (deletedRef!.end - deletedRef!.start);
+            }
+          }
+          
+          if (adjustment !== 0) {
+            needsUpdate = true;
+            const newStart = Math.max(0, start + adjustment);
+            const newEnd = Math.max(newStart, end + adjustment);
+            return `${filename}@${newStart}-${newEnd}`;
+          }
+        }
+        return ref;
+      }) || [];
+      
+      if (needsUpdate) {
+        await this.updateTag(tag.id, { references: updatedRefs });
+      }
     }
   }
 

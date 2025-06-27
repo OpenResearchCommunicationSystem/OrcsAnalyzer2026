@@ -147,6 +147,8 @@ Changelog:
 - June 27, 2025. Fixed critical text selection offset calculation bug that caused misaligned tag highlighting using TreeWalker API
 - June 27, 2025. Added "Fix Misaligned References" feature in References section to recalculate and repair broken tag offset positions
 - June 27, 2025. Fixed TagCreationModal not closing after successful tag creation
+- June 27, 2025. CRITICAL FIX: Implemented automatic offset adjustment system to prevent cascading tag misalignment when tags are deleted
+- June 27, 2025. Added adjustOffsetsAfterDeletion() function that recalculates character positions for all subsequent tags in affected files
 ```
 
 ## Future Enhancements
