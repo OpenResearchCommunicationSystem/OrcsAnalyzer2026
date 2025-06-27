@@ -232,9 +232,9 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
       </div>
 
       {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto p-4 min-h-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 min-h-0">
         <div className="space-y-4">
-          {/* Search Aliases Field - First after header */}
+          {/* Search Aliases Field - Always visible */}
           <div>
             <Label className="text-sm font-medium text-slate-300">Search Aliases</Label>
             <Input
@@ -248,7 +248,14 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
             />
           </div>
 
-          {/* Tag Details Form */}
+          {/* Collapsible Middle Section - Tag Details */}
+          <Collapsible defaultOpen>
+            <CollapsibleTrigger className="flex items-center justify-between w-full text-left p-2 hover:bg-gray-800 rounded">
+              <span className="text-sm font-medium text-slate-300">Tag Details</span>
+              <ChevronDown className="h-4 w-4 text-slate-400" />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 pt-2">
+              {/* Tag Details Form */}
           <div>
             <Label className="text-sm font-medium text-slate-300 mb-2 block">Tag Type</Label>
             <Select
@@ -517,6 +524,33 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               <Trash2 className="w-4 h-4 mr-2" />
               {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
+          </div>
+            </CollapsibleContent>
+          </Collapsible>
+        
+          {/* Bottom Section - Expandable KVP and References */}
+          <div className="border-t border-gray-700 mt-4 pt-4 max-h-96 overflow-y-auto">
+            {/* Key Value Pairs Section */}
+            <Collapsible>
+              <CollapsibleTrigger className="flex items-center justify-between w-full text-left p-2 hover:bg-gray-800 rounded">
+                <span className="text-sm font-medium text-slate-300">Key Value Pairs</span>
+                <ChevronDown className="h-4 w-4 text-slate-400" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-2">
+                <div className="text-xs text-slate-400">KVP functionality will be moved here</div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* References Section */}
+            <Collapsible>
+              <CollapsibleTrigger className="flex items-center justify-between w-full text-left p-2 hover:bg-gray-800 rounded">
+                <span className="text-sm font-medium text-slate-300">References</span>
+                <ChevronDown className="h-4 w-4 text-slate-400" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-2">
+                <div className="text-xs text-slate-400">References functionality will be moved here</div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         </div>
       </div>
