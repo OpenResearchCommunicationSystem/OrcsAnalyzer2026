@@ -189,22 +189,71 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
   }
 
   return (
-    <div className="flex-1 p-4">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium text-slate-200">Edit Tag</h3>
+    <div className="flex-1 flex flex-col">
+      {/* Header with name and controls - fixed */}
+      <div className="p-4 border-b border-gray-700">
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1 min-w-0 mr-3">
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-lg font-semibold text-slate-200 break-words leading-tight" style={{ 
+                display: '-webkit-box',
+                WebkitLineClamp: 5,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}>
+                {selectedTag?.name || 'No Tag Selected'}
+              </h2>
+              {selectedTag && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleEditName}
+                  className="text-slate-400 hover:text-slate-200 p-1 h-auto flex-shrink-0"
+                  title="Edit name"
+                >
+                  <Edit2 className="w-3 h-3" />
+                </Button>
+              )}
+            </div>
+            {selectedTag?.id && (
+              <button
+                onClick={copyUUID}
+                className="text-xs text-slate-500 hover:text-slate-400 transition-colors font-mono"
+                title="Click to copy UUID"
+              >
+                {selectedTag.id}
+              </button>
+            )}
+          </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200"
+            className="text-slate-400 hover:text-slate-200 flex-shrink-0"
           >
             <X className="w-4 h-4" />
           </Button>
         </div>
+      </div>
 
-        {/* Tag Details Form */}
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4">
+          {/* Search Aliases Field - First after header */}
+          <div>
+            <Label className="text-sm font-medium text-slate-300">Search Aliases</Label>
+            <Input
+              value={formData.aliases?.join(', ') || ''}
+              onChange={(e) => setFormData(prev => ({ 
+                ...prev, 
+                aliases: e.target.value.split(',').map(alias => alias.trim()).filter(alias => alias.length > 0)
+              }))}
+              className="bg-gray-800 border-gray-600 focus:border-blue-500"
+              placeholder="Enter search terms for finding untagged content"
+            />
+          </div>
+
+          {/* Tag Details Form */}
           <div>
             <Label className="text-sm font-medium text-slate-300 mb-2 block">Tag Type</Label>
             <Select
@@ -329,15 +378,7 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
             />
           </div>
 
-          <div>
-            <Label className="text-sm font-medium text-slate-300">Aliases</Label>
-            <Input
-              value={formData.aliases?.join(', ') || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, aliases: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
-              className="bg-gray-800 border-gray-600 focus:border-blue-500"
-              placeholder="Comma-separated list"
-            />
-          </div>
+
 
           <div>
             <Label className="text-sm font-medium text-slate-300">Description</Label>
@@ -513,6 +554,38 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
           </div>
         </div>
       </div>
+
+      {/* Edit Name Modal */}
+      <Dialog open={showEditNameModal} onOpenChange={setShowEditNameModal}>
+        <DialogContent className="bg-gray-800 border-gray-600">
+          <DialogHeader>
+            <DialogTitle className="text-slate-200">Edit Tag Name</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              value={editingName}
+              onChange={(e) => setEditingName(e.target.value)}
+              className="bg-gray-700 border-gray-600 text-slate-200"
+              placeholder="Enter tag name"
+            />
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="ghost"
+                onClick={() => setShowEditNameModal(false)}
+                className="text-slate-400"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={saveNameEdit}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       {/* Tag Connection Modal */}
       <TagConnectionModal

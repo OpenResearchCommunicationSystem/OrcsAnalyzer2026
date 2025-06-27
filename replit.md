@@ -44,8 +44,9 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 ### Tagging and Annotation System
 - Five tag types: Entity, Relationship, Attribute, Comment, Key-Value Pair
 - Text selection-based tagging with precise character offset tracking
-- Tag metadata includes aliases, descriptions, and custom key-value pairs
+- Tag metadata includes search aliases, descriptions, and custom key-value pairs
 - Visual tag indicators with color-coded representations
+- **Search Aliases System**: Aliases field is designed for finding untagged content in documents, not for report aliases (which go in attributes/key-value pairs)
 
 ### Graph Visualization
 - Interactive visualization of relationships between tagged elements
@@ -138,6 +139,9 @@ Changelog:
 - June 27, 2025. Completed location-agnostic file system - tags and cards can be moved anywhere and system finds them
 - June 27, 2025. Fixed array-based reference system migration - all tag files updated from REFERENCE: to REFERENCES: format
 - June 27, 2025. Resolved tag highlighting issues caused by comma-separated reference strings in merged tags
+- June 27, 2025. Implemented clickable tag navigation system - tags in documents open TagEditor, references in TagEditor navigate to files
+- June 27, 2025. Enhanced TagEditor with prominent name display, copyable UUID, scrollable content, and edit name modal
+- June 27, 2025. Redesigned aliases field as "Search Aliases" for finding untagged content in documents (not report aliases)
 ```
 
 ## Future Enhancements
