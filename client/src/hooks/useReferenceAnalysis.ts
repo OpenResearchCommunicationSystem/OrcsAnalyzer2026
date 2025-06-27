@@ -187,16 +187,19 @@ function findTaggedReferences(
 ): TaggedReference[] {
   const references: TaggedReference[] = [];
   
+  // Extract clean content first (remove metadata if this is a card file)
+  const cleanContent = extractOriginalContent(content, filename);
+  
   // Look for markdown-style tags: [entity:TechCorp](uuid) format
   const tagRegex = /\[([^:]+):([^\]]+)\]\(([^)]+)\)/g;
   let match;
   
-  while ((match = tagRegex.exec(content)) !== null) {
+  while ((match = tagRegex.exec(cleanContent)) !== null) {
     const [fullMatch, type, text, uuid] = match;
     
     if (uuid === targetTag.id) {
       const position = match.index;
-      const context = extractContext(content, position, fullMatch.length);
+      const context = extractContext(cleanContent, position, fullMatch.length);
       
       references.push({
         tag: targetTag,
@@ -225,8 +228,11 @@ function findUntaggedReferences(
 ): UntaggedReference[] {
   const references: UntaggedReference[] = [];
   
+  // Extract clean content first (remove metadata if this is a card file)
+  const originalContent = extractOriginalContent(content, filename);
+  
   // Remove existing tagged content to avoid duplicate detection
-  const cleanContent = content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, '$2');
+  const cleanContent = originalContent.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, '$2');
   
   for (const searchTerm of searchTerms) {
     if (searchTerm.length < 2) continue; // Skip very short terms
@@ -241,7 +247,7 @@ function findUntaggedReferences(
       const context = extractContext(cleanContent, position, matchedText.length);
       
       // Check if this location is already tagged by looking at original content
-      const isAlreadyTagged = isPositionTagged(content, position, matchedText.length);
+      const isAlreadyTagged = isPositionTagged(originalContent, position, matchedText.length);
       
       if (!isAlreadyTagged) {
         const confidence = calculateConfidence(searchTerm, matchedText, context, targetTag);

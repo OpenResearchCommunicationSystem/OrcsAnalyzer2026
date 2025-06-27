@@ -527,7 +527,7 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
                       </div>
                       
                       <div className="text-sm text-slate-300 mb-2 bg-gray-800/50 p-2 rounded border-l-2 border-amber-500/30">
-                        "{ref.context}"
+                        "{ref.context.length > 200 ? ref.context.substring(0, 200) + '...' : ref.context}"
                       </div>
                       
                       <div className="flex items-center justify-between mb-2">
