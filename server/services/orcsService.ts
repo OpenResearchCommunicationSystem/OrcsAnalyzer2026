@@ -76,11 +76,21 @@ export class OrcsService {
         const files = await fs.readdir(dir);
         for (const filename of files) {
           if (filename === '.gitkeep') continue;
+          
+          // Support both new extensions and legacy .orcs files
+          const isValidTagFile = this.isValidTagFile(filename, type as TagType);
+          if (!isValidTagFile) continue;
+          
           const filepath = path.join(dir, filename);
           const content = await fs.readFile(filepath, 'utf-8');
           const tag = this.parseTagFromOrcsFile(content);
           if (tag) {
             tags.push(tag);
+            
+            // Auto-migrate legacy .orcs files to new extensions
+            if (filename.endsWith('.orcs')) {
+              await this.migrateTagFile(tag, filepath);
+            }
           }
         }
       } catch (error) {
@@ -91,6 +101,35 @@ export class OrcsService {
     return tags;
   }
 
+  private isValidTagFile(filename: string, tagType: TagType): boolean {
+    // Support new double extensions
+    const newExtension = this.getFileExtension(tagType);
+    if (filename.endsWith('.' + newExtension)) {
+      return true;
+    }
+    
+    // Support legacy .orcs files
+    if (filename.endsWith('.orcs')) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  private async migrateTagFile(tag: Tag, oldFilepath: string): Promise<void> {
+    try {
+      // Save with new extension
+      await this.saveTagToFile(tag);
+      
+      // Remove old .orcs file
+      await fs.unlink(oldFilepath);
+      
+      console.log(`Migrated tag file: ${path.basename(oldFilepath)} -> ${tag.name}_${tag.id}.${this.getFileExtension(tag.type)}`);
+    } catch (error) {
+      console.error(`Failed to migrate tag file ${oldFilepath}:`, error);
+    }
+  }
+
   async getTagsByType(type: TagType): Promise<Tag[]> {
     const tags: Tag[] = [];
     const dir = TAG_DIRECTORIES[type];
@@ -99,11 +138,20 @@ export class OrcsService {
       const files = await fs.readdir(dir);
       for (const filename of files) {
         if (filename === '.gitkeep') continue;
+        
+        const isValidTagFile = this.isValidTagFile(filename, type);
+        if (!isValidTagFile) continue;
+        
         const filepath = path.join(dir, filename);
         const content = await fs.readFile(filepath, 'utf-8');
         const tag = this.parseTagFromOrcsFile(content);
         if (tag) {
           tags.push(tag);
+          
+          // Auto-migrate legacy .orcs files
+          if (filename.endsWith('.orcs')) {
+            await this.migrateTagFile(tag, filepath);
+          }
         }
       }
     } catch (error) {
@@ -119,16 +167,61 @@ export class OrcsService {
       return false;
     }
 
-    const dir = TAG_DIRECTORIES[tag.type];
-    const filename = `${tag.name}_${tagId}.orcs`;
-    const filepath = path.join(dir, filename);
+    // Try to find and delete the tag file using Wikipedia approach - search everywhere
+    const filepath = await this.findTagFile(tag);
+    if (!filepath) {
+      console.error(`Tag file not found for tag: ${tagId}`);
+      return false;
+    }
     
     try {
       await fs.unlink(filepath);
       return true;
     } catch (error) {
+      console.error(`Failed to delete tag file: ${filepath}`, error);
       return false;
     }
+  }
+
+  private async findTagFile(tag: Tag): Promise<string | null> {
+    const dir = TAG_DIRECTORIES[tag.type];
+    const possibleExtensions = ['orcs', this.getFileExtension(tag.type)];
+    
+    for (const ext of possibleExtensions) {
+      const filename = `${tag.name}_${tag.id}.${ext}`;
+      const filepath = path.join(dir, filename);
+      
+      try {
+        await fs.access(filepath);
+        return filepath;
+      } catch {
+        // File doesn't exist, try next extension
+      }
+    }
+    
+    // Wikipedia approach: search all directories if not found in expected location
+    return await this.searchAllDirectoriesForTag(tag);
+  }
+
+  private async searchAllDirectoriesForTag(tag: Tag): Promise<string | null> {
+    for (const dir of Object.values(TAG_DIRECTORIES)) {
+      try {
+        const files = await fs.readdir(dir);
+        for (const filename of files) {
+          if (filename.includes(tag.id)) {
+            const filepath = path.join(dir, filename);
+            const content = await fs.readFile(filepath, 'utf-8');
+            const parsedTag = this.parseTagFromOrcsFile(content);
+            if (parsedTag && parsedTag.id === tag.id) {
+              return filepath;
+            }
+          }
+        }
+      } catch {
+        // Directory might not exist
+      }
+    }
+    return null;
   }
 
   async generateGraphData(): Promise<GraphData> {
@@ -330,11 +423,23 @@ export class OrcsService {
 
   private async saveTagToFile(tag: Tag): Promise<void> {
     const dir = TAG_DIRECTORIES[tag.type];
-    const filename = `${tag.name}_${tag.id}.orcs`;
+    const extension = this.getFileExtension(tag.type);
+    const filename = `${tag.name}_${tag.id}.${extension}`;
     const filepath = path.join(dir, filename);
     
     const orcsContent = this.formatTagAsOrcs(tag);
     await fs.writeFile(filepath, orcsContent, 'utf-8');
+  }
+
+  private getFileExtension(tagType: TagType): string {
+    const extensions = {
+      entity: 'entity.txt',
+      relationship: 'relate.txt',
+      attribute: 'attrib.txt',
+      comment: 'comment.txt',
+      kv_pair: 'kv.txt',
+    };
+    return extensions[tagType] || 'orcs.txt';
   }
 
   async mergeTags(masterTagId: string, tagIdsToMerge: string[]): Promise<Tag> {

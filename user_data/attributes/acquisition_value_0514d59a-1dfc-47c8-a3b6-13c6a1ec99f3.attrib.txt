@@ -18,4 +18,5 @@ amount: 2500000000
 DESCRIPTION:
 Financial value of the acquisition deal
 
+
 === END ORCS TAG FILE ===
