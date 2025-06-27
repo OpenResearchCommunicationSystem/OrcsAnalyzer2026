@@ -255,6 +255,48 @@ Changelog:
 - **Comment integration**: Future formal storage within existing comment system
 - **Separation of concerns**: Clear distinction between unanalyzed clipboard items and formal knowledge objects
 
+## UI Standards and Technical Guidelines
+
+### UUID Display Policy
+**Core Principle**: Hide UUIDs from primary display unless specifically needed for technical operations.
+
+**Implementation Standards**:
+- **Primary Display**: Clean, human-readable names (e.g., "TechCorp", "News Clip 1")
+- **Secondary Display**: Small, muted UUID only when needed for disambiguation or technical details
+- **Bad Example**: `news_clip_1_a0c59139-5114-4243-aa89-3c7d924487bc.card.txt` dominating the interface
+- **Good Example**: "TechCorp" with `a7b2c3d4-e5f6-7890-abcd-ef1234567890` in small gray text below when needed
+
+**Where UUIDs Should Appear**:
+- Tag Editor: Small, copyable reference below main name
+- Technical operations: File management, debugging, API responses
+- Error messages: When specific identification needed
+- Cross-references: When linking between entities
+
+**Where UUIDs Should Be Hidden**:
+- File browser primary display
+- Document titles and headers
+- Navigation menus
+- General user workflows
+
+### File System Resilience Policy
+**Core Principle**: Never depend solely on filenames for system functionality. Always implement content-based fallbacks.
+
+**Implementation Requirements**:
+1. **Primary Lookup**: Attempt filename-based UUID extraction first (performance optimization)
+2. **Fallback Strategy**: When filename lookup fails, scan file contents for UUID
+3. **Search Scope**: Limit content scanning to ORCS file types (.card.txt, .entity.txt, .relate.txt, .attrib.txt, .comment.txt, .kv.txt)
+4. **Caching**: Maintain UUID→filepath mapping that updates during file operations
+5. **User Experience**: Silent recovery with optional notification of filename repair
+
+**Resilience Scenarios**:
+- User renames files manually
+- Filename corruption during transfer
+- UUID extraction from filename fails
+- File moved between directories
+- Multiple files with same base name
+
+**Error Handling**: System should gracefully degrade, never crash due to filename issues. Always provide meaningful error messages when both filename and content searches fail.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
