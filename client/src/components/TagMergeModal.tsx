@@ -13,11 +13,15 @@ import {
   ChevronRight, 
   AlertTriangle,
   CheckCircle,
-  X 
+  X,
+  Eye,
+  Target,
+  MapPin
 } from "lucide-react";
 import { Tag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useReferenceAnalysis } from "@/hooks/useReferenceAnalysis";
 
 interface TagMergeModalProps {
   isOpen: boolean;
@@ -43,6 +47,9 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
   const { data: allTags = [] } = useQuery<Tag[]>({
     queryKey: ['/api/tags'],
   });
+
+  // Reference analysis for tagged/untagged instances
+  const { data: referenceAnalysis, isLoading: isAnalysisLoading } = useReferenceAnalysis(masterTag);
 
   // Parse references to show file locations
   const parseReferences = (tag: Tag) => {
@@ -195,13 +202,13 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
               <Users className="w-4 h-4 mr-2" />
               Similar Tags ({similarTags.length})
             </TabsTrigger>
-            <TabsTrigger value="tagged-refs" className="text-slate-300" disabled>
-              <Search className="w-4 h-4 mr-2" />
-              Tagged References
+            <TabsTrigger value="tagged-refs" className="text-slate-300">
+              <Target className="w-4 h-4 mr-2" />
+              Tagged ({referenceAnalysis?.totalTaggedCount || 0})
             </TabsTrigger>
-            <TabsTrigger value="untagged-refs" className="text-slate-300" disabled>
-              <FileText className="w-4 h-4 mr-2" />
-              Untagged References
+            <TabsTrigger value="untagged-refs" className="text-slate-300">
+              <Eye className="w-4 h-4 mr-2" />
+              Untagged ({referenceAnalysis?.totalUntaggedCount || 0})
             </TabsTrigger>
           </TabsList>
           
@@ -322,19 +329,144 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
           </TabsContent>
           
           <TabsContent value="tagged-refs" className="mt-4">
-            <div className="text-center py-8 text-slate-400">
-              <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <div>Tagged References Search</div>
-              <div className="text-sm">Coming soon - Find existing tagged references in documents</div>
-            </div>
+            <ScrollArea className="h-[500px] pr-4">
+              {isAnalysisLoading ? (
+                <div className="text-center py-8 text-slate-400">
+                  <Search className="w-12 h-12 mx-auto mb-4 opacity-50 animate-pulse" />
+                  <div>Analyzing documents...</div>
+                  <div className="text-sm">Finding all tagged references</div>
+                </div>
+              ) : referenceAnalysis?.taggedReferences.length ? (
+                <div className="space-y-4">
+                  {referenceAnalysis.taggedReferences.map((ref, index) => (
+                    <div key={index} className="bg-green-900/20 border border-green-600/30 p-4 rounded-lg">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center">
+                          <Target className="w-4 h-4 text-green-400 mr-2" />
+                          <span className="font-medium text-green-300">{ref.exactText}</span>
+                        </div>
+                        <Badge variant="outline" className="border-green-600/30 text-green-400 text-xs">
+                          {ref.type.toUpperCase()}
+                        </Badge>
+                      </div>
+                      
+                      <div className="text-sm text-slate-300 mb-2 bg-gray-800/50 p-2 rounded border-l-2 border-green-500/30">
+                        "{ref.context}"
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center text-slate-400">
+                          <FileText className="w-3 h-3 mr-1" />
+                          {ref.filename}
+                        </div>
+                        <div className="flex items-center text-slate-500">
+                          <MapPin className="w-3 h-3 mr-1" />
+                          {ref.location}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-slate-400">
+                  <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <div>No tagged references found</div>
+                  <div className="text-sm">This entity hasn't been tagged in any documents yet</div>
+                </div>
+              )}
+            </ScrollArea>
           </TabsContent>
           
           <TabsContent value="untagged-refs" className="mt-4">
-            <div className="text-center py-8 text-slate-400">
-              <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <div>Untagged References Search</div>
-              <div className="text-sm">Coming soon - Find potential untagged references in documents</div>
-            </div>
+            <ScrollArea className="h-[500px] pr-4">
+              {isAnalysisLoading ? (
+                <div className="text-center py-8 text-slate-400">
+                  <Eye className="w-12 h-12 mx-auto mb-4 opacity-50 animate-pulse" />
+                  <div>Analyzing documents...</div>
+                  <div className="text-sm">Finding potential untagged references</div>
+                </div>
+              ) : referenceAnalysis?.untaggedReferences.length ? (
+                <div className="space-y-4">
+                  {referenceAnalysis.untaggedReferences.map((ref, index) => (
+                    <div key={index} className="bg-amber-900/20 border border-amber-600/30 p-4 rounded-lg">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center">
+                          <Eye className="w-4 h-4 text-amber-400 mr-2" />
+                          <span className="font-medium text-amber-300">{ref.text}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs ${
+                              ref.confidence > 0.7 
+                                ? 'border-green-600/30 text-green-400' 
+                                : ref.confidence > 0.5 
+                                ? 'border-yellow-600/30 text-yellow-400'
+                                : 'border-red-600/30 text-red-400'
+                            }`}
+                          >
+                            {Math.round(ref.confidence * 100)}% match
+                          </Badge>
+                          <Badge variant="outline" className="border-amber-600/30 text-amber-400 text-xs">
+                            {ref.type.toUpperCase()}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm text-slate-300 mb-2 bg-gray-800/50 p-2 rounded border-l-2 border-amber-500/30">
+                        "{ref.context}"
+                      </div>
+                      
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center text-slate-400 text-xs">
+                          <FileText className="w-3 h-3 mr-1" />
+                          {ref.filename}
+                        </div>
+                        <div className="flex items-center text-slate-500 text-xs">
+                          <MapPin className="w-3 h-3 mr-1" />
+                          Characters {ref.position.start}-{ref.position.end}
+                        </div>
+                      </div>
+                      
+                      <div className="text-xs text-amber-400">
+                        <strong>Why detected:</strong> {ref.reasons.join(' • ')}
+                      </div>
+                      
+                      <div className="mt-2 flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-green-600 text-green-400 hover:bg-green-600 hover:text-white text-xs"
+                          onClick={() => {
+                            // TODO: Implement tag creation for this reference
+                            console.log('Tag this reference:', ref);
+                          }}
+                        >
+                          Tag This
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-white text-xs"
+                          onClick={() => {
+                            // TODO: Implement ignore functionality
+                            console.log('Ignore this reference:', ref);
+                          }}
+                        >
+                          Ignore
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-slate-400">
+                  <Eye className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <div>No untagged references found</div>
+                  <div className="text-sm">All instances of this entity appear to be tagged</div>
+                </div>
+              )}
+            </ScrollArea>
           </TabsContent>
         </Tabs>
         
