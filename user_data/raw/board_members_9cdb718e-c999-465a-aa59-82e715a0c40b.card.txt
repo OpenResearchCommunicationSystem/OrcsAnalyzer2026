@@ -1,4 +1,4 @@
-# ORCS Analysis Card: Board Members
+=== ORCS CARD === 
 version: "2025.003"
 uuid: "9cdb718e-c999-465a-aa59-82e715a0c40b"
 source_file: "board_members.csv"
@@ -11,35 +11,14 @@ created: "2025-06-15T05:32:47.624Z"
 modified: "2025-06-15T05:32:47.624Z"
 source_hash: "sha256:885c3b15d090b18c15c561a09ca694abe1a1d9ba1ac226b97032e38f8322bce9"
 
-metadata:
-  file_type: "csv"
-  file_size: 159
-  analyst: ""
-  confidence: ""
+=== TAG INDEX START === 
 
----
+=== TAG INDEX END ===
 
-## Original CSV Data
-
-| Company | Board Member | Position |
-|---------|--------------|----------|
-| TechCorp | John Smith | CEO |
-| TechCorp | Ava Cheng | CFO |
-| BioNex Systems | Thomas Greene | Director |
-| CloudVest Holdings | Thomas Greene | Former COO |
-
-## Analysis
-
-This board member data reveals key corporate governance patterns and individual executive relationships across multiple organizations.
-
-Key observations:
-- TechCorp maintains standard executive structure with CEO and CFO positions
-- Thomas Greene serves on multiple boards, indicating potential cross-industry influence
-- The "Former COO" designation suggests career progression tracking capabilities
-- Board composition shows both technology and financial sectors represented
-
-## Tagged Elements
-
-*Analysis content will be created as comment tags with markdown formatting*
-*Individual entities (companies, people, positions) will be created as separate entity tags*
-*Relationships between entities will be tracked as relationship tags*
+=== ORIGINAL CONTENT START ===
+Company,Board Member,Position
+TechCorp,John Smith,CEO
+TechCorp,Ava Cheng,CFO
+BioNex Systems,Thomas Greene,Director
+CloudVest Holdings,Thomas Greene,Former COO
+=== ORIGINAL CONTENT END ===

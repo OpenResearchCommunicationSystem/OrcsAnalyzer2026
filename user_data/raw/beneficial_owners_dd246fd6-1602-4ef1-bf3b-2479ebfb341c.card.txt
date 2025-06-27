@@ -1,4 +1,4 @@
-# ORCS Analysis Card: Corporate Beneficial Ownership
+=== ORCS CARD === 
 version: "2025.003"
 uuid: "dd246fd6-1602-4ef1-bf3b-2479ebfb341c"
 source_file: "beneficial_owners.csv"
@@ -11,39 +11,13 @@ created: "2025-06-15T05:32:35.959Z"
 modified: "2025-06-15T05:32:35.959Z"
 source_hash: "sha256:abc123def456"
 
-metadata:
-  file_type: "csv"
-  file_size: 87
-  analyst: ""
-  confidence: ""
+=== TAG INDEX START === 
 
----
+=== TAG INDEX END ===
 
-## Original CSV Data
-
-| Company | Ultimate Beneficial Owner | Ownership % |
-|---------|---------------------------|-------------|
-| VisionEdge Analytics | Ava Cheng | 45% |
-| FutureFoods | Maria Lopez | 60% |
-| CyberNova | Jasmine O'Neil | 35% |
-
-## Analysis
-
-This beneficial ownership data reveals significant equity stakes held by key executives across three companies, indicating concentrated ownership patterns and potential cross-company influence networks.
-
-Ownership structure analysis:
-- **FutureFoods**: Maria Lopez holds controlling interest (60%) - majority ownership
-- **VisionEdge Analytics**: Ava Cheng holds substantial minority stake (45%) - significant influence
-- **CyberNova**: Jasmine O'Neil holds minority stake (35%) - notable but non-controlling
-
-Strategic implications:
-- All three beneficial owners are women executives, suggesting diverse leadership patterns
-- Ownership percentages indicate varying levels of control and influence
-- Cross-referencing with other intelligence may reveal investment patterns or partnership potential
-
-## Tagged Elements
-
-*Ava Cheng, Maria Lopez, and Jasmine O'Neil will be tagged as person entities*
-*VisionEdge Analytics, FutureFoods, and CyberNova will be tagged as organization entities*
-*Ownership relationships will link owners to companies with percentage attributes*
-*Ownership stakes will be captured as financial attributes*
+=== ORIGINAL CONTENT START ===
+Company,Ultimate Beneficial Owner,Ownership %
+VisionEdge Analytics,Ava Cheng,45
+FutureFoods,Maria Lopez,60
+CyberNova,Jasmine O'Neil,35
+=== ORIGINAL CONTENT END ===

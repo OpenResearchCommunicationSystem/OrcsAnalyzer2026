@@ -79,24 +79,16 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
   };
 
-  // Extract original content from card file
+  // Extract original content from card file using clear delimiters
   const extractOriginalContent = (cardContent: string): string => {
-    // Look for the "## Original" section (could be "## Original CSV Data", "## Original Content", etc.)
-    const originalSectionMatch = cardContent.match(/^## Original[^\n]*\n([\s\S]*?)(?=\n## |$)/m);
+    // Look for content between "=== ORIGINAL CONTENT START ===" and "=== ORIGINAL CONTENT END ==="
+    const match = cardContent.match(/=== ORIGINAL CONTENT START ===\n([\s\S]*?)\n=== ORIGINAL CONTENT END ===/);
     
-    if (originalSectionMatch) {
-      return originalSectionMatch[1].trim();
+    if (match) {
+      return match[1].trim();
     }
     
-    // Fallback: look for content after the metadata section (after ---)
-    const contentAfterMetadata = cardContent.split('---\n')[1];
-    if (contentAfterMetadata) {
-      // Extract everything before "## Analysis" section
-      const beforeAnalysis = contentAfterMetadata.split(/\n## Analysis/)[0].trim();
-      // Remove any remaining section headers like "## Original CSV Data"
-      return beforeAnalysis.replace(/^## [^\n]*\n/, '').trim();
-    }
-    
+    // Fallback: return full content if delimiters not found
     return cardContent;
   };
 
@@ -251,6 +243,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
       if (selection && selection.toString().trim().length > 0 && contentRef.current && fileContent?.content) {
         const selectedText = selection.toString();
         const range = selection.getRangeAt(0);
+        const displayContent = getDisplayContent();
         
         // Calculate offset by counting characters from the beginning of the content element
         const walker = document.createTreeWalker(
@@ -279,7 +272,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
           const endOffset = startOffset + selectedText.length;
           
           // Verify the selection matches the content at these offsets
-          const contentAtOffsets = fileContent.content.substring(startOffset, endOffset);
+          const contentAtOffsets = displayContent.substring(startOffset, endOffset);
           
           if (contentAtOffsets === selectedText) {
             const textSelection: TextSelection = {
@@ -291,8 +284,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
             };
             onTextSelection(textSelection);
           } else {
-            // If offsets don't match, try to find the text in the content
-            const actualStartIndex = fileContent.content.indexOf(selectedText);
+            // If offsets don't match, try to find the text in the display content
+            const actualStartIndex = displayContent.indexOf(selectedText);
             if (actualStartIndex !== -1) {
               const actualEndIndex = actualStartIndex + selectedText.length;
               const textSelection: TextSelection = {
@@ -419,7 +412,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
 
     // Handle CSV files
     if (fileType === 'csv') {
-      const csvData = parseCSV(fileContent.content);
+      const displayContent = getDisplayContent();
+      const csvData = parseCSV(displayContent);
       const headers = csvData[0] || [];
       const rows = csvData.slice(1);
 
