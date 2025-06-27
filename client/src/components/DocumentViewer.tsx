@@ -429,13 +429,20 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   // Handle clicks on highlighted tags
   useEffect(() => {
     const handleTagClick = (event: MouseEvent) => {
+      console.log('Click detected on:', event.target);
       const target = event.target as HTMLElement;
       const tagElement = target.closest('[data-tag-id]');
       
+      console.log('Tag element found:', tagElement);
+      
       if (tagElement) {
         const tagId = tagElement.getAttribute('data-tag-id');
+        console.log('Tag ID:', tagId);
         const tag = tags.find(t => t.id === tagId);
+        console.log('Tag found:', tag);
         if (tag) {
+          event.preventDefault();
+          event.stopPropagation();
           onTagClick(tag);
         }
       }
