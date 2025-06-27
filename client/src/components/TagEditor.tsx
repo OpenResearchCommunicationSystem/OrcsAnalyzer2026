@@ -296,11 +296,15 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
           </div>
 
           <div>
-            <Label className="text-sm font-medium text-slate-300">Reference</Label>
+            <Label className="text-sm font-medium text-slate-300">References</Label>
             <Input
-              value={formData.reference || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, reference: e.target.value }))}
+              value={formData.references?.join(', ') || ''}
+              onChange={(e) => setFormData(prev => ({ 
+                ...prev, 
+                references: e.target.value.split(',').map(ref => ref.trim()).filter(ref => ref.length > 0)
+              }))}
               className="bg-gray-800 border-gray-600 font-mono focus:border-blue-500"
+              placeholder="filename@start-end, filename[row,col]"
             />
           </div>
 
