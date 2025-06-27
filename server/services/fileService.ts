@@ -265,33 +265,8 @@ export class FileService {
         });
       }
       
-      // Scan entities directory for entity files
-      const entitiesDir = path.join(process.cwd(), 'user_data', 'entities');
-      try {
-        const entityFiles = await fs.readdir(entitiesDir);
-        for (const filename of entityFiles) {
-          if (filename === '.gitkeep') continue;
-          
-          const filepath = path.join(entitiesDir, filename);
-          const stats = await fs.stat(filepath);
-          
-          const id = crypto.createHash('md5').update(`${filepath}-${stats.mtime.getTime()}`).digest('hex');
-          
-          files.push({
-            id,
-            name: filename,
-            path: filepath,
-            type: 'entity',
-            size: stats.size,
-            created: stats.birthtime.toISOString(),
-            modified: stats.mtime.toISOString(),
-          });
-        }
-      } catch (error) {
-        // Entities directory might not exist or be empty
-      }
-      
-      // TODO: Add other tag directories (relationships, attributes, comments, kv_pairs)
+      // Recursively scan all directories for tag files (location-agnostic)
+      await this.scanForTagFiles(files, process.cwd() + '/user_data');
       
       return files;
     } catch (error) {
@@ -358,6 +333,53 @@ export class FileService {
 
   private sanitizeFilename(filename: string): string {
     return filename.replace(/[^a-z0-9.-]/gi, '_');
+  }
+
+  // Recursively scan directories for tag files (location-agnostic approach)
+  private async scanForTagFiles(files: File[], directory: string): Promise<void> {
+    try {
+      const entries = await fs.readdir(directory, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        if (entry.name === '.gitkeep') continue;
+        
+        const fullPath = path.join(directory, entry.name);
+        
+        if (entry.isDirectory()) {
+          // Recursively scan subdirectories
+          await this.scanForTagFiles(files, fullPath);
+        } else if (entry.isFile()) {
+          // Check if file matches tag file patterns
+          const tagType = this.getFileTagType(entry.name);
+          if (tagType) {
+            const stats = await fs.stat(fullPath);
+            const id = crypto.createHash('md5').update(`${fullPath}-${stats.mtime.getTime()}`).digest('hex');
+            
+            files.push({
+              id,
+              name: entry.name,
+              path: fullPath,
+              type: tagType,
+              size: stats.size,
+              created: stats.birthtime.toISOString(),
+              modified: stats.mtime.toISOString(),
+            });
+          }
+        }
+      }
+    } catch (error) {
+      // Skip directories that can't be read
+    }
+  }
+
+  // Determine tag type from filename
+  private getFileTagType(filename: string): 'entity' | 'relationship' | 'attribute' | 'comment' | 'kv_pair' | null {
+    if (filename.endsWith('.entity.txt')) return 'entity';
+    if (filename.endsWith('.relate.txt')) return 'relationship';
+    if (filename.endsWith('.attrib.txt')) return 'attribute';
+    if (filename.endsWith('.comment.txt')) return 'comment';
+    if (filename.endsWith('.kv.txt')) return 'kv_pair';
+    return null;
   }
 }
 
