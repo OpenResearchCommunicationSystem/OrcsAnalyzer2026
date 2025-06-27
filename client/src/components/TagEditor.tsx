@@ -189,55 +189,50 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col h-full">
       {/* Header with name and controls - fixed */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex-1 min-w-0 mr-3">
-            <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-lg font-semibold text-slate-200 break-words leading-tight" style={{ 
-                display: '-webkit-box',
-                WebkitLineClamp: 5,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden'
-              }}>
-                {selectedTag?.name || 'No Tag Selected'}
-              </h2>
-              {selectedTag && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleEditName}
-                  className="text-slate-400 hover:text-slate-200 p-1 h-auto flex-shrink-0"
-                  title="Edit name"
-                >
-                  <Edit2 className="w-3 h-3" />
-                </Button>
-              )}
-            </div>
-            {selectedTag?.id && (
-              <button
-                onClick={copyUUID}
-                className="text-xs text-slate-500 hover:text-slate-400 transition-colors font-mono"
-                title="Click to copy UUID"
+      <div className="p-4 border-b border-gray-700 flex-shrink-0">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-slate-200">
+              {selectedTag?.name || 'No Tag Selected'}
+            </h2>
+            {selectedTag && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleEditName}
+                className="text-slate-400 hover:text-slate-200 p-1 h-auto"
+                title="Edit name"
               >
-                {selectedTag.id}
-              </button>
+                <Edit2 className="w-3 h-3" />
+              </Button>
             )}
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 flex-shrink-0"
+            className="text-slate-400 hover:text-slate-200"
           >
             <X className="w-4 h-4" />
           </Button>
         </div>
+        {selectedTag?.id && (
+          <div className="py-1">
+            <button
+              onClick={copyUUID}
+              className="text-xs text-slate-500 hover:text-slate-400 transition-colors font-mono"
+              title="Click to copy UUID"
+            >
+              {selectedTag.id}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 min-h-0">
         <div className="space-y-4">
           {/* Search Aliases Field - First after header */}
           <div>
