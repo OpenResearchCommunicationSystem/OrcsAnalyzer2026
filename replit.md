@@ -190,10 +190,6 @@ Changelog:
 - June 27, 2025. DEPLOYMENT STRATEGY CHANGE: Moved from embedded D3.js to manual library creation approach for portable HTML
 - June 27, 2025. Users now create d3.v7.min.js file from provided d3.v7.min.js.txt source when deploying offline version
 - June 27, 2025. Portable HTML file expects d3.v7.min.js to be placed in same directory as orcs-portable.html for offline functionality
-- June 27, 2025. CONFIGURABLE ALIAS SEARCH SYSTEM: Implemented granular alias controls for different search contexts
-- June 27, 2025. Added three toggle switches: Similar Tags (tag comparison), Document Search (single file analysis), Repository Search (cross-file analysis)
-- June 27, 2025. Master tag display moved to fixed top position, immune to tab switching, with prominent alias visibility
-- June 27, 2025. Reference analysis system now respects alias settings for exact match control in tagged/untagged reference detection
 ```
 
 ## Future Enhancements
