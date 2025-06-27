@@ -91,8 +91,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
 
     // Get tags that reference this file
     const fileTags = tags.filter(tag => {
-      if (!tag.reference) return false;
-      return tag.reference.includes(selectedFileData.name);
+      if (!tag.references || tag.references.length === 0) return false;
+      return tag.references.some(ref => ref.includes(selectedFileData.name));
     });
 
     if (fileTags.length === 0) {
@@ -109,10 +109,9 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     // Parse references and sort by start position (latest first to avoid offset issues)
     const tagSegments: TagSegment[] = fileTags
       .flatMap(tag => {
-        const references = tag.reference.split(',').map(ref => ref.trim());
-        return references
-          .filter(ref => ref.includes(selectedFileData.name))
-          .map(ref => {
+        return tag.references
+          .filter((ref: string) => ref.includes(selectedFileData.name))
+          .map((ref: string) => {
             const match = ref.match(new RegExp(`${escapeRegExp(selectedFileData.name)}@(\\d+)-(\\d+)`));
             if (match) {
               const start = parseInt(match[1]);

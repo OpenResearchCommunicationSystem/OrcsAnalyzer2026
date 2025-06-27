@@ -54,7 +54,7 @@ export function TagCreationModal({
       type: selectedType as any,
       entityType: entityType || undefined,
       name: identifier.trim(),
-      reference,
+      references: [reference],
       aliases: [],
       keyValuePairs: {},
       description: description.trim() || undefined,

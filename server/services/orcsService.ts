@@ -436,8 +436,8 @@ export class OrcsService {
         const tag2 = unconnectedEntities[j];
         
         // Check if they reference the same file
-        const file1 = tag1.reference.split('@')[0] || tag1.reference.split('[')[0];
-        const file2 = tag2.reference.split('@')[0] || tag2.reference.split('[')[0];
+        const file1 = tag1.references[0]?.split('@')[0] || tag1.references[0]?.split('[')[0];
+        const file2 = tag2.references[0]?.split('@')[0] || tag2.references[0]?.split('[')[0];
         
         if (file1 === file2) {
           edges.push({
@@ -494,15 +494,15 @@ export class OrcsService {
     }
 
     // Combine all data into master tag
-    const allReferences = [masterTag.reference].filter(Boolean);
+    const allReferences = [...(masterTag.references || [])];
     const allAliases = [...(masterTag.aliases || [])];
     const allKeyValuePairs = { ...(masterTag.keyValuePairs || {}) };
     let combinedDescription = masterTag.description || '';
 
     // Merge data from each tag
     for (const tag of validTagsToMerge) {
-      if (tag.reference) {
-        allReferences.push(tag.reference);
+      if (tag.references && tag.references.length > 0) {
+        allReferences.push(...tag.references);
       }
       if (tag.aliases) {
         allAliases.push(...tag.aliases);
@@ -515,12 +515,13 @@ export class OrcsService {
       }
     }
 
-    // Remove duplicates from aliases
+    // Remove duplicates from references and aliases
+    const uniqueReferences = Array.from(new Set(allReferences));
     const uniqueAliases = Array.from(new Set(allAliases));
 
     // Update master tag with merged data
     const mergedData: Partial<Tag> = {
-      reference: allReferences.join(','),
+      references: uniqueReferences,
       aliases: uniqueAliases,
       keyValuePairs: allKeyValuePairs,
       description: combinedDescription,
@@ -566,7 +567,7 @@ export class OrcsService {
       `UUID: ${tag.id}`,
       `TYPE: ${tag.type}`,
       `NAME: ${tag.name}`,
-      `REFERENCE: ${tag.reference}`,
+      `REFERENCES: ${tag.references.join(', ')}`,
       `CREATED: ${tag.created}`,
       `MODIFIED: ${tag.modified}`,
       '',

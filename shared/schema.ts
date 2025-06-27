@@ -24,7 +24,7 @@ export const tagSchema = z.object({
   type: tagTypeSchema,
   entityType: z.string().optional(), // Subtype within the tag category (e.g., "person", "organization" for entities)
   name: z.string(),
-  reference: z.string(), // filename@start-end or filename[row,col]
+  references: z.array(z.string()).default([]), // Array of references: ["filename@start-end", "filename[row,col]"]
   aliases: z.array(z.string()).default([]),
   keyValuePairs: z.record(z.string()).default({}),
   description: z.string().optional(),

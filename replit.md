@@ -133,6 +133,9 @@ Changelog:
 - June 27, 2025. Fixed complete tag merge functionality with proper backend implementation
 - June 27, 2025. Added auto-populate identifier field in tag creation modal with selected text
 - June 27, 2025. Implemented comprehensive tag highlighting in document viewer with color-coded types
+- June 27, 2025. Implemented Wikipedia-style file extensions (.entity.txt, .relate.txt, .attrib.txt, .comment.txt, .kv.txt)
+- June 27, 2025. Added UUID-based ORCS cards with .card.txt extension replacing .yaml.txt
+- June 27, 2025. Completed location-agnostic file system - tags and cards can be moved anywhere and system finds them
 ```
 
 ## Future Enhancements
