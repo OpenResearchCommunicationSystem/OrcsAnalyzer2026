@@ -37,12 +37,13 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
     ? (searchResults || [])
     : files;
 
-  // Separate card files from original files
+  // Separate files by type
   const cardFiles = filteredFiles.filter(file => file.name.includes('.card.txt'));
   const originalFiles = filteredFiles.filter(file => (file.type === 'txt' || file.type === 'csv') && !file.name.includes('.card.txt'));
+  const tagFiles = filteredFiles.filter(file => ['entity', 'relationship', 'attribute', 'comment', 'kv_pair'].includes(file.type));
   
-  // Show cards by default, originals only when toggled
-  const displayFiles = showOriginals ? [...cardFiles, ...originalFiles] : cardFiles;
+  // Show cards by default, originals only when toggled, always show tag files
+  const displayFiles = showOriginals ? [...cardFiles, ...originalFiles, ...tagFiles] : [...cardFiles, ...tagFiles];
 
   const tagCounts = stats?.tagCounts || {};
 

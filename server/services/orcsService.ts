@@ -689,17 +689,44 @@ export class OrcsService {
         tag.type = trimmed.substring(5).trim() as TagType;
       } else if (trimmed.startsWith('NAME:')) {
         tag.name = trimmed.substring(5).trim();
-      } else if (trimmed.startsWith('REFERENCE:') || trimmed.startsWith('REFERENCES:')) {
-        const refString = trimmed.startsWith('REFERENCES:') ? 
-          trimmed.substring(11).trim() : 
-          trimmed.substring(10).trim();
-        tag.references = refString.split(',').map(ref => ref.trim()).filter(ref => ref);
+      } else if (trimmed.startsWith('# Entity:') || trimmed.startsWith('# Relationship:') || trimmed.startsWith('# Attribute:') || trimmed.startsWith('# Comment:') || trimmed.startsWith('# KV Pair:')) {
+        // Extract name from markdown header format
+        const parts = trimmed.split(':');
+        if (parts.length > 1) {
+          tag.name = parts[1].trim();
+        }
+      } else if (trimmed.startsWith('REFERENCE:') || trimmed.startsWith('REFERENCES:') || trimmed === 'CARD_REFERENCES:') {
+        if (trimmed === 'CARD_REFERENCES:') {
+          currentSection = 'card_references';
+        } else {
+          const refString = trimmed.startsWith('REFERENCES:') ? 
+            trimmed.substring(11).trim() : 
+            trimmed.substring(10).trim();
+          tag.references = refString.split(',').map(ref => ref.trim()).filter(ref => ref);
+        }
+      } else if (currentSection === 'card_references' && trimmed.startsWith('- ')) {
+        if (!tag.references) tag.references = [];
+        tag.references.push(trimmed.substring(2).trim());
       } else if (trimmed.startsWith('CREATED:')) {
         tag.created = trimmed.substring(8).trim();
       } else if (trimmed.startsWith('MODIFIED:')) {
         tag.modified = trimmed.substring(9).trim();
-      } else if (trimmed === 'ALIASES:') {
-        currentSection = 'aliases';
+      } else if (trimmed === 'ALIASES:' || trimmed.startsWith('SEARCH_ALIASES:')) {
+        if (trimmed.startsWith('SEARCH_ALIASES:')) {
+          // Handle JSON array format: SEARCH_ALIASES: ["alias1", "alias2"]
+          const jsonPart = trimmed.substring(15).trim();
+          try {
+            const aliases = JSON.parse(jsonPart);
+            if (Array.isArray(aliases)) {
+              tag.aliases = aliases;
+            }
+          } catch (e) {
+            // If parsing fails, treat as single value
+            tag.aliases = [jsonPart];
+          }
+        } else {
+          currentSection = 'aliases';
+        }
       } else if (trimmed === 'KEY_VALUE_PAIRS:') {
         currentSection = 'kvp';
       } else if (trimmed === 'DESCRIPTION:') {
