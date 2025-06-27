@@ -5,11 +5,12 @@ TAG_TYPE: entity
 NAME: Jasmine O'Neil
 ENTITY_TYPE: person
 CREATED: 2025-06-27T10:12:54.873Z
-MODIFIED: 2025-06-27T10:12:54.873Z
+MODIFIED: 2025-06-27T11:03:56.721Z
 
 SEARCH_ALIASES:
 
 CARD_REFERENCES:
   - social_post_2_e5515c0c-d148-4877-a732-fe976d13aa41.card.txt
+  - beneficial_owners_dd246fd6-1602-4ef1-bf3b-2479ebfb341c.card.txt
 
 === END ORCS ENTITY ===

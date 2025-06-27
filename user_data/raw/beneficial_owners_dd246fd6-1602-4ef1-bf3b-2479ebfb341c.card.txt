@@ -14,11 +14,12 @@ source_hash: "sha256:abc123def456"
 === TAG INDEX START === 
 [entity:VisionEdge Analytics](5e8a2c5a-12a3-4d7e-9699-c23f77432696)
 [entity:Ava Cheng](696c35b7-d3f1-4909-a41a-3eb02de35bfa)
+[entity:Jasmine O'Neil](bcbaa31a-9ee1-492e-8606-b58f6d704f5f)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
 Company,Ultimate Beneficial Owner,Ownership %
 [entity:VisionEdge Analytics](5e8a2c5a-12a3-4d7e-9699-c23f77432696),[entity:Ava Cheng](696c35b7-d3f1-4909-a41a-3eb02de35bfa),45
 FutureFoods,Maria Lopez,60
-CyberNova,Jasmine O'Neil,35
+CyberNova,[entity:Jasmine O'Neil](bcbaa31a-9ee1-492e-8606-b58f6d704f5f),35
 === ORIGINAL CONTENT END ===

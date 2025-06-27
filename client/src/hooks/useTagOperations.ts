@@ -17,8 +17,20 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Invalidate all queries to ensure document viewer refreshes
-      queryClient.invalidateQueries();
+      // Targeted cache invalidation to prevent race conditions
+      queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Refetch file content queries without invalidating them
+      setTimeout(() => {
+        queryClient.refetchQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey[0]?.toString() || '';
+            return key.includes('/content');
+          }
+        });
+      }, 100);
       toast({
         title: "Tag created successfully",
         description: "The tag has been saved as an ORCS file",
@@ -39,8 +51,20 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Invalidate all queries to ensure document viewer refreshes
-      queryClient.invalidateQueries();
+      // Targeted cache invalidation to prevent race conditions
+      queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Refetch file content queries without invalidating them
+      setTimeout(() => {
+        queryClient.refetchQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey[0]?.toString() || '';
+            return key.includes('/content');
+          }
+        });
+      }, 100);
       toast({
         title: "Tag updated successfully",
       });
@@ -60,12 +84,20 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
+      // Targeted cache invalidation to prevent race conditions
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/files'] });
-      // Invalidate all queries to refresh document viewer
-      queryClient.invalidateQueries();
+      // Refetch file content queries without invalidating them
+      setTimeout(() => {
+        queryClient.refetchQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey[0]?.toString() || '';
+            return key.includes('/content');
+          }
+        });
+      }, 100);
       toast({
         title: "Tag deleted successfully",
       });

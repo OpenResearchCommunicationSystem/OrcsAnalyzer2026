@@ -417,7 +417,15 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
       );
     }
 
-    if (!fileContent?.content) {
+    if (!fileContent?.content && !isContentLoading) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-slate-400">Unsupported file type. Only .txt and .csv files are supported.</div>
+        </div>
+      );
+    }
+
+    if (isContentLoading || !fileContent?.content) {
       return (
         <div className="flex items-center justify-center h-64">
           <div className="text-slate-400">Loading document...</div>
