@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Tag, File } from '@shared/schema';
+import { ContentExtractor } from '@/lib/contentExtractor';
 
 export interface TaggedReference {
   tag: Tag;
@@ -130,9 +131,9 @@ function analyzeReferences(
   console.log('File contents available:', Object.keys(fileContents).length);
 
   for (const file of files) {
-    // Skip tag files - only analyze source documents (cards and original files)
-    if (file.name.match(/\.(entity|relate|attrib|comment|kv)\.txt$/)) {
-      console.log(`Skipping tag file: ${file.name}`);
+    // Use ContentExtractor to determine if this is a source file (never analyze metadata files)
+    if (!ContentExtractor.isSourceFile(file.name)) {
+      console.log(`Skipping metadata file: ${file.name}`);
       continue;
     }
 
@@ -143,7 +144,17 @@ function analyzeReferences(
     }
 
     console.log(`Analyzing file: ${file.name}`);
-    const cleanContent = extractOriginalContent(content, file.name);
+    
+    // Use standardized content extraction
+    const cleanContentResult = ContentExtractor.extractCleanContent(content, file.name);
+    const cleanContent = cleanContentResult.content;
+    
+    // Validate content is truly clean
+    if (!ContentExtractor.validateCleanContent(cleanContentResult, file.name)) {
+      console.warn(`Skipping file with contaminated content: ${file.name}`);
+      continue;
+    }
+    
     console.log(`Clean content length: ${cleanContent.length}`);
     
     // Find all tagged references to this entity
