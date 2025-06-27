@@ -49,18 +49,23 @@ export function useReferenceAnalysis(targetTag: Tag | null) {
     queryFn: async () => {
       if (!targetTag) return {};
       
+      console.log('Fetching file contents for analysis:', targetTag.name);
       const contents: Record<string, string> = {};
+      
       for (const file of files) {
         try {
           const response = await fetch(`/api/files/${file.id}/content`);
           if (response.ok) {
             const data = await response.json();
             contents[file.name] = data.content;
+            console.log(`Fetched content for ${file.name}:`, data.content.substring(0, 100) + '...');
           }
         } catch (error) {
-          console.warn(`Failed to fetch content for ${file.name}`);
+          console.warn(`Failed to fetch content for ${file.name}:`, error);
         }
       }
+      
+      console.log('Total files fetched:', Object.keys(contents).length);
       return contents;
     },
     enabled: !!targetTag && files.length > 0,
@@ -71,6 +76,7 @@ export function useReferenceAnalysis(targetTag: Tag | null) {
     queryKey: ['/api/reference-analysis', targetTag?.id, fileContents.data],
     queryFn: async (): Promise<ReferenceAnalysis> => {
       if (!targetTag || !fileContents.data) {
+        console.log('Analysis skipped - missing data:', { targetTag: !!targetTag, fileContents: !!fileContents.data });
         return {
           taggedReferences: [],
           untaggedReferences: [],
@@ -79,7 +85,10 @@ export function useReferenceAnalysis(targetTag: Tag | null) {
         };
       }
 
-      return analyzeReferences(targetTag, fileContents.data, files, tags);
+      console.log('Starting analysis for:', targetTag.name);
+      const result = analyzeReferences(targetTag, fileContents.data, files, tags);
+      console.log('Analysis result:', result);
+      return result;
     },
     enabled: !!targetTag && !!fileContents.data,
   });
@@ -96,6 +105,7 @@ function analyzeReferences(
   files: File[],
   tags: Tag[]
 ): ReferenceAnalysis {
+  console.log('Starting analyzeReferences for:', targetTag.name);
   const taggedReferences: TaggedReference[] = [];
   const untaggedReferences: UntaggedReference[] = [];
 
@@ -105,27 +115,41 @@ function analyzeReferences(
     ...(targetTag.aliases || []),
   ].filter(term => term.trim().length > 0);
 
+  console.log('Search terms:', searchTerms);
+  console.log('Files to analyze:', files.length);
+  console.log('File contents available:', Object.keys(fileContents).length);
+
   for (const file of files) {
     const content = fileContents[file.name];
-    if (!content) continue;
+    if (!content) {
+      console.log('No content for file:', file.name);
+      continue;
+    }
 
+    console.log(`Analyzing file: ${file.name}`);
     const cleanContent = extractOriginalContent(content, file.name);
+    console.log(`Clean content length: ${cleanContent.length}`);
     
     // Find all tagged references to this entity
     const taggedRefs = findTaggedReferences(targetTag, cleanContent, file.name, tags);
+    console.log(`Found ${taggedRefs.length} tagged references in ${file.name}`);
     taggedReferences.push(...taggedRefs);
 
     // Find potential untagged references
     const untaggedRefs = findUntaggedReferences(targetTag, cleanContent, file.name, searchTerms, tags);
+    console.log(`Found ${untaggedRefs.length} untagged references in ${file.name}`);
     untaggedReferences.push(...untaggedRefs);
   }
 
-  return {
+  const result = {
     taggedReferences,
     untaggedReferences,
     totalTaggedCount: taggedReferences.length,
     totalUntaggedCount: untaggedReferences.length,
   };
+
+  console.log('Final analysis result:', result);
+  return result;
 }
 
 function extractOriginalContent(content: string, filename: string): string {
