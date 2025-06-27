@@ -16,7 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 export default function OrcsMain() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedText, setSelectedText] = useState<TextSelection | null>(null);
-  const [activeTab, setActiveTab] = useState<'graph' | 'tagEditor'>('graph');
+  const [activeTab, setActiveTab] = useState<'graph' | 'tagEditor'>('tagEditor');
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
   const [showTagModal, setShowTagModal] = useState(false);
   const [tagModalType, setTagModalType] = useState<string>('entity');
@@ -65,10 +65,11 @@ export default function OrcsMain() {
     // Find the file by name and select it
     const matchingFile = files.find(file => file.name === filename);
     if (matchingFile) {
-      setSelectedFile(matchingFile.id);
-      // Close tag editor to show the document
-      setSelectedTag(null);
-      setActiveTab('graph');
+      // Only change file if it's different from currently selected
+      if (selectedFile !== matchingFile.id) {
+        setSelectedFile(matchingFile.id);
+      }
+      // Keep tag editor open - don't switch tabs or close tag editor
     } else {
       console.warn('File not found:', filename);
     }
