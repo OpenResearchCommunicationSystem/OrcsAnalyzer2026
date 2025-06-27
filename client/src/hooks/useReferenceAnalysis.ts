@@ -109,19 +109,23 @@ function analyzeReferences(
   targetTag: Tag,
   fileContents: Record<string, string>,
   files: File[],
-  tags: Tag[]
+  tags: Tag[],
+  aliasSettings?: AliasSettings
 ): ReferenceAnalysis {
   console.log('Starting analyzeReferences for:', targetTag.name);
   const taggedReferences: TaggedReference[] = [];
   const untaggedReferences: UntaggedReference[] = [];
 
-  // Create search patterns for the target tag
-  const searchTerms = [
-    targetTag.name,
-    ...(targetTag.aliases || []),
-  ].filter(term => term.trim().length > 0);
-
-  console.log('Search terms:', searchTerms);
+  // Create search patterns for the target tag based on alias settings
+  const searchTerms = [targetTag.name];
+  
+  // Add aliases based on context - for reference analysis, use both document and repository settings
+  if (aliasSettings?.documentSearch || aliasSettings?.repositorySearch) {
+    searchTerms.push(...(targetTag.aliases || []));
+  }
+  
+  const filteredSearchTerms = searchTerms.filter(term => term.trim().length > 0);
+  console.log('Search terms:', filteredSearchTerms, 'alias settings:', aliasSettings);
   console.log('Files to analyze:', files.length);
   console.log('File contents available:', Object.keys(fileContents).length);
 
@@ -142,7 +146,7 @@ function analyzeReferences(
     taggedReferences.push(...taggedRefs);
 
     // Find potential untagged references
-    const untaggedRefs = findUntaggedReferences(targetTag, cleanContent, file.name, searchTerms, tags);
+    const untaggedRefs = findUntaggedReferences(targetTag, cleanContent, file.name, filteredSearchTerms, tags);
     console.log(`Found ${untaggedRefs.length} untagged references in ${file.name}`);
     untaggedReferences.push(...untaggedRefs);
   }

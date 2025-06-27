@@ -208,6 +208,82 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
           </DialogTitle>
         </DialogHeader>
         
+        {/* Alias Toggle Controls */}
+        <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-4 mb-4">
+          <div className="flex items-center mb-3">
+            <Settings className="w-4 h-4 mr-2 text-slate-400" />
+            <span className="text-sm font-medium text-slate-300">Search Alias Settings</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <Label htmlFor="similarity-aliases" className="text-xs text-slate-300">
+                  Similar Tags
+                </Label>
+                <span className="text-xs text-slate-500">
+                  Include aliases when finding similar tags
+                </span>
+              </div>
+              <Switch
+                id="similarity-aliases"
+                checked={aliasSettings.similaritySearch}
+                onCheckedChange={(checked) => 
+                  setAliasSettings(prev => ({ ...prev, similaritySearch: checked }))
+                }
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <Label htmlFor="document-aliases" className="text-xs text-slate-300">
+                  Document Search
+                </Label>
+                <span className="text-xs text-slate-500">
+                  Use aliases for single document analysis
+                </span>
+              </div>
+              <Switch
+                id="document-aliases"
+                checked={aliasSettings.documentSearch}
+                onCheckedChange={(checked) => 
+                  setAliasSettings(prev => ({ ...prev, documentSearch: checked }))
+                }
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <Label htmlFor="repository-aliases" className="text-xs text-slate-300">
+                  Repository Search
+                </Label>
+                <span className="text-xs text-slate-500">
+                  Use aliases for repository-wide analysis
+                </span>
+              </div>
+              <Switch
+                id="repository-aliases"
+                checked={aliasSettings.repositorySearch}
+                onCheckedChange={(checked) => 
+                  setAliasSettings(prev => ({ ...prev, repositorySearch: checked }))
+                }
+              />
+            </div>
+          </div>
+          
+          {masterTag?.aliases && masterTag.aliases.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-700">
+              <div className="text-xs text-slate-400 mb-2">Current aliases for "{masterTag.name}":</div>
+              <div className="flex flex-wrap gap-1">
+                {masterTag.aliases.map(alias => (
+                  <Badge key={alias} variant="outline" className="text-xs border-amber-600/50 text-amber-300">
+                    {alias}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-gray-800">
             <TabsTrigger value="similar-tags" className="text-slate-300">
