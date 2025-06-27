@@ -36,16 +36,9 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     const currentFile = files.find(f => f.id === selectedFile);
     if (currentFile) return selectedFile;
     
-    // If selected file doesn't exist, try to find a similar card file
-    const selectedFileData = files.find(f => f.id === selectedFile);
-    if (!selectedFileData) {
-      // Look for card files with similar base names
-      const cardFiles = files.filter(f => f.name.includes('.card.txt'));
-      if (cardFiles.length > 0) {
-        // Return the first card file as fallback
-        return cardFiles[0].id;
-      }
-    }
+    // If selected file doesn't exist, we need to find the matching document
+    // This happens when tag operations invalidate the current file ID
+    // We'll defer to the parent component's handleFileNotFound logic
     return selectedFile;
   })() : selectedFile;
 

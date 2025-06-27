@@ -62,13 +62,28 @@ export default function OrcsMain() {
   };
 
   const handleFileNotFound = (staleFileId: string) => {
-    // When a file becomes invalid after tag operations, find the best replacement
+    // When a file becomes invalid after tag operations, find the corresponding card file
+    const staleFile = files.find(f => f.id === staleFileId);
+    if (staleFile) {
+      // Extract base name from the stale file to find matching card
+      const baseName = staleFile.name.replace(/\.(txt|csv)$/, '').replace(/\.card$/, '');
+      
+      // Look for a card file with the same base name
+      const matchingCardFile = files.find(f => 
+        f.name.includes('.card.txt') && f.name.startsWith(baseName)
+      );
+      
+      if (matchingCardFile) {
+        setSelectedFile(matchingCardFile.id);
+        return;
+      }
+    }
+    
+    // Fallback: if we can't find a specific match, try to stay in the same document family
     const cardFiles = files.filter(f => f.name.includes('.card.txt'));
     if (cardFiles.length > 0) {
-      // Select the first card file as replacement
       setSelectedFile(cardFiles[0].id);
     } else {
-      // No card files available, clear selection
       setSelectedFile(null);
     }
   };
