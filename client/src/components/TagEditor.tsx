@@ -363,6 +363,8 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
             />
           </div>
 
+          {/* OLD KVP SECTION - MOVED TO BOTTOM - COMMENTED OUT FOR TESTING */}
+          {/*
           <div>
             <Label className="text-sm font-medium text-slate-300">Key-Value Pairs</Label>
             <div className="space-y-2">
@@ -407,8 +409,10 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               )}
             </div>
           </div>
+          */}
 
-          {/* References Section */}
+          {/* OLD REFERENCES SECTION - MOVED TO BOTTOM - COMMENTED OUT FOR TESTING */}
+          {/*
           {selectedTag && (
             <Collapsible open={showReferences} onOpenChange={setShowReferences}>
               <CollapsibleTrigger asChild>
@@ -439,6 +443,7 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               </CollapsibleContent>
             </Collapsible>
           )}
+          */}
 
           {/* Similar Tags Section */}
           {selectedTag && similarTags.length > 0 && (

@@ -4,7 +4,7 @@ TYPE: entity
 NAME: AI startup
 REFERENCES: test_news.txt@45-55
 CREATED: 2025-06-15T05:38:20.339Z
-MODIFIED: 2025-06-15T05:38:20.339Z
+MODIFIED: 2025-06-27T05:23:17.717Z
 
 ALIASES:
   - AI company
@@ -13,6 +13,7 @@ ALIASES:
 KEY_VALUE_PAIRS:
 valuation: 2.5B
 employees: 150
+anouncement date: 2025-06-15T05:20:00.000Z
 
 DESCRIPTION:
 Artificial intelligence startup being acquired
