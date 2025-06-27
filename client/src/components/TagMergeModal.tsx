@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Tag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface TagMergeModalProps {
   isOpen: boolean;
@@ -36,6 +36,7 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
   const [selectedForMerge, setSelectedForMerge] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState("similar-tags");
   
+  const queryClient = useQueryClient();
   const { updateTag } = useTagOperations();
   
   // Fetch all tags for similarity detection
@@ -137,52 +138,30 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
   const handleMerge = async () => {
     if (!masterTag || selectedForMerge.size === 0) return;
     
-    const tagsToMerge = similarTags.filter(item => selectedForMerge.has(item.tag.id));
-    
     try {
-      // Combine all references
-      const allReferences = [masterTag.reference];
-      const allAliases = [...(masterTag.aliases || [])];
-      const allKeyValuePairs = { ...(masterTag.keyValuePairs || {}) };
-      let combinedDescription = masterTag.description || '';
+      const tagIdsToMerge = Array.from(selectedForMerge);
       
-      // Merge data from selected tags
-      Array.from(selectedForMerge).forEach((tagId) => {
-        const tagToMerge = tagsToMerge.find(item => item.tag.id === tagId);
-        if (!tagToMerge) return;
-        const { tag } = tagToMerge;
-        if (tag.reference) {
-          allReferences.push(tag.reference);
-        }
-        if (tag.aliases) {
-          allAliases.push(...tag.aliases);
-        }
-        if (tag.keyValuePairs) {
-          Object.assign(allKeyValuePairs, tag.keyValuePairs);
-        }
-        if (tag.description && tag.description !== combinedDescription) {
-          combinedDescription += combinedDescription ? '\n\n' + tag.description : tag.description;
-        }
+      // Call the merge API endpoint
+      const response = await fetch(`/api/tags/${masterTag.id}/merge`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tagIdsToMerge }),
       });
       
-      // Remove duplicates from aliases
-      const uniqueAliases = Array.from(new Set(allAliases));
+      if (!response.ok) {
+        throw new Error(`Merge failed: ${response.statusText}`);
+      }
       
-      // Update master tag with merged data
-      const mergedData = {
-        ...masterTag,
-        reference: allReferences.filter(Boolean).join(','), // TODO: Handle multiple references properly
-        aliases: uniqueAliases,
-        keyValuePairs: allKeyValuePairs,
-        description: combinedDescription,
-        modified: new Date().toISOString()
-      };
+      const mergedTag = await response.json();
+      console.log('Tags merged successfully:', mergedTag);
       
-      await updateTag(masterTag.id, mergedData);
-      
-      // TODO: Delete merged tags and update any connections
-      // TODO: Update tag connections that reference merged tags
-      // TODO: Store merge history for broken reference prevention
+      // Invalidate queries to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
       
       onMergeComplete?.();
       onClose();

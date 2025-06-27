@@ -337,6 +337,91 @@ export class OrcsService {
     await fs.writeFile(filepath, orcsContent, 'utf-8');
   }
 
+  async mergeTags(masterTagId: string, tagIdsToMerge: string[]): Promise<Tag> {
+    const masterTag = await this.getTag(masterTagId);
+    if (!masterTag) {
+      throw new Error("Master tag not found");
+    }
+
+    // Get all tags to merge
+    const tagsToMerge = await Promise.all(
+      tagIdsToMerge.map(id => this.getTag(id))
+    );
+    
+    // Filter out any tags that don't exist
+    const validTagsToMerge = tagsToMerge.filter((tag): tag is Tag => tag !== undefined);
+    
+    if (validTagsToMerge.length === 0) {
+      throw new Error("No valid tags to merge");
+    }
+
+    // Combine all data into master tag
+    const allReferences = [masterTag.reference].filter(Boolean);
+    const allAliases = [...(masterTag.aliases || [])];
+    const allKeyValuePairs = { ...(masterTag.keyValuePairs || {}) };
+    let combinedDescription = masterTag.description || '';
+
+    // Merge data from each tag
+    for (const tag of validTagsToMerge) {
+      if (tag.reference) {
+        allReferences.push(tag.reference);
+      }
+      if (tag.aliases) {
+        allAliases.push(...tag.aliases);
+      }
+      if (tag.keyValuePairs) {
+        Object.assign(allKeyValuePairs, tag.keyValuePairs);
+      }
+      if (tag.description && tag.description !== combinedDescription) {
+        combinedDescription += combinedDescription ? '\n\n' + tag.description : tag.description;
+      }
+    }
+
+    // Remove duplicates from aliases
+    const uniqueAliases = Array.from(new Set(allAliases));
+
+    // Update master tag with merged data
+    const mergedData: Partial<Tag> = {
+      reference: allReferences.join(','),
+      aliases: uniqueAliases,
+      keyValuePairs: allKeyValuePairs,
+      description: combinedDescription,
+      modified: new Date().toISOString()
+    };
+
+    const updatedMasterTag = await this.updateTag(masterTagId, mergedData);
+
+    // Update all tag connections that reference the merged tags
+    const allConnections = await storage.getTagConnections();
+    for (const connection of allConnections) {
+      let shouldUpdate = false;
+      const updates: Partial<typeof connection> = {};
+
+      // Update source tag references
+      if (tagIdsToMerge.includes(connection.sourceTagId)) {
+        updates.sourceTagId = masterTagId;
+        shouldUpdate = true;
+      }
+
+      // Update target tag references
+      if (tagIdsToMerge.includes(connection.targetTagId)) {
+        updates.targetTagId = masterTagId;
+        shouldUpdate = true;
+      }
+
+      if (shouldUpdate) {
+        await storage.updateTagConnection(connection.id, updates);
+      }
+    }
+
+    // Delete the merged tags
+    for (const tagId of tagIdsToMerge) {
+      await this.deleteTag(tagId);
+    }
+
+    return updatedMasterTag;
+  }
+
   private formatTagAsOrcs(tag: Tag): string {
     const lines = [
       '=== ORCS TAG FILE ===',

@@ -186,6 +186,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tag merge operation
+  app.post("/api/tags/:id/merge", async (req, res) => {
+    try {
+      const masterTagId = req.params.id;
+      const { tagIdsToMerge } = req.body;
+      
+      if (!Array.isArray(tagIdsToMerge) || tagIdsToMerge.length === 0) {
+        return res.status(400).json({ error: "Invalid tagIdsToMerge array" });
+      }
+
+      const result = await orcsService.mergeTags(masterTagId, tagIdsToMerge);
+      res.json(result);
+    } catch (error) {
+      console.error("Tag merge error:", error);
+      res.status(500).json({ error: "Failed to merge tags" });
+    }
+  });
+
   // Tag Connection operations
   app.get("/api/connections", async (req, res) => {
     try {
