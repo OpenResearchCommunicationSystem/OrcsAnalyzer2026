@@ -110,7 +110,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     // Look for markdown-style tags: [entity:TechCorp](uuid) format
     return content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, (match, type, text, uuid) => {
       const colorClass = getTagColorClass(type);
-      return `<span class="${colorClass}" data-tag-id="${uuid}" data-tag-type="${type}">${text}</span>`;
+      return `<span class="${colorClass}" data-tag-id="${uuid}" data-tag-type="${type}" style="cursor: pointer;">${text}</span>`;
     });
   };
 
