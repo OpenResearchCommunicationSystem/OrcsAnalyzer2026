@@ -237,12 +237,16 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   const renderHighlightedContent = (content: string) => {
     // Process markdown tags and convert to React elements
     const lines = content.split('\n');
-    return lines.map((line, lineIndex) => (
-      <span key={lineIndex}>
-        {lineIndex > 0 && <br />}
-        {processMarkdownTagsToReact(line)}
-      </span>
-    ));
+    return (
+      <>
+        {lines.map((line, lineIndex) => (
+          <span key={lineIndex}>
+            {lineIndex > 0 && <br />}
+            {processMarkdownTagsToReact(line)}
+          </span>
+        ))}
+      </>
+    );
   };
 
 
