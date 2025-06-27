@@ -177,6 +177,9 @@ Changelog:
 - June 27, 2025. Verified end-to-end CSV workflow: selection → tag creation → card content update → visual highlighting
 - June 27, 2025. DEPRECATED "Fix Misaligned References" feature - no longer needed with card-based markdown system
 - June 27, 2025. Commented out handleFixReferences function and button in TagEditor component
+- June 27, 2025. FIXED TAG DELETION CARD CLEANUP: Added removeTagFromCards() function to clean up card content when tags are deleted
+- June 27, 2025. Tags now properly removed from both TAG INDEX and ORIGINAL CONTENT sections when deleted from TagEditor
+- June 27, 2025. Replaced markdown tags with plain text in card content during tag deletion to maintain content integrity
 ```
 
 ## Future Enhancements
