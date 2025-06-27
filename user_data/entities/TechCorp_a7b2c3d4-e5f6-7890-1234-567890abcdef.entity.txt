@@ -1,21 +1,29 @@
-# Entity: TechCorp
+=== ORCS ENTITY === 
+version: "2025.003"
 UUID: a7b2c3d4-e5f6-7890-1234-567890abcdef
-TYPE: entity
+TAG_TYPE: entity
+NAME: TechCorp
 ENTITY_TYPE: organization
 DESCRIPTION: Technology corporation specializing in artificial intelligence and healthcare technology solutions
-SEARCH_ALIASES: ["tech corp", "technology corporation", "techcorp inc", "tc", "tech corporation"]
-KEY_VALUE_PAIRS:
-  industry: "artificial intelligence"
-  sector: "healthcare technology"
-  founded: "2020"
-  headquarters: "Silicon Valley, CA"
-  market_cap: "15.2B"
-  employees: "3500+"
-  ceo: "John Smith"
-CARD_REFERENCES:
-  - c0c59139-5114-4243-aa89-3c7d924487bc
-DIRECT_RELATIONSHIPS:
+SEARCH_ALIASES:
+  - "tech corp"
+  - "technology corporation"
+  - "techcorp inc"
+  - "tc"
+  - "tech corporation"
+RELATIONSHIPS:
   - acquires: bionex-systems-uuid
   - led_by: john-smith-uuid
+ATTRIBUTES:
+  - industry: "artificial intelligence"
+  - sector: "healthcare technology"
+KEY_VALUE_PAIRS:
+  - founded: "2020"
+  - headquarters: "Silicon Valley, CA"
+  - market_cap: "15.2B"
+  - employees: "3500+"
+  - ceo: "John Smith"
+CARD_REFERENCES:
+  - c0c59139-5114-4243-aa89-3c7d924487bc
 CREATED: 2025-06-27T15:30:00.000Z
 MODIFIED: 2025-06-27T15:30:00.000Z

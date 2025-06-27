@@ -685,8 +685,11 @@ export class OrcsService {
       
       if (trimmed.startsWith('UUID:')) {
         tag.id = trimmed.substring(5).trim();
-      } else if (trimmed.startsWith('TYPE:')) {
-        tag.type = trimmed.substring(5).trim() as TagType;
+      } else if (trimmed.startsWith('TYPE:') || trimmed.startsWith('TAG_TYPE:')) {
+        const typeValue = trimmed.startsWith('TAG_TYPE:') ? 
+          trimmed.substring(9).trim() : 
+          trimmed.substring(5).trim();
+        tag.type = typeValue as TagType;
       } else if (trimmed.startsWith('NAME:')) {
         tag.name = trimmed.substring(5).trim();
       } else if (trimmed.startsWith('# Entity:') || trimmed.startsWith('# Relationship:') || trimmed.startsWith('# Attribute:') || trimmed.startsWith('# Comment:') || trimmed.startsWith('# KV Pair:')) {
@@ -694,6 +697,15 @@ export class OrcsService {
         const parts = trimmed.split(':');
         if (parts.length > 1) {
           tag.name = parts[1].trim();
+        }
+      } else if (trimmed.startsWith('ENTITY_TYPE:')) {
+        tag.entityType = trimmed.substring(12).trim();
+      } else if (trimmed.startsWith('DESCRIPTION:')) {
+        const desc = trimmed.substring(12).trim();
+        if (desc) {
+          tag.description = desc;
+        } else {
+          currentSection = 'description';
         }
       } else if (trimmed.startsWith('REFERENCE:') || trimmed.startsWith('REFERENCES:') || trimmed === 'CARD_REFERENCES:') {
         if (trimmed === 'CARD_REFERENCES:') {
@@ -711,38 +723,47 @@ export class OrcsService {
         tag.created = trimmed.substring(8).trim();
       } else if (trimmed.startsWith('MODIFIED:')) {
         tag.modified = trimmed.substring(9).trim();
-      } else if (trimmed === 'ALIASES:' || trimmed.startsWith('SEARCH_ALIASES:')) {
-        if (trimmed.startsWith('SEARCH_ALIASES:')) {
-          // Handle JSON array format: SEARCH_ALIASES: ["alias1", "alias2"]
-          const jsonPart = trimmed.substring(15).trim();
-          try {
-            const aliases = JSON.parse(jsonPart);
-            if (Array.isArray(aliases)) {
-              tag.aliases = aliases;
-            }
-          } catch (e) {
-            // If parsing fails, treat as single value
-            tag.aliases = [jsonPart];
-          }
-        } else {
-          currentSection = 'aliases';
-        }
+      } else if (trimmed === 'ALIASES:' || trimmed === 'SEARCH_ALIASES:') {
+        currentSection = 'aliases';
       } else if (trimmed === 'KEY_VALUE_PAIRS:') {
         currentSection = 'kvp';
-      } else if (trimmed === 'DESCRIPTION:') {
-        currentSection = 'description';
+      } else if (trimmed === 'RELATIONSHIPS:' || trimmed === 'ATTRIBUTES:') {
+        // Skip these sections for now - they're metadata, not part of the core tag
+        currentSection = 'skip';
       } else if (currentSection === 'aliases' && trimmed.startsWith('- ')) {
-        tag.aliases!.push(trimmed.substring(2));
-      } else if (currentSection === 'kvp' && trimmed.includes(':')) {
-        const [key, ...valueParts] = trimmed.split(':');
-        tag.keyValuePairs![key.trim()] = valueParts.join(':').trim();
+        const alias = trimmed.substring(2).trim();
+        // Remove quotes if present
+        const cleanAlias = alias.replace(/^["']|["']$/g, '');
+        tag.aliases!.push(cleanAlias);
+      } else if (currentSection === 'kvp' && trimmed.startsWith('- ')) {
+        const kvLine = trimmed.substring(2).trim();
+        if (kvLine.includes(':')) {
+          const [key, ...valueParts] = kvLine.split(':');
+          const value = valueParts.join(':').trim().replace(/^["']|["']$/g, '');
+          tag.keyValuePairs![key.trim()] = value;
+        }
       } else if (currentSection === 'description' && trimmed && !trimmed.startsWith('===')) {
         tag.description = (tag.description || '') + trimmed + '\n';
+      } else if (currentSection === 'skip') {
+        // Skip content in sections we don't process
+        continue;
       }
     }
 
-    // Validate required fields
-    if (tag.id && tag.type && tag.name && tag.references && tag.references.length > 0 && tag.created && tag.modified) {
+    // Clean up description if it exists
+    if (tag.description) {
+      tag.description = tag.description.trim();
+    }
+
+    // Validate required fields - for entity files, we need at least id, type, and card references
+    if (tag.id && tag.type && tag.references && tag.references.length > 0 && tag.created && tag.modified) {
+      // If no explicit name, try to extract from the first line or use the type
+      if (!tag.name) {
+        const firstLine = lines[0];
+        if (firstLine.includes('===') && firstLine.includes('ENTITY')) {
+          tag.name = 'Entity'; // Default name
+        }
+      }
       return tag as Tag;
     }
     

@@ -165,6 +165,10 @@ Changelog:
 - June 27, 2025. COMPLETED CARD-CENTRIC FOUNDATION: DocumentViewer now extracts original content from cards, detects source file type from metadata, processes markdown tags with format [entity:TechCorp](uuid)
 - June 27, 2025. Implemented color-coded tag highlighting system for card content: entity (blue), relationship (green), attribute (yellow), comment (purple), kv_pair (orange)
 - June 27, 2025. Finalized card-first interface with clean file names, prioritized card display, and backward compatibility for missing content scenarios
+- June 27, 2025. YAML FORMAT STANDARDIZATION: Implemented consistent YAML format across all ORCS entity files
+- June 27, 2025. Updated parseTagFromOrcsFile() to handle TAG_TYPE, SEARCH_ALIASES, and CARD_REFERENCES in YAML list format
+- June 27, 2025. Fixed FileManagerSidebar to display tag files alongside cards for complete file visibility
+- June 27, 2025. Established standard entity format: === ORCS ENTITY === header, version field, consistent YAML lists throughout
 ```
 
 ## Future Enhancements
