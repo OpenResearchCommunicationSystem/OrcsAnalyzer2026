@@ -195,6 +195,9 @@ Changelog:
 - December 27, 2025. Established knowledge-management-architecture.md with entity-relationship modeling, card structure standards, and analyst attribution requirements
 - December 27, 2025. Added critical analyst attribution system for comment tags with privacy-configurable user UUID management
 - December 27, 2025. Cross-referenced architectural documents with replit.md for unified project documentation
+- December 27, 2025. CRITICAL FIX: Prevented metadata-within-metadata loop by excluding tag files from reference analysis
+- December 27, 2025. Reference analysis now only scans source documents (.card.txt files), not entity/relationship/attribute metadata files
+- December 27, 2025. Fixed Tagged/Untagged content display to show clean document content matching the main viewer format
 ```
 
 ## Future Enhancements

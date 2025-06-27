@@ -130,6 +130,12 @@ function analyzeReferences(
   console.log('File contents available:', Object.keys(fileContents).length);
 
   for (const file of files) {
+    // Skip tag files - only analyze source documents (cards and original files)
+    if (file.name.match(/\.(entity|relate|attrib|comment|kv)\.txt$/)) {
+      console.log(`Skipping tag file: ${file.name}`);
+      continue;
+    }
+
     const content = fileContents[file.name];
     if (!content) {
       console.log('No content for file:', file.name);
