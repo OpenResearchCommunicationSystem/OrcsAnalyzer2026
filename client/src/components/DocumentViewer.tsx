@@ -92,17 +92,63 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     return cardContent;
   };
 
+  // Extract source file info from card metadata
+  const getSourceFileInfo = (cardContent: string): { filename: string; type: 'txt' | 'csv' | null } => {
+    const sourceFileMatch = cardContent.match(/source_file:\s*"([^"]+)"/);
+    
+    if (sourceFileMatch) {
+      const filename = sourceFileMatch[1];
+      const type = filename.endsWith('.csv') ? 'csv' : filename.endsWith('.txt') ? 'txt' : null;
+      return { filename, type };
+    }
+    
+    return { filename: '', type: null };
+  };
+
+  // Detect and process markdown tags in content
+  const processMarkdownTags = (content: string): string => {
+    // Look for markdown-style tags: [text](entity:uuid) or [text](relationship:uuid)
+    return content.replace(/\[([^\]]+)\]\(([^:]+):([^)]+)\)/g, (match, text, type, uuid) => {
+      const colorClass = getTagColorClass(type);
+      return `<span class="${colorClass}" data-tag-id="${uuid}" data-tag-type="${type}">${text}</span>`;
+    });
+  };
+
+  // Get CSS class for tag type colors
+  const getTagColorClass = (tagType: string): string => {
+    switch (tagType) {
+      case 'entity': return 'bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded px-1';
+      case 'relationship': return 'bg-green-500/20 text-green-300 border border-green-500/30 rounded px-1';
+      case 'attribute': return 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 rounded px-1';
+      case 'comment': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded px-1';
+      case 'kv_pair': return 'bg-orange-500/20 text-orange-300 border border-orange-500/30 rounded px-1';
+      default: return 'bg-gray-500/20 text-gray-300 border border-gray-500/30 rounded px-1';
+    }
+  };
+
   // Check if current file is a card file and extract original content
-  const getDisplayContent = (): string => {
-    if (!fileContent?.content) return '';
+  const getDisplayContent = (): { content: string; sourceType: 'txt' | 'csv' | null } => {
+    if (!fileContent?.content) return { content: '', sourceType: null };
     
     // If this is a card file (.card.txt), extract the original content section
     if (selectedFileData?.name.includes('.card.txt')) {
-      return extractOriginalContent(fileContent.content);
+      const originalContent = extractOriginalContent(fileContent.content);
+      const sourceInfo = getSourceFileInfo(fileContent.content);
+      
+      // Process markdown tags in the content for highlighting
+      const processedContent = processMarkdownTags(originalContent);
+      
+      return { 
+        content: processedContent, 
+        sourceType: sourceInfo.type 
+      };
     }
     
-    // Otherwise, display the full content
-    return fileContent.content;
+    // For original files, return content as-is
+    return { 
+      content: fileContent.content, 
+      sourceType: selectedFileData?.type as 'txt' | 'csv' | null 
+    };
   };
 
 
@@ -243,7 +289,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
       if (selection && selection.toString().trim().length > 0 && contentRef.current && fileContent?.content) {
         const selectedText = selection.toString();
         const range = selection.getRangeAt(0);
-        const displayContent = getDisplayContent();
+        const displayData = getDisplayContent();
         
         // Calculate offset by counting characters from the beginning of the content element
         const walker = document.createTreeWalker(
@@ -272,7 +318,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
           const endOffset = startOffset + selectedText.length;
           
           // Verify the selection matches the content at these offsets
-          const contentAtOffsets = displayContent.substring(startOffset, endOffset);
+          const contentAtOffsets = displayData.content.substring(startOffset, endOffset);
           
           if (contentAtOffsets === selectedText) {
             const textSelection: TextSelection = {
@@ -285,7 +331,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
             onTextSelection(textSelection);
           } else {
             // If offsets don't match, try to find the text in the display content
-            const actualStartIndex = displayContent.indexOf(selectedText);
+            const actualStartIndex = displayData.content.indexOf(selectedText);
             if (actualStartIndex !== -1) {
               const actualEndIndex = actualStartIndex + selectedText.length;
               const textSelection: TextSelection = {
@@ -349,8 +395,11 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
       );
     }
 
+    const displayData = getDisplayContent();
+    const effectiveFileType = displayData.sourceType || fileType;
+
     // Handle text files
-    if (fileType === 'txt') {
+    if (effectiveFileType === 'txt') {
       return (
         <>
           <div className="mb-6 pb-4 border-b border-gray-700">
@@ -386,7 +435,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
             style={{ userSelect: 'text' }}
           >
             {renderContentWithTables(
-              getDisplayContent(),
+              displayData.content,
               renderHighlightedContent,
               (row: number, col: number, content: string) => {
                 if (selectedFileData) {
@@ -411,9 +460,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     }
 
     // Handle CSV files
-    if (fileType === 'csv') {
-      const displayContent = getDisplayContent();
-      const csvData = parseCSV(displayContent);
+    if (effectiveFileType === 'csv') {
+      const csvData = parseCSV(displayData.content);
       const headers = csvData[0] || [];
       const rows = csvData.slice(1);
 
