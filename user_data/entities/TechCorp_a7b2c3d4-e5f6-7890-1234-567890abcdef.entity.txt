@@ -5,7 +5,7 @@ TAG_TYPE: entity
 NAME: TechCorp
 ENTITY_TYPE: organization
 CREATED: 2025-06-27T15:30:00.000Z
-MODIFIED: 2025-06-27T09:54:39.566Z
+MODIFIED: 2025-06-27T10:00:50.632Z
 
 SEARCH_ALIASES:
   - tech corp
@@ -19,6 +19,6 @@ CARD_REFERENCES:
   - test_news_b581bdea-4dbb-41d4-925b-6091f5ec8aff.card.txt
 
 DESCRIPTION:
-Technology corporation specializing in artificial intelligence and healthcare technology solutions
+Technology corporation specializing in artificial intelligence and healthcare technology solutions - Updated
 
 === END ORCS ENTITY ===

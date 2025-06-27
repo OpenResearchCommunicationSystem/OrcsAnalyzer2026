@@ -48,6 +48,10 @@ export class OrcsService {
     };
 
     await this.saveTagToFile(updatedTag);
+    
+    // Update card content with tag markup
+    await this.updateCardContent(updatedTag);
+    
     return updatedTag;
   }
 

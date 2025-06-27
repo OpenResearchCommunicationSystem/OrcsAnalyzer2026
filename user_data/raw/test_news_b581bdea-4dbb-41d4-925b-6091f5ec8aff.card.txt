@@ -12,9 +12,9 @@ modified: "2025-06-15T05:20:00.000Z"
 source_hash: "sha256:abc123def456"
 
 === TAG INDEX START === 
-
+[entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
-BREAKING: TechCorp announces major acquisition of AI startup for .5B
+BREAKING: [entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef) announces major acquisition of AI startup for .5B
 === ORIGINAL CONTENT END ===
