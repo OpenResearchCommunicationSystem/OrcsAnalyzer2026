@@ -145,6 +145,8 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
         const atMatch = ref.match(/^(.+?)@(\d+)-(\d+)$/);
         if (atMatch) {
           const filename = atMatch[1];
+          const originalStart = parseInt(atMatch[2]);
+          const originalEnd = parseInt(atMatch[3]);
           const file = files.find((f: any) => f.name === filename);
           
           if (file) {
@@ -152,21 +154,46 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
             const contentResponse = await fetch(`/api/files/${file.id}/content`);
             const { content } = await contentResponse.json();
             
-            // Try to find the tag name in the content
-            const tagNameIndex = content.indexOf(selectedTag.name);
-            if (tagNameIndex !== -1) {
-              const newRef = `${filename}@${tagNameIndex}-${tagNameIndex + selectedTag.name.length}`;
-              fixedReferences.push(newRef);
-            } else {
-              // Keep original reference if can't find the text
+            // Get the text that was originally selected
+            const originalText = content.substring(originalStart, originalEnd);
+            
+            // Check if the original position still contains valid text
+            if (originalText.trim().length > 0 && !originalText.includes('<') && !originalText.includes('>')) {
+              // Original position seems valid, keep it
               fixedReferences.push(ref);
+            } else {
+              // Try to find the tag name in the content for repositioning
+              const searchText = selectedTag.name;
+              const newIndex = content.indexOf(searchText);
+              
+              if (newIndex !== -1) {
+                const newRef = `${filename}@${newIndex}-${newIndex + searchText.length}`;
+                fixedReferences.push(newRef);
+                console.log(`Fixed reference: ${ref} -> ${newRef}`);
+              } else {
+                // If we can't find it, try to find similar text (case insensitive)
+                const lowerContent = content.toLowerCase();
+                const lowerSearch = searchText.toLowerCase();
+                const caseInsensitiveIndex = lowerContent.indexOf(lowerSearch);
+                
+                if (caseInsensitiveIndex !== -1) {
+                  const actualText = content.substring(caseInsensitiveIndex, caseInsensitiveIndex + searchText.length);
+                  const newRef = `${filename}@${caseInsensitiveIndex}-${caseInsensitiveIndex + actualText.length}`;
+                  fixedReferences.push(newRef);
+                  console.log(`Fixed reference (case insensitive): ${ref} -> ${newRef}`);
+                } else {
+                  // Keep original if we can't find any match
+                  console.log(`Cannot fix reference: ${ref} - text not found`);
+                  fixedReferences.push(ref);
+                }
+              }
             }
           } else {
             // Keep original reference if file not found
             fixedReferences.push(ref);
           }
         } else {
-          // Keep non-text references as-is
+          // Keep non-text references as-is (CSV references, etc.)
           fixedReferences.push(ref);
         }
       }
@@ -177,6 +204,8 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
       
       // Update local form data
       setFormData(prev => ({ ...prev, references: fixedReferences }));
+      
+      console.log('References fix completed');
       
     } catch (error) {
       console.error('Failed to fix references:', error);
