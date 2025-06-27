@@ -42,8 +42,8 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
   const originalFiles = filteredFiles.filter(file => (file.type === 'txt' || file.type === 'csv') && !file.name.includes('.card.txt'));
   const tagFiles = filteredFiles.filter(file => ['entity', 'relationship', 'attribute', 'comment', 'kv_pair'].includes(file.type));
   
-  // Show cards by default, originals only when toggled, always show tag files
-  const displayFiles = showOriginals ? [...cardFiles, ...originalFiles, ...tagFiles] : [...cardFiles, ...tagFiles];
+  // Show cards by default, originals only when toggled, hide tag files from main display
+  const displayFiles = showOriginals ? [...cardFiles, ...originalFiles] : cardFiles;
 
   const tagCounts = stats?.tagCounts || {};
 
