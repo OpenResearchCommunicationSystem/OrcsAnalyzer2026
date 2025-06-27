@@ -151,20 +151,28 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
 
   // Process markdown tags and return array of React elements
   const processMarkdownTagsToReact = (content: string) => {
+    console.log('Processing content:', content);
     const parts = [];
     let lastIndex = 0;
     const tagRegex = /\[([^:]+):([^\]]+)\]\(([^)]+)\)/g;
     let match;
+    let matchCount = 0;
 
     while ((match = tagRegex.exec(content)) !== null) {
+      matchCount++;
+      console.log(`Found tag ${matchCount}:`, match);
+      
       // Add text before the tag
       if (match.index > lastIndex) {
-        parts.push(content.slice(lastIndex, match.index));
+        const textBefore = content.slice(lastIndex, match.index);
+        parts.push(textBefore);
       }
 
       // Add the tag as a clickable React element
       const [fullMatch, type, text, uuid] = match;
       const colorClass = getTagColorClass(type);
+      
+      console.log(`Creating clickable tag: ${type}:${text} with uuid ${uuid}`);
       
       parts.push(
         <span
@@ -174,6 +182,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
           data-tag-type={type}
           style={{ cursor: 'pointer' }}
           onClick={(e) => {
+            console.log('Tag clicked:', text, uuid);
             e.preventDefault();
             e.stopPropagation();
             const tag = tags.find(t => t.id === uuid);
@@ -191,9 +200,11 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
 
     // Add remaining text
     if (lastIndex < content.length) {
-      parts.push(content.slice(lastIndex));
+      const remainingText = content.slice(lastIndex);
+      parts.push(remainingText);
     }
 
+    console.log(`Total parts created: ${parts.length}, matches found: ${matchCount}`);
     return parts;
   };
 
