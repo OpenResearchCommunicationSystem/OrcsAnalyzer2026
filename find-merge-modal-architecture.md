@@ -359,16 +359,29 @@ queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
 
 **Result**: Master tag information now appears permanently at top of modal, immune to tab switching, providing consistent reference point for all operations.
 
+#### UI Standards Implementation Project  
+**Completed**: Clean display standards aligned with project-wide UUID visibility policies
+
+**Phase 1**: Similar Tags Section Cleanup
+- **UUID Visibility**: Removed UUIDs from primary display following established UI standards
+- **Match Criteria**: Updated to show "Perfect Match" badge for 100%+ similarity scores only
+- **Match Descriptions**: Enhanced with specific explanations (e.g., `Name contains "TechCorp"`, `Alias match: technology`)
+- **Visual Hierarchy**: Gold badges reserved for perfect matches, muted outline badges for partial matches
+- **Search Capability**: Restored full similarity search (filter changed back from `>= 100` to `> 0`)
+
+**Critical Fix**: Prevented loss of search functionality by maintaining original scoring thresholds while improving visual presentation
+
 #### Key Architectural Insights
 - **Data Flow**: All modal functionality reads from `masterTag` prop, not visual displays
 - **Visual Separation**: Master tag displays are purely presentational
 - **No Functional Dependencies**: Merge operations, similarity analysis, and reference analysis all use `masterTag` directly
+- **UI Consistency**: Modal now follows project-wide standards for UUID hiding and clean name display
 
 #### Line Number Updates Post-Implementation
 - **Master Tag Display**: Lines 211-232 (permanent top position)
 - **Alias Toggle Controls**: Lines 234-308
 - **Tab System**: Lines 311-325
-- **Similar Tags Tab**: Lines 327+ (master tag display removed)
+- **Similar Tags Tab**: Lines 327+ (master tag display removed, UUID-free display)
 
 ## Future Extension Points
 
@@ -383,8 +396,15 @@ queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
 - **Additional Analysis Types**: Reference analysis framework is extensible
 - **UI Customization**: Tab system and layout are flexible
 - **Master Tag Extensions**: Could add edit capabilities, additional metadata display
+- **Advanced UUID Management**: Implement three-tier file lookup resilience (See: replit.md - File System Resilience Policy)
+
+### Design Patterns Established
+- **Clean Name Display**: Primary focus on human-readable names, technical details hidden
+- **Progressive Match Disclosure**: Perfect matches highlighted, partial matches clearly labeled
+- **Descriptive Match Reasons**: Specific explanations rather than generic percentages
+- **Reference Content Focus**: Context over file paths for similarity assessment
 
 ---
 
 *Generated: December 27, 2025*
-*Updated: December 27, 2025 - Master Tag Repositioning Complete*
+*Updated: December 27, 2025 - UI Standards Implementation Complete*

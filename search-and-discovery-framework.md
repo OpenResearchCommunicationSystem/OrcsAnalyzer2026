@@ -414,9 +414,46 @@ Visual identity system ensuring consistent search result presentation:
 - **Color Schema**: Complete visual identity system implemented
 - **Pending Migrations**: Relationship, attribute, comment, key-value tags following entity pattern
 
+## UI/UX Design Patterns for Search & Discovery
+
+### Visual Hierarchy Standards
+- **Clean Name Priority**: Human-readable names prominently displayed over technical identifiers
+- **UUID Visibility Policy**: Hidden from primary display, shown only when technically necessary for disambiguation
+- **Progressive Disclosure**: Essential information first, detailed technical data expandable or secondary
+
+### Similarity Search Interface Standards
+Based on Find & Merge Modal implementation:
+
+#### Match Quality Display
+- **Perfect Matches (100%+)**: Gold "Perfect Match" badge with enhanced visual treatment
+- **Partial Matches (50-99%)**: Muted percentage badges showing exact similarity score
+- **Low Matches (<50%)**: Standard display with clear indication of limited relevance
+
+#### Match Explanation Standards
+- **Descriptive Reasons**: Specific explanations over generic percentages
+  - Example: "Name contains 'TechCorp'" instead of "75% name match"
+  - Example: "Alias match: technology" instead of "50% alias match"
+- **Multiple Criteria**: Combined explanations when multiple factors contribute
+- **User-Friendly Language**: Avoid technical terminology in match descriptions
+
+#### Reference Display Guidelines
+- **Context Over Location**: Show content snippets rather than file paths for relevance assessment
+- **Clean File Names**: Remove UUIDs from displayed filenames in reference lists
+- **Relevance Indicators**: Visual cues for reference strength and confidence
+
+### Search Result Organization
+- **Categorized Results**: Group by match type (exact, partial, alias, context)
+- **Relevance Sorting**: Highest confidence matches first within each category
+- **Quick Actions**: Immediate access to merge, edit, or navigate actions
+
+### Implementation Cross-References
+- **Find & Merge Modal**: Complete implementation in `client/src/components/TagMergeModal.tsx`
+- **UI Standards**: Comprehensive guidelines in `replit.md` - UI Standards and Technical Guidelines
+- **File Resilience**: Three-tier lookup strategy documented in `replit.md`
+
 ---
 
 *Created: December 27, 2025*
-*Updated: December 27, 2025 - Integrated Index Transition Documentation*
+*Updated: December 27, 2025 - Added UI/UX Design Patterns from Find & Merge Modal*
 *Industry Standards: Information Retrieval, Enterprise Search, Intelligence Analysis*
 *Framework Status: Foundation Phase Complete - Entity Baseline Established*
