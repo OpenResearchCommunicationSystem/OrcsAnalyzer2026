@@ -24,12 +24,12 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 - **Validation**: Zod schemas for type-safe data validation
 
 ### Data Storage Solutions
-- **Primary Storage**: File-based system organized in structured directories
-- **Search Index**: Persistent JSON-based index stored in `user_data/index.json`
+- **Primary Storage**: Card-centric file system with embedded content (See: [knowledge-management-architecture.md](./knowledge-management-architecture.md))
+- **Search Index**: Persistent JSON-based index stored in `user_data/index.json` (See: [search-and-discovery-framework.md](./search-and-discovery-framework.md))
 - **Database**: PostgreSQL 16 (configured but not yet implemented with Drizzle ORM)
 - **File Organization**: Hierarchical directory structure under `user_data/`
-  - `raw/` - Original uploaded files (.txt, .csv) with companion .yaml.txt metadata files
-  - `entities/`, `relationships/`, `attributes/`, `comments/`, `kv_pairs/` - Categorized tags
+  - **Cards**: `.card.txt` files with embedded original content and analysis
+  - **Tag Files**: `.entity.txt`, `.relate.txt`, `.attrib.txt`, `.comment.txt`, `.kv.txt` with cross-references
   - `index.json` - Search index with keywords, content hashes, and metadata
 
 ## Key Components
@@ -52,7 +52,7 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 - **Entity**: Green (`bg-green-500/20 text-green-300 border-green-500/30`) - Organizations, people, locations, objects
 - **Relationship**: Orange (`bg-orange-500/20 text-orange-300 border-orange-500/30`) - Connections between entities
 - **Attribute**: Purple (`bg-purple-500/20 text-purple-300 border-purple-500/30`) - Properties and characteristics
-- **Comment**: Blue (`bg-blue-500/20 text-blue-300 border-blue-500/30`) - Analysis and observations
+- **Comment**: Blue (`bg-blue-500/20 text-blue-300 border-blue-500/30`) - **Analyst notes and observations** (Critical for production workflows)
 - **Key-Value**: Amber (`bg-amber-500/20 text-amber-300 border-amber-500/30`) - Structured data pairs
 
 ### Graph Visualization
@@ -190,12 +190,17 @@ Changelog:
 - June 27, 2025. DEPLOYMENT STRATEGY CHANGE: Moved from embedded D3.js to manual library creation approach for portable HTML
 - June 27, 2025. Users now create d3.v7.min.js file from provided d3.v7.min.js.txt source when deploying offline version
 - June 27, 2025. Portable HTML file expects d3.v7.min.js to be placed in same directory as orcs-portable.html for offline functionality
+- December 27, 2025. Created comprehensive architectural documentation framework
+- December 27, 2025. Established search-and-discovery-framework.md with industry standards for search operations, reference libraries, and discovery patterns
+- December 27, 2025. Established knowledge-management-architecture.md with entity-relationship modeling, card structure standards, and analyst attribution requirements
+- December 27, 2025. Added critical analyst attribution system for comment tags with privacy-configurable user UUID management
+- December 27, 2025. Cross-referenced architectural documents with replit.md for unified project documentation
 ```
 
 ## Future Enhancements
 
 ### Advanced Disambiguation System
-- **Search term management**: Check/uncheck individual search terms during disambiguation
+- **Search term management**: Check/uncheck individual search terms during disambiguation (See: [search-and-discovery-framework.md](./search-and-discovery-framework.md) - Reference Data Libraries)
 - **Temporary/permanent modifications**: Add/remove search terms for current session or permanently
 - **Document resolution**: Resolve multiple analyst views of same document with automatic future resolution
 - **Import library system**: Imported content staged in separate library for selective integration
@@ -210,7 +215,7 @@ Changelog:
 - **User precedence**: User's own tags always take priority over imported content
 
 ### Organizational Features
-- **Individual analyst UUIDs**: Future addition for user identification
+- **Individual analyst UUIDs**: Future addition for user identification (See: [knowledge-management-architecture.md](./knowledge-management-architecture.md) - Analyst Attribution)
 - **Repository UUIDs**: Allow organizations to track and merge multiple repositories
 - **Export capabilities**: MS Office, Google Office, node/edge tables, ORCS-to-ORCS
 - **Supervisor merge tools**: Higher-level users combine multiple analyst repositories
