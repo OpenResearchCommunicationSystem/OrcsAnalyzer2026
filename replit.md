@@ -175,6 +175,8 @@ Changelog:
 - June 27, 2025. COMPLETED CSV TAGGING SYSTEM: Full support for tagging CSV content with proper markdown insertion into card files
 - June 27, 2025. CSV tags appear in both TAG INDEX and ORIGINAL CONTENT sections with format [entity:Name](uuid)
 - June 27, 2025. Verified end-to-end CSV workflow: selection → tag creation → card content update → visual highlighting
+- June 27, 2025. DEPRECATED "Fix Misaligned References" feature - no longer needed with card-based markdown system
+- June 27, 2025. Commented out handleFixReferences function and button in TagEditor component
 ```
 
 ## Future Enhancements

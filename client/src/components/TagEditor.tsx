@@ -131,7 +131,8 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
     });
   };
 
-  const handleFixReferences = async () => {
+  // DEPRECATED: No longer needed with card-based system
+  /* const handleFixReferences = async () => {
     if (!selectedTag) return;
     
     try {
@@ -210,7 +211,7 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
     } catch (error) {
       console.error('Failed to fix references:', error);
     }
-  };
+  }; */
 
   const handleSave = () => {
     if (selectedTag && formData.name && formData.type) {
@@ -646,8 +647,8 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               <CollapsibleContent className="p-2">
                 {selectedTag && (
                   <div className="space-y-2">
-                    {/* Fix References Button */}
-                    <Button
+                    {/* Fix References Button - DEPRECATED: No longer needed with card-based system */}
+                    {/* <Button
                       variant="outline"
                       className="w-full border-orange-600 text-orange-400 hover:bg-orange-600 hover:text-white py-2 px-3 mb-3"
                       onClick={handleFixReferences}
@@ -655,7 +656,7 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
                     >
                       <RotateCcw className="w-4 h-4 mr-1" />
                       Fix Misaligned References
-                    </Button>
+                    </Button> */}
                     
                     {parseReferences(selectedTag).map((ref, index) => (
                       <div 

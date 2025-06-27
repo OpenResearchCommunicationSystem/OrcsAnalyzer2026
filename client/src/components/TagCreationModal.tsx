@@ -5,9 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { User, Link, Tag, MessageCircle, Key, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { User, Link, Tag, MessageCircle, Key, X, AlertTriangle } from "lucide-react";
 import { TextSelection, InsertTag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
+import { useQuery } from "@tanstack/react-query";
+import type { Tag as TagType } from "@shared/schema";
 
 interface TagCreationModalProps {
   isOpen: boolean;
@@ -30,6 +33,11 @@ export function TagCreationModal({
   const [entityType, setEntityType] = useState('');
 
   const { createTag, isCreating } = useTagOperations();
+
+  // Fetch all tags for similarity detection
+  const { data: allTags = [] } = useQuery<TagType[]>({
+    queryKey: ['/api/tags'],
+  });
 
   // Auto-populate identifier with selected text when modal opens
   useEffect(() => {
