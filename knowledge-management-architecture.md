@@ -46,6 +46,66 @@ Based on CommonMark specification with intelligence analysis extensions:
 - **Metadata Blocks**: YAML frontmatter for structured information
 - **Extension Compatibility**: GitHub Flavored Markdown compliance
 
+## Architectural Evolution: Location-Based to Card-Centric Knowledge
+
+### Transition from Fragile Positioning to Robust Structure
+ORCS knowledge management evolved from a location-based indexing system to a card-centric architecture due to fundamental structural problems:
+
+#### Original Location-Based Challenges
+- **Character offset fragility**: Tags positioned by character counts broke when documents were edited
+- **Cascading reference failures**: One misaligned tag could break all subsequent tag positioning
+- **Dual-file complexity**: Required constant synchronization between source documents and metadata files
+- **Export difficulties**: Packaging analysis with source materials was complex and error-prone
+
+#### Current Card-Centric Solution
+- **Embedded knowledge**: Original content preserved within structured cards using delimiter sections
+- **Markdown-based tagging**: Tags embedded as `[entity:Name](uuid)` format within content
+- **Single source of truth**: Cards contain both original content and analysis in unified format
+- **Stable cross-references**: UUID-based linking immune to content changes
+
+### Entity-First Implementation Strategy
+**Current Status**: Entity tags fully transitioned, serving as proven baseline for other tag types
+
+#### Entity Tag Structure (Complete)
+```markdown
+=== ORCS CARD ===
+[Card metadata with classification, handling, timestamps]
+
+=== TAG INDEX START ===
+[entity:TechCorp](uuid-reference)
+=== TAG INDEX END ===
+
+=== ORIGINAL CONTENT START ===
+The company [entity:TechCorp](uuid-reference) announced their new platform.
+=== ORIGINAL CONTENT END ===
+```
+
+#### Official Tag Color Schema
+**Industry Standard**: Consistent visual identity system for knowledge classification
+
+| Tag Type | Color Theme | Tailwind Classes | Knowledge Domain |
+|----------|-------------|------------------|------------------|
+| **Entity** | Green | `bg-green-500/20 text-green-300 border-green-500/30` | Organizations, people, locations, objects |
+| **Relationship** | Orange | `bg-orange-500/20 text-orange-300 border-orange-500/30` | Connections between entities |
+| **Attribute** | Purple | `bg-purple-500/20 text-purple-300 border-purple-500/30` | Properties and characteristics |
+| **Comment** | Blue | `bg-blue-500/20 text-blue-300 border-blue-500/30` | Analysis and observations |
+| **Key-Value** | Amber | `bg-amber-500/20 text-amber-300 border-amber-500/30` | Structured data pairs |
+
+#### Pending Tag Type Migrations
+Following entity tag proven patterns:
+- **Relationship tags**: `[relationship:develops](uuid)` - Orange visual theme
+- **Attribute tags**: `[attribute:healthcare_focus](uuid)` - Purple visual theme  
+- **Comment tags**: `[comment:analyst_observation](uuid)` - Blue visual theme
+- **Key-Value tags**: `[kv_pair:industry=AI](uuid)` - Amber visual theme
+
+**Implementation Status**: 
+- **Entity tags**: Fully implemented across all components
+- **Other tag types**: Color schema defined, following entity pattern for transition
+- **Accessibility**: Sufficient contrast ratios, alpha transparency for readability
+
+### Cross-Reference
+*For search and discovery implementation details, see: [search-and-discovery-framework.md](./search-and-discovery-framework.md)*
+
 ## ORCS Knowledge Structure
 
 ### Core Data Model Architecture
@@ -528,8 +588,26 @@ CARD_REFERENCES:
 - **Performance Testing**: Load and stress testing
 - **User Acceptance**: Workflow usability validation
 
+## Document Changelog
+
+### December 27, 2025 - Foundation Document Created
+- Established comprehensive knowledge management architecture framework
+- Documented industry standards for entity-relationship modeling, semantic web compliance
+- Integrated architectural evolution from location-based to card-centric knowledge structure
+- Created ORCS card format standards with delimiter-based content organization
+- Documented entity-first implementation strategy as proven baseline for other tag types
+- Added official tag color schema with implementation status tracking
+- Cross-referenced with search-and-discovery-framework.md for unified documentation
+
+### Current Implementation Status
+- **Entity Knowledge Structure**: Fully implemented with card-centric architecture
+- **Tag Color Schema**: Complete visual identity system defined
+- **Card Format**: Standardized structure with metadata, index, content, and analysis sections
+- **Pending Tag Migrations**: Relationship, attribute, comment, key-value following entity patterns
+
 ---
 
 *Created: December 27, 2025*
+*Updated: December 27, 2025 - Integrated Index Transition Documentation*
 *Industry Standards: Knowledge Management, Semantic Web, Intelligence Analysis*
-*Architecture Status: Foundation Phase Complete*
+*Architecture Status: Foundation Phase Complete - Entity Knowledge Baseline Established*

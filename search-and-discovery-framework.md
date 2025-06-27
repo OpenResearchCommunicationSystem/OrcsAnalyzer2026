@@ -257,6 +257,41 @@ Professional terminology for query expansion:
 - **Location**: `server/storage.ts`
 - **Enhancement**: Needs relationship traversal
 
+## Architectural Transition: From Location-Based to Card-Centric
+
+### Historical Context
+ORCS originally implemented location-based tag indexing using character offset positioning within source documents. This approach proved problematic due to:
+- **Fragile positioning**: Character offsets broke when documents were edited
+- **Cascading failures**: One broken reference could misalign all subsequent tags
+- **Dual-file dependencies**: Required coordination between source files and metadata files
+- **Complex maintenance**: Tag highlighting required constant position recalculation
+
+### Current Card-Centric Architecture
+The system transitioned to a card-centric model where:
+- **Single source of truth**: Tags embedded as markdown within `.card.txt` files
+- **Stable references**: Tags use UUID-based linking instead of character positions
+- **Embedded content**: Original documents preserved within cards using delimited sections
+- **Robust highlighting**: Visual tags rendered from markdown format `[entity:Name](uuid)`
+
+### Entity Tag Baseline (Fully Transitioned)
+**Status**: Complete implementation serving as foundation for other tag types
+- **Color coding**: Green (`bg-green-500/20 text-green-300 border-green-500/30`)
+- **Markdown format**: `[entity:TechCorp](uuid-reference)`
+- **Card integration**: Embedded in both TAG INDEX and ORIGINAL CONTENT sections
+- **Search integration**: Fully indexed and discoverable
+
+### Pending Tag Type Transitions
+**Status**: Following entity tag pattern once search/discovery baseline is established
+- **Relationship**: Orange - `[relationship:develops](uuid)` 
+- **Attribute**: Purple - `[attribute:healthcare_focus](uuid)`
+- **Comment**: Blue - `[comment:analyst_observation](uuid)`
+- **Key-Value**: Amber - `[kv_pair:industry=AI](uuid)`
+
+*Note: All tag types use consistent color schema and markdown patterns. Migration follows entity tag proven approach.*
+
+### Cross-Reference
+*For detailed knowledge organization patterns, see: [knowledge-management-architecture.md](./knowledge-management-architecture.md)*
+
 ## Current Implementation Inventory
 
 ### Existing Search Capabilities
@@ -285,23 +320,36 @@ Professional terminology for query expansion:
 **Features**: Delimiter-based parsing, format detection
 **Limitations**: No structured content analysis
 
+### Official Tag Color Schema for Search Results
+Visual identity system ensuring consistent search result presentation:
+
+| Tag Type | Color Theme | Tailwind Classes | Search Context |
+|----------|-------------|------------------|----------------|
+| **Entity** | Green | `bg-green-500/20 text-green-300 border-green-500/30` | Organizations, people, locations, objects |
+| **Relationship** | Orange | `bg-orange-500/20 text-orange-300 border-orange-500/30` | Connections between entities |
+| **Attribute** | Purple | `bg-purple-500/20 text-purple-300 border-purple-500/30` | Properties and characteristics |
+| **Comment** | Blue | `bg-blue-500/20 text-blue-300 border-blue-500/30` | Analysis and observations |
+| **Key-Value** | Amber | `bg-amber-500/20 text-amber-300 border-amber-500/30` | Structured data pairs |
+
+**Implementation**: Colors maintain accessibility with sufficient contrast ratios, alpha transparency (20%) allows text readability, consistent across all search interfaces.
+
 ### Search Integration Points
 
 #### Frontend Components
-- **DocumentViewer**: `client/src/components/DocumentViewer.tsx`
-- **TagMergeModal**: `client/src/components/TagMergeModal.tsx`
-- **TagEditor**: `client/src/components/TagEditor.tsx`
-- **FileManagerSidebar**: `client/src/components/FileManagerSidebar.tsx`
+- **DocumentViewer**: `client/src/components/DocumentViewer.tsx` - Card content extraction, tag highlighting
+- **TagMergeModal**: `client/src/components/TagMergeModal.tsx` - Reference analysis, similarity search
+- **TagEditor**: `client/src/components/TagEditor.tsx` - Individual tag search operations
+- **FileManagerSidebar**: `client/src/components/FileManagerSidebar.tsx` - File discovery interface
 
 #### Backend Services
-- **OrcsService**: `server/services/orcsService.ts`
-- **FileService**: `server/services/fileService.ts`
-- **Storage**: `server/storage.ts`
+- **OrcsService**: `server/services/orcsService.ts` - Tag operations, graph generation
+- **FileService**: `server/services/fileService.ts` - File content operations
+- **Storage**: `server/storage.ts` - Core search implementation
 
 #### API Endpoints
-- **Search Files**: `/api/search/files`
-- **Search Content**: `/api/search/content`
-- **Rebuild Index**: `/api/index/rebuild`
+- **Search Files**: `/api/search/files` - Document-level search
+- **Search Content**: `/api/search/content` - Full-text content search
+- **Rebuild Index**: `/api/index/rebuild` - Search index maintenance
 
 ## Future Enhancement Roadmap
 
@@ -349,8 +397,26 @@ Professional terminology for query expansion:
 - **Data Protection**: Sensitive content handling
 - **Library Security**: Trusted source validation
 
+## Document Changelog
+
+### December 27, 2025 - Foundation Document Created
+- Established comprehensive search and discovery framework architecture
+- Documented industry standards for Boolean, proximity, semantic search operations
+- Integrated index transition lessons from location-based to card-centric architecture
+- Created reference data library management standards (controlled vocabularies, pattern libraries, watch lists)
+- Documented entity tag baseline implementation as foundation for other tag types
+- Added official tag color schema for consistent search result presentation
+- Cross-referenced with knowledge-management-architecture.md for unified documentation
+
+### Current Implementation Status
+- **Entity Tags**: Fully transitioned to card-centric model, serving as proven baseline
+- **Search Integration**: Basic text search, tag similarity analysis, reference analysis functional
+- **Color Schema**: Complete visual identity system implemented
+- **Pending Migrations**: Relationship, attribute, comment, key-value tags following entity pattern
+
 ---
 
 *Created: December 27, 2025*
+*Updated: December 27, 2025 - Integrated Index Transition Documentation*
 *Industry Standards: Information Retrieval, Enterprise Search, Intelligence Analysis*
-*Framework Status: Foundation Phase Complete*
+*Framework Status: Foundation Phase Complete - Entity Baseline Established*
