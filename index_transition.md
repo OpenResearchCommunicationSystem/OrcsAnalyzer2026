@@ -213,6 +213,24 @@ tags_index: {
 4. **User Training**: Clear documentation and examples
 5. **Incremental Approach**: File-by-file or tag-by-tag migration options
 
+## Official Tag Color Schema
+
+**Visual Identity System**: Consistent color coding across all interface components
+
+| Tag Type | Color | Tailwind Classes | Use Case |
+|----------|--------|------------------|----------|
+| **Entity** | Green | `bg-green-500/20 text-green-300 border-green-500/30` | Organizations, people, locations, objects |
+| **Relationship** | Orange | `bg-orange-500/20 text-orange-300 border-orange-500/30` | Connections between entities |
+| **Attribute** | Purple | `bg-purple-500/20 text-purple-300 border-purple-500/30` | Properties and characteristics |
+| **Comment** | Blue | `bg-blue-500/20 text-blue-300 border-blue-500/30` | Analysis and observations |
+| **Key-Value** | Amber | `bg-amber-500/20 text-amber-300 border-amber-500/30` | Structured data pairs |
+
+**Implementation Notes**:
+- Colors maintain accessibility with sufficient contrast ratios
+- Alpha transparency (20%) allows text readability underneath
+- Border styling provides clear visual boundaries
+- Consistent across DocumentViewer, TagEditor, and navigation components
+
 ## Current Implementation Status (June 27, 2025)
 
 ### ✓ COMPLETED - Phase 1: Card-Centric Foundation
@@ -220,7 +238,7 @@ tags_index: {
 - Extracts original content using `=== ORIGINAL CONTENT START/END ===` delimiters
 - Detects source file type (.txt/.csv) from card metadata `source_file:` field
 - Processes markdown tags with format: `[entity:TechCorp](uuid)`
-- Applies color-coded highlighting: entity (blue), relationship (green), attribute (yellow), comment (purple), kv_pair (orange)
+- Applies color-coded highlighting using official schema: entity (green), relationship (orange), attribute (purple), comment (blue), kv_pair (amber)
 - Maintains CSV table rendering and cell selection for card-embedded data
 
 **File Management System**:

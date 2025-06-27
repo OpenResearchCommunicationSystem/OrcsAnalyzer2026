@@ -48,6 +48,13 @@ The system uses a full-stack architecture with a React frontend, Express.js back
 - Visual tag indicators with color-coded representations
 - **Search Aliases System**: Aliases field is designed for finding untagged content in documents, not for report aliases (which go in attributes/key-value pairs)
 
+#### Official Tag Color Schema
+- **Entity**: Green (`bg-green-500/20 text-green-300 border-green-500/30`) - Organizations, people, locations, objects
+- **Relationship**: Orange (`bg-orange-500/20 text-orange-300 border-orange-500/30`) - Connections between entities
+- **Attribute**: Purple (`bg-purple-500/20 text-purple-300 border-purple-500/30`) - Properties and characteristics
+- **Comment**: Blue (`bg-blue-500/20 text-blue-300 border-blue-500/30`) - Analysis and observations
+- **Key-Value**: Amber (`bg-amber-500/20 text-amber-300 border-amber-500/30`) - Structured data pairs
+
 ### Graph Visualization
 - Interactive visualization of relationships between tagged elements
 - Node-based representation of entities and their connections
