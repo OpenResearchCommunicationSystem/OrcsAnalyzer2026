@@ -2,7 +2,7 @@
 UUID: fa4e92f3-59e1-401c-a375-c72aed7d1cc7
 TYPE: relationship
 NAME: acquisition
-REFERENCE: test_news.txt@25-44
+REFERENCES: test_news.txt@25-44
 CREATED: 2025-06-15T05:38:25.125Z
 MODIFIED: 2025-06-15T05:38:25.125Z
 

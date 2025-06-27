@@ -2,7 +2,7 @@
 UUID: c1ab0594-e85e-49c8-acbc-7f8417dfab34
 TYPE: entity
 NAME: VisionEdge Analytics
-REFERENCE: beneficial_owners.csv@0-20
+REFERENCES: beneficial_owners.csv@0-20
 CREATED: 2025-06-15T05:57:27.760Z
 MODIFIED: 2025-06-15T06:10:07.282Z
 
