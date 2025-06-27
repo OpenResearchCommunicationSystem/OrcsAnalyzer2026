@@ -63,7 +63,7 @@ export class FileService {
     const sourceHash = crypto.createHash('sha256').update(content).digest('hex');
     
     const baseName = path.parse(file.name).name;
-    const metadataFilename = `${baseName}.yaml.txt`;
+    const metadataFilename = `${baseName}_${metadataId}.card.txt`;
     const metadataPath = path.join(RAW_DIR, metadataFilename);
     
     const yamlContent = [
@@ -100,22 +100,102 @@ export class FileService {
 
   async getMetadataForFile(filename: string): Promise<string | null> {
     const baseName = path.parse(filename).name;
-    const metadataFilename = `${baseName}.yaml.txt`;
-    const metadataPath = path.join(RAW_DIR, metadataFilename);
+    
+    // Wikipedia approach: Find the metadata file regardless of format
+    const metadataFile = await this.findMetadataFile(baseName);
+    if (!metadataFile) {
+      return null;
+    }
     
     try {
-      return await fs.readFile(metadataPath, 'utf-8');
+      const content = await fs.readFile(metadataFile.path, 'utf-8');
+      
+      // Auto-migrate old .yaml.txt files to new .card.txt format
+      if (metadataFile.isLegacy) {
+        await this.migrateMetadataFile(filename, metadataFile.path, content);
+      }
+      
+      return content;
     } catch (error) {
-      return null; // Metadata file doesn't exist
+      return null;
+    }
+  }
+
+  private async findMetadataFile(baseName: string): Promise<{path: string, isLegacy: boolean} | null> {
+    try {
+      const files = await fs.readdir(RAW_DIR);
+      
+      // Look for new .card.txt format first
+      for (const file of files) {
+        if (file.startsWith(baseName) && file.endsWith('.card.txt')) {
+          return { path: path.join(RAW_DIR, file), isLegacy: false };
+        }
+      }
+      
+      // Fallback to legacy .yaml.txt format
+      const legacyFile = `${baseName}.yaml.txt`;
+      const legacyPath = path.join(RAW_DIR, legacyFile);
+      
+      try {
+        await fs.access(legacyPath);
+        return { path: legacyPath, isLegacy: true };
+      } catch {
+        return null;
+      }
+    } catch {
+      return null;
+    }
+  }
+
+  private async migrateMetadataFile(originalFilename: string, oldPath: string, content: string): Promise<void> {
+    try {
+      const metadataId = uuidv4();
+      const baseName = path.parse(originalFilename).name;
+      const newFilename = `${baseName}_${metadataId}.card.txt`;
+      const newPath = path.join(RAW_DIR, newFilename);
+      
+      // Check if new file already exists
+      try {
+        await fs.access(newPath);
+        // New file exists, just remove old one
+        await fs.unlink(oldPath);
+        return;
+      } catch {
+        // New file doesn't exist, proceed with migration
+      }
+      
+      // Update the UUID in the content
+      const updatedContent = content.replace(/uuid: "[^"]*"/, `uuid: "${metadataId}"`);
+      
+      // Save with new format
+      await fs.writeFile(newPath, updatedContent, 'utf-8');
+      
+      // Remove old file
+      await fs.unlink(oldPath);
+      
+      console.log(`Migrated metadata file: ${path.basename(oldPath)} -> ${newFilename}`);
+    } catch (error: any) {
+      if (error.code !== 'ENOENT') {
+        console.error(`Failed to migrate metadata file ${oldPath}:`, error);
+      }
     }
   }
 
   async updateMetadataFile(filename: string, content: string): Promise<void> {
     const baseName = path.parse(filename).name;
-    const metadataFilename = `${baseName}.yaml.txt`;
-    const metadataPath = path.join(RAW_DIR, metadataFilename);
     
-    await fs.writeFile(metadataPath, content, 'utf-8');
+    // Find existing metadata file using Wikipedia approach
+    const metadataFile = await this.findMetadataFile(baseName);
+    if (metadataFile) {
+      // Update existing file
+      await fs.writeFile(metadataFile.path, content, 'utf-8');
+    } else {
+      // Create new metadata file with UUID
+      const metadataId = uuidv4();
+      const newFilename = `${baseName}_${metadataId}.card.txt`;
+      const newPath = path.join(RAW_DIR, newFilename);
+      await fs.writeFile(newPath, content, 'utf-8');
+    }
   }
 
   private formatOrcsCard(card: OrcsCard): string {

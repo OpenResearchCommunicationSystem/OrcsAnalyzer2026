@@ -1,6 +1,6 @@
 # ORCS Metadata Card
 version: "2025.003"
-uuid: "c88ea308-c8dd-4c67-8c4a-0138ce3367b3"
+uuid: "c0c59139-5114-4243-aa89-3c7d924487bc"
 source_file: "news_clip_1.txt"
 source_reference: "MSG 235455"
 classification: "Proprietary Information"

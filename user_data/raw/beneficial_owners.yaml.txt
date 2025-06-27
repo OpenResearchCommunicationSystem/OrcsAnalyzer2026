@@ -1,3 +1,0 @@
-# Test metadata update
-version: "2025.003"
-uuid: "test-123"

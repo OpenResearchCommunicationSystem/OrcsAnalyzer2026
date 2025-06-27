@@ -1,6 +1,6 @@
 # ORCS Metadata Card
 version: "2025.003"
-uuid: "54a4a6ed-b688-4ef3-83b7-bfd64360a475"
+uuid: "4aebb51e-875a-4351-aba3-99174f17c394"
 source_file: "news_clip_2.txt"
 source_reference: ""  # External URL or reference
 classification: "Proprietary Information"
