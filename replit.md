@@ -149,6 +149,9 @@ Changelog:
 - June 27, 2025. Fixed TagCreationModal not closing after successful tag creation
 - June 27, 2025. CRITICAL FIX: Implemented automatic offset adjustment system to prevent cascading tag misalignment when tags are deleted
 - June 27, 2025. Added adjustOffsetsAfterDeletion() function that recalculates character positions for all subsequent tags in affected files
+- June 27, 2025. MAJOR TRANSITION: Created new card-centric architecture with embedded original text/tables
+- June 27, 2025. Backed up existing cards as .backup files and created new enhanced cards with markdown analysis sections
+- June 27, 2025. Cards now contain: original content + structured analysis + tagged elements planning (analysis becomes comment tags)
 ```
 
 ## Future Enhancements
