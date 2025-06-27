@@ -19,7 +19,7 @@ interface TagEditorProps {
   onReferenceClick?: (filename: string) => void;
 }
 
-export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps) {
+export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick }: TagEditorProps) {
   const [formData, setFormData] = useState<Partial<Tag>>({});
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
@@ -383,8 +383,13 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose }: TagEditorProps)
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-2 mt-2">
                 {parseReferences(selectedTag).map((ref, index) => (
-                  <div key={index} className="bg-gray-800 p-3 rounded border border-gray-600">
-                    <div className="font-medium text-slate-200">{ref.filename}</div>
+                  <div 
+                    key={index} 
+                    className="bg-gray-800 p-3 rounded border border-gray-600 cursor-pointer hover:bg-gray-700 transition-colors"
+                    onClick={() => onReferenceClick?.(ref.filename)}
+                    title={`Click to open ${ref.filename}`}
+                  >
+                    <div className="font-medium text-slate-200 hover:text-blue-300">{ref.filename}</div>
                     <div className="text-sm text-slate-400">{ref.location}</div>
                     <div className="text-xs text-slate-500 capitalize">{ref.type} file</div>
                   </div>

@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Shield, Upload, Search } from "lucide-react";
 import { useFileOperations } from "@/hooks/useFileOperations";
 import { useTagOperations } from "@/hooks/useTagOperations";
-import { TextSelection, Tag, Stats } from "@shared/schema";
+import { TextSelection, Tag, Stats, File } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
 
 export default function OrcsMain() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -23,6 +24,11 @@ export default function OrcsMain() {
 
   const { uploadFile, isUploading } = useFileOperations();
   const { stats }: { stats?: Stats } = useTagOperations();
+  
+  // Fetch files for reference navigation
+  const { data: files = [] } = useQuery<File[]>({
+    queryKey: ['/api/files'],
+  });
 
   const handleFileUpload = () => {
     const input = document.createElement('input');
@@ -53,6 +59,19 @@ export default function OrcsMain() {
   const handleTagClick = (tag: Tag) => {
     setSelectedTag(tag);
     setActiveTab('tagEditor');
+  };
+
+  const handleReferenceClick = (filename: string) => {
+    // Find the file by name and select it
+    const matchingFile = files.find(file => file.name === filename);
+    if (matchingFile) {
+      setSelectedFile(matchingFile.id);
+      // Close tag editor to show the document
+      setSelectedTag(null);
+      setActiveTab('graph');
+    } else {
+      console.warn('File not found:', filename);
+    }
   };
 
   return (
@@ -167,6 +186,7 @@ export default function OrcsMain() {
               selectedTag={selectedTag}
               onTagUpdate={(tag) => setSelectedTag(tag)}
               onClose={() => setSelectedTag(null)}
+              onReferenceClick={handleReferenceClick}
             />
           )}
         </div>
