@@ -179,22 +179,7 @@ function analyzeReferences(
   return result;
 }
 
-function extractOriginalContent(content: string, filename: string): string {
-  // If this is a card file, extract the original content section
-  if (filename.includes('.card.txt')) {
-    const startMarker = '=== ORIGINAL CONTENT START ===';
-    const endMarker = '=== ORIGINAL CONTENT END ===';
-    
-    const startIndex = content.indexOf(startMarker);
-    const endIndex = content.indexOf(endMarker);
-    
-    if (startIndex !== -1 && endIndex !== -1) {
-      return content.substring(startIndex + startMarker.length, endIndex).trim();
-    }
-  }
-  
-  return content;
-}
+// Content extraction now handled by standardized ContentExtractor utility
 
 function findTaggedReferences(
   targetTag: Tag,
@@ -205,7 +190,8 @@ function findTaggedReferences(
   const references: TaggedReference[] = [];
   
   // Extract clean content first (remove metadata if this is a card file)
-  const cleanContent = extractOriginalContent(content, filename);
+  const cleanContentResult = ContentExtractor.extractCleanContent(content, filename);
+  const cleanContent = cleanContentResult.content;
   
   // Look for markdown-style tags: [entity:TechCorp](uuid) format
   const tagRegex = /\[([^:]+):([^\]]+)\]\(([^)]+)\)/g;
@@ -246,7 +232,8 @@ function findUntaggedReferences(
   const references: UntaggedReference[] = [];
   
   // Extract clean content first (remove metadata if this is a card file)
-  const originalContent = extractOriginalContent(content, filename);
+  const originalContentResult = ContentExtractor.extractCleanContent(content, filename);
+  const originalContent = originalContentResult.content;
   
   // Remove existing tagged content to avoid duplicate detection
   const cleanContent = originalContent.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, '$2');

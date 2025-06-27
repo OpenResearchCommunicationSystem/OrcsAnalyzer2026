@@ -198,6 +198,10 @@ Changelog:
 - December 27, 2025. CRITICAL FIX: Prevented metadata-within-metadata loop by excluding tag files from reference analysis
 - December 27, 2025. Reference analysis now only scans source documents (.card.txt files), not entity/relationship/attribute metadata files
 - December 27, 2025. Fixed Tagged/Untagged content display to show clean document content matching the main viewer format
+- December 27, 2025. CLEAN CONTENT ARCHITECTURE: Implemented standardized ContentExtractor utility for strict content/metadata separation
+- December 27, 2025. Created CleanContentDisplay component with official ORCS color schema and contamination validation
+- December 27, 2025. Established clean-content-architecture.md with comprehensive standards for preventing metadata loops
+- December 27, 2025. Updated reference analysis to use ContentExtractor - ensures only source documents are analyzed, never metadata files
 ```
 
 ## Future Enhancements
