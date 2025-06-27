@@ -398,7 +398,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
     const displayData = getDisplayContent();
     const effectiveFileType = displayData.sourceType || fileType;
 
-    // Handle text files
+    // Handle text files  
     if (effectiveFileType === 'txt') {
       return (
         <>
