@@ -342,6 +342,9 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
             </div>
           )}
 
+          {/* REDUNDANT FIELDS - COMMENTED OUT FOR TESTING */}
+          {/* UUID field - redundant, already shown in header */}
+          {/*
           <div>
             <Label className="text-sm font-medium text-slate-300">UUID</Label>
             <Input
@@ -350,7 +353,10 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               readOnly
             />
           </div>
+          */}
 
+          {/* Name/Identifier field - redundant, already shown in header with edit button */}
+          {/*
           <div>
             <Label className="text-sm font-medium text-slate-300">Name/Identifier</Label>
             <Input
@@ -359,7 +365,10 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               className="bg-gray-800 border-gray-600 focus:border-blue-500"
             />
           </div>
+          */}
 
+          {/* References field - redundant, shown in References section below */}
+          {/*
           <div>
             <Label className="text-sm font-medium text-slate-300">References</Label>
             <Input
@@ -372,6 +381,7 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               placeholder="filename@start-end, filename[row,col]"
             />
           </div>
+          */}
 
 
 
