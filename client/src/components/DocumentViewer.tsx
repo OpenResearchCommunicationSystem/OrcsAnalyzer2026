@@ -45,16 +45,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   const selectedFileData = files.find(f => f.id === selectedFile);
   const fileType = selectedFileData?.type;
 
-  // Auto-refresh content when tags change to update highlighting
-  useEffect(() => {
-    if (selectedFile && fileContent) {
-      // Refresh content after tag operations to show updated highlighting
-      const timer = setTimeout(() => {
-        refetchContent();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [tags, selectedFile, refetchContent]);
+  // Listen for tag changes but rely on gentle refetch from useTagOperations
+  // This ensures highlighting updates without aggressive cache invalidation
 
   // Update metadata content when data loads
   useEffect(() => {

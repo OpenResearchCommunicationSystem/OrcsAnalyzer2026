@@ -17,11 +17,22 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Invalidate specific query types one by one to prevent race conditions
+      // Only invalidate metadata queries, keep file content stable
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      
+      // Gentle refetch of file list and content without breaking cache
+      queryClient.refetchQueries({ queryKey: ['/api/files'] });
+      setTimeout(() => {
+        queryClient.refetchQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey[0]?.toString() || '';
+            return key.includes('/content');
+          },
+          type: 'active'
+        });
+      }, 200);
       
       toast({
         title: "Tag created successfully",
@@ -43,11 +54,22 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Invalidate specific query types one by one to prevent race conditions
+      // Only invalidate metadata queries, keep file content stable
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      
+      // Gentle refetch of file list and content without breaking cache
+      queryClient.refetchQueries({ queryKey: ['/api/files'] });
+      setTimeout(() => {
+        queryClient.refetchQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey[0]?.toString() || '';
+            return key.includes('/content');
+          },
+          type: 'active'
+        });
+      }, 200);
       
       toast({
         title: "Tag updated successfully",
@@ -68,11 +90,22 @@ export function useTagOperations() {
       return await response.json();
     },
     onSuccess: () => {
-      // Invalidate specific query types one by one to prevent race conditions
+      // Only invalidate metadata queries, keep file content stable
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      
+      // Gentle refetch of file list and content without breaking cache
+      queryClient.refetchQueries({ queryKey: ['/api/files'] });
+      setTimeout(() => {
+        queryClient.refetchQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey[0]?.toString() || '';
+            return key.includes('/content');
+          },
+          type: 'active'
+        });
+      }, 200);
       
       toast({
         title: "Tag deleted successfully",
