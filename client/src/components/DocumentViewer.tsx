@@ -117,8 +117,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
   // Get CSS class for tag type colors
   const getTagColorClass = (tagType: string): string => {
     switch (tagType) {
-      case 'entity': return 'bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded px-1';
-      case 'relationship': return 'bg-green-500/20 text-green-300 border border-green-500/30 rounded px-1';
+      case 'entity': return 'bg-green-500/20 text-green-300 border border-green-500/30 rounded px-1';
+      case 'relationship': return 'bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded px-1';
       case 'attribute': return 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 rounded px-1';
       case 'comment': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded px-1';
       case 'kv_pair': return 'bg-orange-500/20 text-orange-300 border border-orange-500/30 rounded px-1';
