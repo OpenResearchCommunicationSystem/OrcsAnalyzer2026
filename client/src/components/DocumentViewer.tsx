@@ -7,6 +7,7 @@ import { Edit, Table, Save, FileText } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { Tag, TextSelection, File } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
+import { renderContentWithTables } from '@/lib/markdownTableRenderer';
 
 interface DocumentViewerProps {
   selectedFile: string | null;
@@ -354,10 +355,29 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
 
           <div 
             ref={contentRef}
-            className="font-mono text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text text-slate-300 mb-4 whitespace-pre-wrap"
+            className="text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text text-slate-300 mb-4"
             style={{ userSelect: 'text' }}
           >
-            {renderHighlightedContent(fileContent.content)}
+            {renderContentWithTables(
+              fileContent.content,
+              renderHighlightedContent,
+              (row: number, col: number, content: string) => {
+                if (selectedFileData) {
+                  const textSelection: TextSelection = {
+                    text: content,
+                    startOffset: 0,
+                    endOffset: content.length,
+                    filename: selectedFileData.name,
+                    reference: `${selectedFileData.name}[${row},${col}]`
+                  };
+                  onTextSelection(textSelection);
+                  setSelectedCell({ row, col });
+                }
+              },
+              selectedCell
+            ).map((element, index) => (
+              <div key={index}>{element}</div>
+            ))}
           </div>
         </>
       );
