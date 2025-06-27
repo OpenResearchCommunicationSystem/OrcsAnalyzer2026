@@ -310,12 +310,10 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
 
           <div 
             ref={contentRef}
-            className="font-mono text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text"
+            className="font-mono text-sm leading-relaxed bg-gray-800 p-4 rounded-lg border border-gray-700 select-text text-slate-300 mb-4 whitespace-pre-wrap"
             style={{ userSelect: 'text' }}
           >
-            <div className="text-slate-300 mb-4 whitespace-pre-wrap">
-              {renderHighlightedContent(fileContent.content)}
-            </div>
+            {renderHighlightedContent(fileContent.content)}
           </div>
         </>
       );
