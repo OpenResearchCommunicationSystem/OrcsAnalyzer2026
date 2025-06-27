@@ -250,7 +250,7 @@ export class FileService {
           id,
           name: filename,
           path: filepath,
-          type: filename.endsWith('.csv') ? 'csv' : filename.endsWith('.yaml.txt') ? 'metadata' : 'txt',
+          type: filename.endsWith('.csv') ? 'csv' : (filename.endsWith('.yaml.txt') || filename.endsWith('.card.txt')) ? 'metadata' : 'txt',
           size: stats.size,
           created: stats.birthtime.toISOString(),
           modified: stats.mtime.toISOString(),
