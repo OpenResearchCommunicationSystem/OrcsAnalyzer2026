@@ -63,29 +63,39 @@ export default function OrcsMain() {
 
   const handleFileNotFound = (staleFileId: string) => {
     // When a file becomes invalid after tag operations, find the corresponding card file
-    const staleFile = files.find(f => f.id === staleFileId);
-    if (staleFile) {
-      // Extract base name from the stale file to find matching card
-      const baseName = staleFile.name.replace(/\.(txt|csv)$/, '').replace(/\.card$/, '');
-      
-      // Look for a card file with the same base name
-      const matchingCardFile = files.find(f => 
-        f.name.includes('.card.txt') && f.name.startsWith(baseName)
-      );
-      
-      if (matchingCardFile) {
-        setSelectedFile(matchingCardFile.id);
-        return;
+    // We need to identify which document was being viewed and find its current card file
+    
+    // First, try to find the stale file in our current files list
+    // If it doesn't exist, we need to match by document name pattern
+    
+    // Look at the currently selected file data to understand what document we're in
+    const currentlySelectedData = files.find(f => f.id === selectedFile);
+    
+    if (currentlySelectedData && currentlySelectedData.name.includes('.card.txt')) {
+      // We're already looking at a card file, but it became stale
+      // Extract the base document name (e.g., "social_post_1" from "social_post_1_uuid.card.txt")
+      const baseNameMatch = currentlySelectedData.name.match(/^([^_]+(?:_[^_]+)*?)_[a-f0-9-]+\.card\.txt$/);
+      if (baseNameMatch) {
+        const baseName = baseNameMatch[1];
+        
+        // Find the current card file for this same document
+        const updatedCardFile = files.find(f => 
+          f.name.includes('.card.txt') && 
+          f.name.startsWith(baseName + '_') &&
+          f.id !== staleFileId // Don't select the same stale file
+        );
+        
+        if (updatedCardFile) {
+          setSelectedFile(updatedCardFile.id);
+          return;
+        }
       }
     }
     
-    // Fallback: if we can't find a specific match, try to stay in the same document family
-    const cardFiles = files.filter(f => f.name.includes('.card.txt'));
-    if (cardFiles.length > 0) {
-      setSelectedFile(cardFiles[0].id);
-    } else {
-      setSelectedFile(null);
-    }
+    // Fallback: if we can't find a specific match, don't switch documents
+    // Just clear the selection to avoid confusion
+    setSelectedFile(null);
+    console.warn('Could not resolve stale file reference, clearing selection');
   };
 
   const handleReferenceClick = (filename: string) => {
