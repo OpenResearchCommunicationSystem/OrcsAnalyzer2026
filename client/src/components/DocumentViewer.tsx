@@ -149,63 +149,35 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     return { filename: '', type: null };
   };
 
-  // Process markdown tags and return array of React elements
-  const processMarkdownTagsToReact = (content: string) => {
-    console.log('Processing content:', content);
-    const parts = [];
-    let lastIndex = 0;
+  // Process markdown tags and return HTML string with clickable elements
+  const processMarkdownTagsToHTML = (content: string): string => {
     const tagRegex = /\[([^:]+):([^\]]+)\]\(([^)]+)\)/g;
-    let match;
-    let matchCount = 0;
-
-    while ((match = tagRegex.exec(content)) !== null) {
-      matchCount++;
-      console.log(`Found tag ${matchCount}:`, match);
-      
-      // Add text before the tag
-      if (match.index > lastIndex) {
-        const textBefore = content.slice(lastIndex, match.index);
-        parts.push(textBefore);
-      }
-
-      // Add the tag as a clickable React element
-      const [fullMatch, type, text, uuid] = match;
+    
+    return content.replace(tagRegex, (match, type, text, uuid) => {
       const colorClass = getTagColorClass(type);
+      // Convert Tailwind classes to inline styles for better compatibility
+      const colorStyles = getTagInlineStyles(type);
       
-      console.log(`Creating clickable tag: ${type}:${text} with uuid ${uuid}`);
-      
-      parts.push(
-        <span
-          key={`tag-${uuid}-${match.index}`}
-          className={colorClass}
-          data-tag-id={uuid}
-          data-tag-type={type}
-          style={{ cursor: 'pointer' }}
-          onClick={(e) => {
-            console.log('Tag clicked:', text, uuid);
-            e.preventDefault();
-            e.stopPropagation();
-            const tag = tags.find(t => t.id === uuid);
-            if (tag) {
-              onTagClick(tag);
-            }
-          }}
-        >
-          {text}
-        </span>
-      );
+      return `<span class="clickable-tag ${colorClass}" data-tag-id="${uuid}" data-tag-type="${type}" style="cursor: pointer; ${colorStyles}">${text}</span>`;
+    });
+  };
 
-      lastIndex = tagRegex.lastIndex;
+  // Convert tag type to inline styles
+  const getTagInlineStyles = (type: string): string => {
+    switch (type) {
+      case 'entity':
+        return 'background-color: rgba(34, 197, 94, 0.2); color: rgb(134, 239, 172); border: 1px solid rgba(34, 197, 94, 0.3); padding: 1px 4px; border-radius: 4px;';
+      case 'relationship':
+        return 'background-color: rgba(249, 115, 22, 0.2); color: rgb(253, 186, 116); border: 1px solid rgba(249, 115, 22, 0.3); padding: 1px 4px; border-radius: 4px;';
+      case 'attribute':
+        return 'background-color: rgba(168, 85, 247, 0.2); color: rgb(196, 181, 253); border: 1px solid rgba(168, 85, 247, 0.3); padding: 1px 4px; border-radius: 4px;';
+      case 'comment':
+        return 'background-color: rgba(59, 130, 246, 0.2); color: rgb(147, 197, 253); border: 1px solid rgba(59, 130, 246, 0.3); padding: 1px 4px; border-radius: 4px;';
+      case 'kv_pair':
+        return 'background-color: rgba(245, 158, 11, 0.2); color: rgb(252, 211, 77); border: 1px solid rgba(245, 158, 11, 0.3); padding: 1px 4px; border-radius: 4px;';
+      default:
+        return 'background-color: rgba(156, 163, 175, 0.2); color: rgb(209, 213, 219); border: 1px solid rgba(156, 163, 175, 0.3); padding: 1px 4px; border-radius: 4px;';
     }
-
-    // Add remaining text
-    if (lastIndex < content.length) {
-      const remainingText = content.slice(lastIndex);
-      parts.push(remainingText);
-    }
-
-    console.log(`Total parts created: ${parts.length}, matches found: ${matchCount}`);
-    return parts;
   };
 
   // Get CSS class for tag type colors - Official ORCS Color Schema
