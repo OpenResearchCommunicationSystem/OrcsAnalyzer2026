@@ -63,6 +63,7 @@ export function TagCreationModal({
     try {
       await createTag(tagData);
       onTagCreated();
+      onClose(); // Close the modal after successful creation
       setIdentifier('');
       setDescription('');
     } catch (error) {
