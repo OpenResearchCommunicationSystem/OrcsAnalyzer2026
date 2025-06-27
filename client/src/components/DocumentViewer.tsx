@@ -422,18 +422,18 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick }: Do
       );
     }
 
-    if (!fileContent?.content && !isContentLoading) {
+    if (isContentLoading) {
       return (
         <div className="flex items-center justify-center h-64">
-          <div className="text-slate-400">Unsupported file type. Only .txt and .csv files are supported.</div>
+          <div className="text-slate-400">Loading document...</div>
         </div>
       );
     }
 
-    if (isContentLoading || !fileContent?.content) {
+    if (!fileContent?.content) {
       return (
         <div className="flex items-center justify-center h-64">
-          <div className="text-slate-400">Loading document...</div>
+          <div className="text-slate-400">Document not found or empty.</div>
         </div>
       );
     }

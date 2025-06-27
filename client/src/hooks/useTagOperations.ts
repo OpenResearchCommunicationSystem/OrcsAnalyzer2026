@@ -23,12 +23,14 @@ export function useTagOperations() {
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       
-      // Invalidate all file content and metadata queries to refresh document highlighting
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey[0] as string;
-          return key.includes('/api/files/') && (key.includes('/content') || key.includes('/metadata'));
-        }
+      // Force refetch of files list to get current file IDs, then invalidate content queries
+      queryClient.refetchQueries({ queryKey: ['/api/files'] }).then(() => {
+        queryClient.invalidateQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey[0] as string;
+            return key.includes('/api/files/') && (key.includes('/content') || key.includes('/metadata'));
+          }
+        });
       });
       
       toast({
@@ -57,12 +59,14 @@ export function useTagOperations() {
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       
-      // Invalidate all file content and metadata queries to refresh document highlighting
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey[0] as string;
-          return key.includes('/api/files/') && (key.includes('/content') || key.includes('/metadata'));
-        }
+      // Force refetch of files list to get current file IDs, then invalidate content queries
+      queryClient.refetchQueries({ queryKey: ['/api/files'] }).then(() => {
+        queryClient.invalidateQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey[0] as string;
+            return key.includes('/api/files/') && (key.includes('/content') || key.includes('/metadata'));
+          }
+        });
       });
       
       toast({
@@ -91,12 +95,14 @@ export function useTagOperations() {
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       
-      // Invalidate all file content and metadata queries to refresh document highlighting
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey[0] as string;
-          return key.includes('/api/files/') && (key.includes('/content') || key.includes('/metadata'));
-        }
+      // Force refetch of files list to get current file IDs, then invalidate content queries
+      queryClient.refetchQueries({ queryKey: ['/api/files'] }).then(() => {
+        queryClient.invalidateQueries({ 
+          predicate: (query) => {
+            const key = query.queryKey[0] as string;
+            return key.includes('/api/files/') && (key.includes('/content') || key.includes('/metadata'));
+          }
+        });
       });
       
       toast({

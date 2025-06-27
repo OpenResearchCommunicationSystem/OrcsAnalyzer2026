@@ -16,12 +16,13 @@ source_hash: "sha256:885c3b15d090b18c15c561a09ca694abe1a1d9ba1ac226b97032e38f832
 [entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef)
 [entity:BioNex Systems](707df28b-5443-4a4a-89e6-c02e1f48b605)
 [entity:CloudVest](4057a24c-dd6a-4a78-b9c1-9e6606869275)
+[entity:Thomas Greene](3a7fdd18-9c30-4c60-80fa-e0e202242689)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
 Company,Board Member,Position
 [entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef),John Smith,CEO
 [entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef),[entity:Ava Cheng](696c35b7-d3f1-4909-a41a-3eb02de35bfa),CFO
-[entity:BioNex Systems](707df28b-5443-4a4a-89e6-c02e1f48b605),Thomas Greene,Director
-[entity:CloudVest](4057a24c-dd6a-4a78-b9c1-9e6606869275) Holdings,Thomas Greene,Former COO
+[entity:BioNex Systems](707df28b-5443-4a4a-89e6-c02e1f48b605),[entity:Thomas Greene](3a7fdd18-9c30-4c60-80fa-e0e202242689),Director
+[entity:CloudVest](4057a24c-dd6a-4a78-b9c1-9e6606869275) Holdings,[entity:Thomas Greene](3a7fdd18-9c30-4c60-80fa-e0e202242689),Former COO
 === ORIGINAL CONTENT END ===
