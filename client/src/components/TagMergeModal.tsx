@@ -117,7 +117,11 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
         // Partial name match
         else if (tagName.includes(masterName) || masterName.includes(tagName)) {
           similarity += 75;
-          matchReasons.push("Partial name match");
+          if (tagName.includes(masterName)) {
+            matchReasons.push(`Name contains "${masterTag.name}"`);
+          } else {
+            matchReasons.push(`"${masterTag.name}" contains "${tag.name}"`);
+          }
         }
         
         // Alias matches - only if similarity search aliases are enabled
@@ -146,7 +150,7 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
         
         return { tag, similarity, matchReasons };
       })
-      .filter(item => item.similarity >= 100)
+      .filter(item => item.similarity > 0)
       .sort((a, b) => b.similarity - a.similarity);
   };
 
@@ -379,9 +383,13 @@ export function TagMergeModal({ isOpen, onClose, masterTag, onMergeComplete }: T
                           <div className="flex-1">
                             <div className="flex items-center">
                               <div className="font-medium text-slate-200">{tag.name}</div>
-                              {similarity >= 100 && (
+                              {similarity >= 100 ? (
                                 <Badge className="ml-2 bg-amber-600 text-amber-100">
                                   Perfect Match
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="ml-2 text-slate-400 border-slate-600">
+                                  {similarity}% match
                                 </Badge>
                               )}
                             </div>
