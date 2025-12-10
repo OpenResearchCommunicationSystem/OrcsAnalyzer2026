@@ -5,6 +5,7 @@ import { z } from "zod";
 import { insertTagSchema, insertTagConnectionSchema, textSelectionSchema } from "@shared/schema";
 import { fileService } from "./services/fileService";
 import { orcsService } from "./services/orcsService";
+import { indexService } from "./services/indexService";
 import { storage } from "./storage";
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -526,6 +527,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Index rebuild failed:', error);
       res.status(500).json({ error: 'Index rebuild failed' });
+    }
+  });
+
+  // Master Index API routes
+  app.get('/api/system/index', async (req, res) => {
+    try {
+      const index = await indexService.getIndex();
+      res.json(index);
+    } catch (error) {
+      console.error('Failed to get index:', error);
+      res.status(500).json({ error: 'Failed to get index' });
+    }
+  });
+
+  app.post('/api/system/reindex', async (req, res) => {
+    try {
+      const index = await indexService.buildFullIndex();
+      res.json({ 
+        message: 'System reindexed successfully',
+        stats: index.stats 
+      });
+    } catch (error) {
+      console.error('Reindex failed:', error);
+      res.status(500).json({ error: 'Reindex failed' });
+    }
+  });
+
+  app.get('/api/system/broken-connections', async (req, res) => {
+    try {
+      const brokenConnections = await indexService.validateConnections();
+      res.json(brokenConnections);
+    } catch (error) {
+      console.error('Failed to validate connections:', error);
+      res.status(500).json({ error: 'Failed to validate connections' });
+    }
+  });
+
+  app.get('/api/system/stats', async (req, res) => {
+    try {
+      const index = await indexService.getIndex();
+      res.json(index.stats);
+    } catch (error) {
+      console.error('Failed to get stats:', error);
+      res.status(500).json({ error: 'Failed to get stats' });
     }
   });
 
