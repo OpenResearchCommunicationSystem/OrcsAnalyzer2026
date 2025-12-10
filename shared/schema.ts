@@ -9,6 +9,7 @@ export const fileSchema = z.object({
   size: z.number(),
   created: z.string(),
   modified: z.string(),
+  cardUuid: z.string().optional(), // Stable UUID for card files (never changes when content is modified)
 });
 
 export const insertFileSchema = fileSchema.omit({ id: true });

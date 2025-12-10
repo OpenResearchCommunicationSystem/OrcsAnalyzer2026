@@ -163,9 +163,9 @@ export class OrcsService {
       await fs.unlink(oldFilepath);
       
       console.log(`Migrated tag file: ${path.basename(oldFilepath)} -> ${newFilename}`);
-    } catch (error) {
+    } catch (error: any) {
       // Only log error if it's not a "file not found" error (migration already completed)
-      if (error.code !== 'ENOENT') {
+      if (error?.code !== 'ENOENT') {
         console.error(`Failed to migrate tag file ${oldFilepath}:`, error);
       }
     }
@@ -753,10 +753,15 @@ export class OrcsService {
   }
   
   // Append user-added text to a card's USER ADDED section
-  async appendUserText(cardFilename: string, text: string): Promise<boolean> {
+  // Returns the card's UUID for stable re-selection, or null on failure
+  async appendUserText(cardFilename: string, text: string): Promise<string | null> {
     try {
       const cardPath = path.join(USER_DATA_DIR, 'raw', cardFilename);
       const cardContent = await fs.readFile(cardPath, 'utf-8');
+      
+      // Extract the card's UUID for stable reference
+      const uuidMatch = cardContent.match(/^uuid:\s*"([^"]+)"/m);
+      const cardUuid = uuidMatch ? uuidMatch[1] : null;
       
       const lines = cardContent.split('\n');
       let userAddedStart = -1;
@@ -777,7 +782,7 @@ export class OrcsService {
       
       if (originalContentEnd === -1) {
         console.error('Card does not have expected format');
-        return false;
+        return null;
       }
       
       let newLines: string[];
@@ -805,10 +810,59 @@ export class OrcsService {
       
       await fs.writeFile(cardPath, newLines.join('\n'), 'utf-8');
       console.log(`Appended user text to card: ${cardFilename}`);
-      return true;
+      return cardUuid;
     } catch (error) {
       console.error('Failed to append user text:', error);
-      return false;
+      return null;
+    }
+  }
+  
+  // Clear user-added text from a card's USER ADDED section
+  // Returns the card's UUID for stable re-selection, or null on failure
+  async clearUserAddedText(cardFilename: string): Promise<string | null> {
+    try {
+      const cardPath = path.join(USER_DATA_DIR, 'raw', cardFilename);
+      const cardContent = await fs.readFile(cardPath, 'utf-8');
+      
+      // Extract the card's UUID for stable reference
+      const uuidMatch = cardContent.match(/^uuid:\s*"([^"]+)"/m);
+      const cardUuid = uuidMatch ? uuidMatch[1] : null;
+      
+      const lines = cardContent.split('\n');
+      let userAddedStart = -1;
+      let userAddedEnd = -1;
+      
+      // Find USER ADDED section boundaries
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line === '=== USER ADDED START ===') {
+          userAddedStart = i;
+        } else if (line === '=== USER ADDED END ===') {
+          userAddedEnd = i;
+        }
+      }
+      
+      if (userAddedStart === -1 || userAddedEnd === -1) {
+        // No USER ADDED section, nothing to clear
+        return cardUuid;
+      }
+      
+      // Remove the entire USER ADDED section (including delimiters)
+      // Also remove the blank line before it if present
+      const startIndex = userAddedStart > 0 && lines[userAddedStart - 1].trim() === '' 
+        ? userAddedStart - 1 
+        : userAddedStart;
+      const newLines = [
+        ...lines.slice(0, startIndex),
+        ...lines.slice(userAddedEnd + 1)
+      ];
+      
+      await fs.writeFile(cardPath, newLines.join('\n'), 'utf-8');
+      console.log(`Cleared user-added text from card: ${cardFilename}`);
+      return cardUuid;
+    } catch (error) {
+      console.error('Failed to clear user-added text:', error);
+      return null;
     }
   }
 

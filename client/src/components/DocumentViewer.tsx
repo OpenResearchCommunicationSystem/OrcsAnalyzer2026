@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Edit, Table, Save, FileText, RefreshCw, Plus, Send } from 'lucide-react';
+import { Edit, Table, Save, FileText, RefreshCw, Plus, Send, Trash2 } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { Tag, TextSelection, File } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
@@ -16,9 +16,10 @@ interface DocumentViewerProps {
   onTagClick: (tag: Tag, isCtrlClick?: boolean) => void;
   onFileNotFound?: (staleFileId: string) => void;
   onEntityDragConnection?: (sourceEntity: Tag, targetEntity: Tag) => void;
+  onSelectFileByCardUuid?: (cardUuid: string) => void;
 }
 
-export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFileNotFound, onEntityDragConnection }: DocumentViewerProps) {
+export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFileNotFound, onEntityDragConnection, onSelectFileByCardUuid }: DocumentViewerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const userAddedRef = useRef<HTMLDivElement>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
@@ -32,14 +33,34 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   // Mutation to append user text
   const appendTextMutation = useMutation({
     mutationFn: async ({ fileId, text }: { fileId: string; text: string }) => {
-      return apiRequest('POST', `/api/files/${fileId}/append-text`, { text });
+      const response = await apiRequest('POST', `/api/files/${fileId}/append-text`, { text });
+      return response.json();
     },
-    onSuccess: () => {
-      // Invalidate queries to refresh content
-      queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/content`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
+    onSuccess: async (data: { success: boolean; cardUuid: string }) => {
+      // Refresh file list first
+      await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Use cardUuid to re-select the file after modification
+      if (data.cardUuid && onSelectFileByCardUuid) {
+        onSelectFileByCardUuid(data.cardUuid);
+      }
       setNewUserText('');
       setShowAddText(false);
+    },
+  });
+
+  // Mutation to clear user-added text
+  const clearUserAddedMutation = useMutation({
+    mutationFn: async (fileId: string) => {
+      const response = await apiRequest('DELETE', `/api/files/${fileId}/user-added`);
+      return response.json();
+    },
+    onSuccess: async (data: { success: boolean; cardUuid: string }) => {
+      // Refresh file list first
+      await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Use cardUuid to re-select the file after modification
+      if (data.cardUuid && onSelectFileByCardUuid) {
+        onSelectFileByCardUuid(data.cardUuid);
+      }
     },
   });
 
@@ -800,16 +821,35 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                   </Button>
                 </div>
               ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowAddText(true)}
-                  className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
-                  data-testid="button-add-text"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Text
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowAddText(true)}
+                    className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                    data-testid="button-add-text"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Text
+                  </Button>
+                  {displayData.userAddedContent && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (selectedFile && confirm('Are you sure you want to clear all user-added content?')) {
+                          clearUserAddedMutation.mutate(selectedFile);
+                        }
+                      }}
+                      disabled={clearUserAddedMutation.isPending}
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      data-testid="button-clear-user-added"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Clear
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -977,16 +1017,35 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                   </Button>
                 </div>
               ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowAddText(true)}
-                  className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
-                  data-testid="button-add-text"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Text
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowAddText(true)}
+                    className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                    data-testid="button-add-text"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Text
+                  </Button>
+                  {displayData.userAddedContent && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (selectedFile && confirm('Are you sure you want to clear all user-added content?')) {
+                          clearUserAddedMutation.mutate(selectedFile);
+                        }
+                      }}
+                      disabled={clearUserAddedMutation.isPending}
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      data-testid="button-clear-user-added"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Clear
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           )}

@@ -165,6 +165,14 @@ export default function OrcsMain() {
     }
   };
 
+  // Handle re-selection by cardUuid after file modifications (e.g., adding user text)
+  const handleSelectFileByCardUuid = (cardUuid: string) => {
+    const matchingFile = files.find(f => f.cardUuid === cardUuid);
+    if (matchingFile) {
+      setSelectedFile(matchingFile.id);
+    }
+  };
+
   return (
     <div className="desktop-layout min-h-screen flex flex-col bg-gray-900 text-slate-50">
       {/* Header */}
@@ -237,6 +245,7 @@ export default function OrcsMain() {
               onTagClick={handleTagClick}
               onFileNotFound={handleFileNotFound}
               onEntityDragConnection={handleEntityDragConnection}
+              onSelectFileByCardUuid={handleSelectFileByCardUuid}
             />
             
             <TagToolbar

@@ -140,15 +140,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Can only append text to card files" });
       }
       
-      const success = await orcsService.appendUserText(file.name, text.trim());
-      if (!success) {
+      const cardUuid = await orcsService.appendUserText(file.name, text.trim());
+      if (!cardUuid) {
         return res.status(500).json({ error: "Failed to append text to card" });
       }
       
-      res.json({ success: true });
+      res.json({ success: true, cardUuid });
     } catch (error) {
       console.error("Append text error:", error);
       res.status(500).json({ error: "Failed to append text" });
+    }
+  });
+
+  // Clear user-added text from a card file
+  app.delete("/api/files/:id/user-added", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Only allow clearing from card files
+      if (!file.name.endsWith('.card.txt')) {
+        return res.status(400).json({ error: "Can only clear user-added text from card files" });
+      }
+      
+      const cardUuid = await orcsService.clearUserAddedText(file.name);
+      if (cardUuid === null) {
+        return res.status(500).json({ error: "Failed to clear user-added text" });
+      }
+      
+      res.json({ success: true, cardUuid });
+    } catch (error) {
+      console.error("Clear user-added text error:", error);
+      res.status(500).json({ error: "Failed to clear user-added text" });
     }
   });
 

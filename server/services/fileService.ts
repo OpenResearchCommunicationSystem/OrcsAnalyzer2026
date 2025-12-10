@@ -254,6 +254,20 @@ export class FileService {
         
         const id = crypto.createHash('md5').update(`${filepath}-${stats.mtime.getTime()}`).digest('hex');
         
+        // Extract cardUuid for card files
+        let cardUuid: string | undefined;
+        if (filename.endsWith('.card.txt')) {
+          try {
+            const content = await fs.readFile(filepath, 'utf-8');
+            const uuidMatch = content.match(/^uuid:\s*"([^"]+)"/m);
+            if (uuidMatch) {
+              cardUuid = uuidMatch[1];
+            }
+          } catch (e) {
+            // Ignore errors reading UUID
+          }
+        }
+        
         files.push({
           id,
           name: filename,
@@ -262,6 +276,7 @@ export class FileService {
           size: stats.size,
           created: stats.birthtime.toISOString(),
           modified: stats.mtime.toISOString(),
+          ...(cardUuid && { cardUuid }),
         });
       }
       
