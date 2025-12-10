@@ -40,6 +40,12 @@ Preferred communication style: Simple, everyday language.
 - **Graph Visualization**: Interactive, SVG-based relationship visualization.
 - **File System Resilience**: Three-tier lookup strategy (Default Location, Repository-Wide, Content Search) for UUIDs and file paths, with user recovery options for misplaced files.
 - **Clean Content Architecture**: Standardized ContentExtractor utility for strict content/metadata separation, preventing metadata loops.
+- **Resizable Document Viewer**: Uses react-resizable-panels for vertical resizable layout:
+  - Card files: 3 panels - Original Content (55%), User Added (25%), Metadata (20%)
+  - Non-card files: 2 panels - Original Content (70%), Metadata (30%)
+  - Each panel has independent vertical scrolling for long content
+  - Drag handles between panels for user-adjustable sizing
+  - Proper flex/min-h-0/overflow constraints for nested scrollable containers
 
 ### Feature Specifications
 - **File Management**: Supports `.txt` and `.csv` upload, automatic ORCS card generation, metadata tracking, content parsing with highlighting, and complete file deletion.
