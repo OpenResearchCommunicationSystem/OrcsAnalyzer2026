@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Edit, Table, Save, FileText, RefreshCw, Plus, Send, Trash2, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { Tag, TextSelection, File } from '@shared/schema';
@@ -1240,86 +1241,369 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     );
   };
 
-  return (
-    <div className="flex-1 bg-gray-900 p-6 overflow-y-auto min-h-0">
-      <div className="max-w-none w-full">
-        {renderContent()}</div>
-      
-      {/* Metadata Panel */}
-      {selectedFile && (
-        <div className="mt-6 pt-4 border-t border-gray-700">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-slate-400 font-sans text-xs uppercase tracking-wide">ORCS Metadata</h3>
-            <div className="flex items-center space-x-2">
-              <Button
-                onClick={() => {
-                  refetchContent();
-                  queryClient.refetchQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
-                }}
-                variant="ghost"
-                size="sm"
-                className="text-slate-400 hover:text-slate-200"
-                title="Refresh document content and highlighting"
-              >
-                <RefreshCw className="w-3 h-3 mr-1" />
-                Refresh
-              </Button>
-              <Button
-                onClick={() => setShowMetadataForm(true)}
-                variant="ghost"
-                size="sm"
-                className="text-slate-400 hover:text-slate-200"
-              >
-                <Edit className="w-3 h-3 mr-1" />
-                Edit
-              </Button>
-            </div>
-          </div>
-          
-          <div className="bg-gray-800 p-3 rounded-lg border border-gray-700">
-            <pre className="font-mono text-xs text-slate-300 whitespace-pre-wrap">
-              {metadataContent || 'No metadata available'}
-            </pre>
+  // Get file-specific tags for the tagged elements section
+  const getFileSpecificTags = () => {
+    const currentFileName = selectedFileData?.name;
+    return tags.filter(tag => {
+      if (!currentFileName || !tag.references || tag.references.length === 0) return false;
+      return tag.references.some(ref => 
+        ref.startsWith(currentFileName + '@') || 
+        ref.startsWith(currentFileName + '[')
+      );
+    });
+  };
+
+  const displayData = getDisplayContent();
+
+  // Show empty/loading state when no file or loading
+  if (!selectedFile || isContentLoading || !fileContent?.content) {
+    return (
+      <div className="flex-1 bg-gray-900 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-none w-full">
+            {renderContent()}
           </div>
         </div>
-      )}
-      
-      {/* Tagged entities visualization */}
-      {(() => {
-        // Filter tags to only show those that reference the current file
-        const currentFileName = selectedFileData?.name;
-        const fileSpecificTags = tags.filter(tag => {
-          if (!currentFileName || !tag.references || tag.references.length === 0) return false;
-          // Check if tag references this file (handle both @offset and [row,col] formats)
-          return tag.references.some(ref => 
-            ref.startsWith(currentFileName + '@') || 
-            ref.startsWith(currentFileName + '[')
-          );
-        });
-        
-        return fileSpecificTags.length > 0 && selectedFile && (
-          <div className="mt-6 pt-4 border-t border-gray-700">
-            <h3 className="text-slate-400 font-sans text-xs uppercase tracking-wide mb-3">Tagged Elements</h3>
-            <div className="space-y-2 text-xs">
-              {fileSpecificTags.map((tag) => (
-                <div 
-                  key={tag.id} 
-                  className="flex items-center space-x-3 cursor-pointer hover:bg-gray-700 p-1 rounded"
-                  onClick={() => onTagClick(tag)}
-                >
-                  <span className={`text-${tag.type === 'entity' ? 'green' : tag.type === 'relationship' ? 'amber' : 'purple'}-400`}>
-                    {tag.type}:{tag.name}
-                  </span>
-                  <span className="text-slate-400">{tag.references.join(', ')}</span>
-                  {tag.aliases.length > 0 && (
-                    <span className="text-slate-500">[{tag.aliases.join(', ')}]</span>
-                  )}
+
+        {/* Metadata Form Modal */}
+        {showMetadataForm && selectedFile && selectedFileData && (
+          <MetadataForm
+            fileId={selectedFile}
+            fileName={selectedFileData.name}
+            initialMetadata={metadataContent}
+            onClose={() => setShowMetadataForm(false)}
+            onSave={handleMetadataSave}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Resizable panel layout for all documents with content
+  const fileSpecificTags = getFileSpecificTags();
+  const showUserAddedPanel = isCardFile; // Only card files have User Added section
+
+  return (
+    <div className="flex-1 bg-gray-900 flex flex-col min-h-0">
+      <ResizablePanelGroup direction="vertical" className="flex-1 min-h-0">
+        {/* Panel 1: Original Content */}
+        <ResizablePanel defaultSize={showUserAddedPanel ? 55 : 70} minSize={20}>
+          <div className="h-full flex flex-col min-h-0">
+            <div className="px-6 py-2 border-b border-gray-700 flex-shrink-0 bg-gray-800/50">
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Original Content</span>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* File Header */}
+              <div className="mb-4 pb-4 border-b border-gray-700">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-lg font-medium text-slate-200">
+                    {selectedFileData?.name}
+                  </h2>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline" className="border-gray-600 text-slate-300">
+                      {displayData.sourceType === 'csv' ? 'CSV' : 'TEXT'}
+                    </Badge>
+                  </div>
                 </div>
-              ))}
+                <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
+                  <div>
+                    <span className="font-medium">Size:</span> 
+                    <span className="ml-1">{selectedFileData?.size} bytes</span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Modified:</span> 
+                    <span className="ml-1">{selectedFileData?.modified ? new Date(selectedFileData.modified).toLocaleString() : 'Unknown'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Integrity Banners */}
+              {isCardFile && isVerifying && !verifyResult && (
+                <div className="mb-4 p-2 rounded-lg bg-slate-500/10 border border-slate-500/20 flex items-center gap-2" data-testid="integrity-loading">
+                  <RefreshCw className="w-4 h-4 text-slate-400 animate-spin" />
+                  <span className="text-slate-400 text-xs">Verifying content integrity...</span>
+                </div>
+              )}
+
+              {isCardFile && verifyResult && !verifyResult.isValid && (
+                <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3" data-testid="integrity-warning">
+                  <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="text-amber-300 font-medium text-sm">Content Integrity Issue Detected</div>
+                    <div className="text-amber-200/70 text-xs mt-1">
+                      The card content doesn't match the original source file.
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          if (selectedFile && confirm('This will restore the original content from the source file. Continue?')) {
+                            restoreContentMutation.mutate(selectedFile);
+                          }
+                        }}
+                        disabled={restoreContentMutation.isPending}
+                        className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10 text-xs h-7"
+                        data-testid="button-restore-content"
+                      >
+                        <RotateCcw className="w-3 h-3 mr-1" />
+                        Restore from Original
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {isCardFile && verifyResult?.isValid && (
+                <div className="mb-4 p-2 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2" data-testid="integrity-valid">
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <span className="text-green-300 text-xs">Content matches original source file</span>
+                </div>
+              )}
+
+              {/* Original Content Area */}
+              <div 
+                ref={contentRef}
+                className="text-sm leading-relaxed bg-gray-800 p-6 rounded-lg border border-gray-700 select-text text-slate-300"
+                style={{ 
+                  userSelect: 'text',
+                  wordBreak: 'break-word',
+                  whiteSpace: 'pre-wrap',
+                  fontSize: '14px',
+                  lineHeight: '1.7'
+                }}
+              >
+                {displayData.sourceType === 'csv' ? (
+                  (() => {
+                    const csvData = parseCSV(displayData.content);
+                    const headers = csvData[0] || [];
+                    const rows = csvData.slice(1);
+                    return (
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr>
+                              {headers.map((header, colIndex) => (
+                                <th key={colIndex} className="border border-gray-600 bg-gray-700 px-3 py-2 text-left text-slate-200 font-medium">
+                                  {header}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rows.map((row, rowIndex) => (
+                              <tr key={rowIndex}>
+                                {row.map((cell, colIndex) => (
+                                  <td 
+                                    key={colIndex}
+                                    className={`border border-gray-600 px-3 py-2 text-slate-300 cursor-pointer hover:bg-gray-700 ${
+                                      selectedCell?.row === rowIndex + 1 && selectedCell?.col === colIndex ? 'bg-blue-900/30' : ''
+                                    }`}
+                                    onClick={() => handleCellSelection(rowIndex + 1, colIndex, cell)}
+                                  >
+                                    {cell}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()
+                ) : (
+                  renderContentWithTables(
+                    displayData.content,
+                    renderHighlightedContent,
+                    (row: number, col: number, content: string) => {
+                      if (selectedFileData) {
+                        const textSelection: TextSelection = {
+                          text: content,
+                          startOffset: 0,
+                          endOffset: content.length,
+                          filename: selectedFileData.name,
+                          reference: `${selectedFileData.name}[${row},${col}]`
+                        };
+                        onTextSelection(textSelection);
+                        setSelectedCell({ row, col });
+                      }
+                    },
+                    selectedCell
+                  ).map((element, index) => (
+                    <div key={index}>{element}</div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
-        );
-      })()}
+        </ResizablePanel>
+
+        {/* Panel 2: User Added Content - Only for card files */}
+        {showUserAddedPanel && (
+          <>
+            <ResizableHandle withHandle className="bg-gray-700 hover:bg-gray-600" />
+            <ResizablePanel defaultSize={25} minSize={10}>
+              <div className="h-full flex flex-col min-h-0">
+                <div className="px-6 py-2 border-b border-cyan-500/30 flex-shrink-0 bg-cyan-950/30">
+                  <span className="text-xs font-medium text-cyan-400 uppercase tracking-wider">User Added</span>
+                </div>
+                <div className="flex-1 overflow-y-auto p-6">
+                  {displayData.userAddedContent && (
+                    <div 
+                      ref={userAddedRef}
+                      className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
+                      style={{ 
+                        userSelect: 'text',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap',
+                        fontSize: '14px',
+                        lineHeight: '1.7'
+                      }}
+                      data-testid="user-added-content"
+                    >
+                      {renderHighlightedContent(displayData.userAddedContent)}
+                    </div>
+                  )}
+
+                  {/* Add Text UI */}
+                  {showAddText ? (
+                    <div className="flex gap-2 items-start" data-testid="add-text-form">
+                      <Input
+                        value={newUserText}
+                        onChange={(e) => setNewUserText(e.target.value)}
+                        placeholder="Enter text to add..."
+                        className="flex-1 bg-gray-800 border-gray-600 text-slate-300"
+                        data-testid="input-add-text"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && newUserText.trim() && selectedFile) {
+                            appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
+                          }
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (newUserText.trim() && selectedFile) {
+                            appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
+                          }
+                        }}
+                        disabled={!newUserText.trim() || appendTextMutation.isPending}
+                        className="bg-cyan-600 hover:bg-cyan-700"
+                        data-testid="button-submit-text"
+                      >
+                        <Send className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setShowAddText(false);
+                          setNewUserText('');
+                        }}
+                        className="text-slate-400 hover:text-slate-200"
+                        data-testid="button-cancel-add-text"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowAddText(true)}
+                        className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                        data-testid="button-add-text"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add Text
+                      </Button>
+                      {displayData.userAddedContent && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (selectedFile && confirm('Are you sure you want to clear all user-added content?')) {
+                              clearUserAddedMutation.mutate(selectedFile);
+                            }
+                          }}
+                          disabled={clearUserAddedMutation.isPending}
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                          data-testid="button-clear-user-added"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Clear
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </ResizablePanel>
+          </>
+        )}
+
+        <ResizableHandle withHandle className="bg-gray-700 hover:bg-gray-600" />
+
+        {/* Panel 3: Metadata */}
+        <ResizablePanel defaultSize={showUserAddedPanel ? 20 : 30} minSize={10}>
+          <div className="h-full flex flex-col min-h-0">
+            <div className="px-6 py-2 border-b border-gray-700 flex-shrink-0 bg-gray-800/50 flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">ORCS Metadata</span>
+              <div className="flex items-center space-x-2">
+                <Button
+                  onClick={() => {
+                    refetchContent();
+                    queryClient.refetchQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-400 hover:text-slate-200 h-6 px-2"
+                  title="Refresh document content and highlighting"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                </Button>
+                <Button
+                  onClick={() => setShowMetadataForm(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-400 hover:text-slate-200 h-6 px-2"
+                >
+                  <Edit className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="bg-gray-800 p-3 rounded-lg border border-gray-700 mb-4">
+                <pre className="font-mono text-xs text-slate-300 whitespace-pre-wrap">
+                  {metadataContent || 'No metadata available'}
+                </pre>
+              </div>
+
+              {/* Tagged Elements */}
+              {fileSpecificTags.length > 0 && (
+                <div className="pt-4 border-t border-gray-700">
+                  <h3 className="text-slate-400 font-sans text-xs uppercase tracking-wide mb-3">Tagged Elements</h3>
+                  <div className="space-y-2 text-xs">
+                    {fileSpecificTags.map((tag) => (
+                      <div 
+                        key={tag.id} 
+                        className="flex items-center space-x-3 cursor-pointer hover:bg-gray-700 p-1 rounded"
+                        onClick={() => onTagClick(tag)}
+                      >
+                        <span className={`text-${tag.type === 'entity' ? 'green' : tag.type === 'relationship' ? 'amber' : 'purple'}-400`}>
+                          {tag.type}:{tag.name}
+                        </span>
+                        <span className="text-slate-400 truncate">{tag.references.join(', ')}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
 
       {/* Metadata Form Modal */}
       {showMetadataForm && selectedFile && selectedFileData && (

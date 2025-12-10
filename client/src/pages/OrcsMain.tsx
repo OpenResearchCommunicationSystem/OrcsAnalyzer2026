@@ -264,25 +264,7 @@ export default function OrcsMain() {
             onClearSelection={() => setSelectedText(null)}
           />
 
-          {/* DEBUG: Document area boundary */}
-          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto border-2 border-dashed border-red-500">
-          
-          {/* Document Header */}
-          <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-b border-gray-700 px-6 py-2 text-xs text-slate-400 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <span>Document</span>
-                <span>|</span>
-                <span>Ready for analysis</span>
-              </div>
-              <div className="flex items-center space-x-4">
-                <span>Text viewer</span>
-                <span>|</span>
-                <span>Selection mode</span>
-              </div>
-            </div>
-          </div>
-
+          {/* Document Viewer Area - Flex container for resizable panels */}
           <div className="flex-1 flex flex-col min-h-0">
             <DocumentViewer
               selectedFile={selectedFile}
@@ -293,7 +275,6 @@ export default function OrcsMain() {
               onSelectFileByCardUuid={handleSelectFileByCardUuid}
             />
           </div>
-          </div>{/* END DEBUG: Document area boundary */}
         </div>
 
         {/* Right Sidebar - Graph & Tag Editor */}
