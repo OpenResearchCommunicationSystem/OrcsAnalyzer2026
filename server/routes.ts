@@ -297,6 +297,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const tagData = insertTagSchema.parse(req.body);
       const tag = await orcsService.createTag(tagData);
+      
+      // Update index with new tag
+      const tagFilePath = orcsService.getTagFilePath(tag);
+      await indexService.reindexTag(tag.id, tagFilePath);
+      
       res.json(tag);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -311,6 +316,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const updates = req.body;
       const tag = await orcsService.updateTag(req.params.id, updates);
+      
+      // Update index with modified tag
+      const tagFilePath = orcsService.getTagFilePath(tag);
+      await indexService.reindexTag(tag.id, tagFilePath);
+      
       res.json(tag);
     } catch (error) {
       console.error("Tag update error:", error);
@@ -324,6 +334,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!success) {
         return res.status(404).json({ error: "Tag not found" });
       }
+      
+      // Remove deleted tag from index
+      await indexService.removeTagFromIndex(req.params.id);
+      
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete tag" });
@@ -341,6 +355,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const result = await orcsService.mergeTags(masterTagId, tagIdsToMerge);
+      
+      // Update index: update merged master tag, remove merged tags
+      const masterTagFilePath = orcsService.getTagFilePath(result);
+      await indexService.reindexTag(masterTagId, masterTagFilePath);
+      for (const mergedTagId of tagIdsToMerge) {
+        await indexService.removeTagFromIndex(mergedTagId);
+      }
+      
       res.json(result);
     } catch (error) {
       console.error("Tag merge error:", error);

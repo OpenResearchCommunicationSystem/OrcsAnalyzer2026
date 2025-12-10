@@ -398,6 +398,95 @@ export class IndexService {
     await this.saveIndex(this.index);
   }
 
+  async reindexTag(tagId: string, tagFilePath: string): Promise<void> {
+    if (!this.index) {
+      await this.loadIndex();
+    }
+    
+    try {
+      const content = await fs.readFile(tagFilePath, 'utf-8');
+      const tagType = this.getTagTypeFromPath(tagFilePath);
+      const parsedTag = this.parseTagFromContent(content, tagType, tagFilePath);
+      
+      if (parsedTag) {
+        // Remove old entry and add new one
+        this.index!.tags = this.index!.tags.filter(t => t.id !== tagId);
+        this.index!.tags.push(parsedTag);
+        
+        // Update stats
+        this.index!.stats.totalTags = this.index!.tags.length;
+        this.index!.stats.entityCount = this.index!.tags.filter(t => t.type === 'entity').length;
+        this.index!.stats.relationshipCount = this.index!.tags.filter(t => t.type === 'relationship').length;
+        
+        // Rebuild connections if this is an entity or relationship tag
+        if (parsedTag.type === 'entity' || parsedTag.type === 'relationship') {
+          await this.rebuildConnections();
+        }
+        
+        this.index!.lastUpdated = new Date().toISOString();
+        
+        await this.saveIndex(this.index!);
+      }
+    } catch (error) {
+      console.error('[IndexService] Failed to reindex tag:', error);
+    }
+  }
+
+  async removeTagFromIndex(tagId: string): Promise<void> {
+    if (!this.index) return;
+    
+    const removedTag = this.index.tags.find(t => t.id === tagId);
+    this.index.tags = this.index.tags.filter(t => t.id !== tagId);
+    
+    // Remove connections involving this tag
+    this.index.connections = this.index.connections.filter(
+      c => c.sourceEntityId !== tagId && c.targetEntityId !== tagId && c.relationshipId !== tagId
+    );
+    this.index.brokenConnections = this.index.brokenConnections.filter(
+      bc => !bc.connectionId.includes(tagId)
+    );
+    
+    // Rebuild connections if this was an entity or relationship tag
+    if (removedTag && (removedTag.type === 'entity' || removedTag.type === 'relationship')) {
+      await this.rebuildConnections();
+    }
+    
+    // Update stats
+    this.index.stats.totalTags = this.index.tags.length;
+    this.index.stats.totalConnections = this.index.connections.length;
+    this.index.stats.brokenConnectionCount = this.index.brokenConnections.length;
+    this.index.stats.entityCount = this.index.tags.filter(t => t.type === 'entity').length;
+    this.index.stats.relationshipCount = this.index.tags.filter(t => t.type === 'relationship').length;
+    this.index.lastUpdated = new Date().toISOString();
+    
+    await this.saveIndex(this.index);
+  }
+
+  private async rebuildConnections(): Promise<void> {
+    if (!this.index) return;
+    
+    const { connections, brokenConnections } = await this.indexConnections(
+      this.index.tags.map(t => ({
+        ...t,
+        type: t.type as TagType,
+      }))
+    );
+    
+    this.index.connections = connections;
+    this.index.brokenConnections = brokenConnections;
+    this.index.stats.totalConnections = connections.length;
+    this.index.stats.brokenConnectionCount = brokenConnections.length;
+  }
+
+  private getTagTypeFromPath(filepath: string): TagType {
+    if (filepath.includes('/entities/')) return 'entity';
+    if (filepath.includes('/relationships/')) return 'relationship';
+    if (filepath.includes('/attributes/')) return 'attribute';
+    if (filepath.includes('/comments/')) return 'comment';
+    if (filepath.includes('/kv_pairs/')) return 'kv_pair';
+    return 'entity';
+  }
+
   async validateConnections(): Promise<BrokenConnection[]> {
     if (!this.index) {
       await this.loadIndex();

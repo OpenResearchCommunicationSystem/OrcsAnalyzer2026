@@ -483,11 +483,15 @@ export class OrcsService {
     return { nodes, edges };
   }
 
-  private async saveTagToFile(tag: Tag): Promise<void> {
+  getTagFilePath(tag: Tag): string {
     const dir = TAG_DIRECTORIES[tag.type];
     const extension = this.getFileExtension(tag.type);
     const filename = `${tag.name}_${tag.id}.${extension}`;
-    const filepath = path.join(dir, filename);
+    return path.join(dir, filename);
+  }
+
+  private async saveTagToFile(tag: Tag): Promise<void> {
+    const filepath = this.getTagFilePath(tag);
     
     const orcsContent = this.formatTagAsOrcs(tag);
     await fs.writeFile(filepath, orcsContent, 'utf-8');

@@ -28,6 +28,12 @@ Preferred communication style: Simple, everyday language.
 - **File Organization**: Hierarchical directory structure under `user_data/` for `.card.txt` files and various tag files (`.entity.txt`, `.relate.txt`, etc.).
 - **ORCS Card System**: Structured intelligence document format with embedded original content, analysis, metadata, classification, handling instructions, and citation tracking. Uses a clear delimiter-based format for content separation.
 - **Tagging System**: Five types (Entity, Relationship, Attribute, Comment, Key-Value Pair) with text selection-based tagging, character offset tracking, and visual indicators. Includes search aliases.
+- **IDE-Style Master Index**: Persistent JSON-based master index (`user_data/master-index.json`) with:
+  - Hash-based change detection using SHA256 for efficient file modification tracking
+  - Incremental indexing: file/tag changes trigger targeted reindexing, not full rebuilds
+  - Connection/relationship graph tracking with broken connection detection
+  - Startup indexing on server start, manual refresh via UI button
+  - API endpoints: `GET /api/system/index`, `POST /api/system/reindex`, `GET /api/system/broken-connections`
 - **Search & Indexing**: Persistent index, automatic indexing, keyword extraction, content-based search.
 - **Graph Visualization**: Interactive, SVG-based relationship visualization.
 - **File System Resilience**: Three-tier lookup strategy (Default Location, Repository-Wide, Content Search) for UUIDs and file paths, with user recovery options for misplaced files.
