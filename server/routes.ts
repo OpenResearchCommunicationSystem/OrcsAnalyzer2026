@@ -5,6 +5,7 @@ import { z } from "zod";
 import { insertTagSchema, insertTagConnectionSchema, textSelectionSchema } from "@shared/schema";
 import { fileService } from "./services/fileService";
 import { orcsService } from "./services/orcsService";
+import { indexService } from "./services/indexService";
 import { storage } from "./storage";
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -34,6 +35,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const file = await fileService.saveUploadedFile(req.file.originalname, req.file.buffer);
+      
+      // Update index for the new file
+      if (file.path) {
+        await indexService.reindexFile(file.path);
+      }
+      
       res.json(file);
     } catch (error) {
       console.error("File upload error:", error);
@@ -60,10 +67,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/files/:id", async (req, res) => {
     try {
+      // Get file path before deletion for index update
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === req.params.id);
+      const filePath = file?.path;
+      
       const success = await fileService.deleteFile(req.params.id);
       if (!success) {
         return res.status(404).json({ error: "File not found" });
       }
+      
+      // Remove deleted file from index
+      if (filePath) {
+        await indexService.removeFromIndex(filePath);
+      }
+      
       res.json({ success: true });
     } catch (error) {
       console.error("File deletion error:", error);
@@ -118,6 +136,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Append user-added text to a card file
+  app.post("/api/files/:id/append-text", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      const { text } = req.body;
+      
+      if (!text || typeof text !== 'string' || text.trim().length === 0) {
+        return res.status(400).json({ error: "Text is required" });
+      }
+      
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Only allow appending to card files
+      if (!file.name.endsWith('.card.txt')) {
+        return res.status(400).json({ error: "Can only append text to card files" });
+      }
+      
+      const cardUuid = await orcsService.appendUserText(file.name, text.trim());
+      if (!cardUuid) {
+        return res.status(500).json({ error: "Failed to append text to card" });
+      }
+      
+      // Update index for modified file
+      await indexService.reindexFile(file.path);
+      
+      res.json({ success: true, cardUuid });
+    } catch (error) {
+      console.error("Append text error:", error);
+      res.status(500).json({ error: "Failed to append text" });
+    }
+  });
+
+  // Clear user-added text from a card file
+  app.delete("/api/files/:id/user-added", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Only allow clearing from card files
+      if (!file.name.endsWith('.card.txt')) {
+        return res.status(400).json({ error: "Can only clear user-added text from card files" });
+      }
+      
+      const cardUuid = await orcsService.clearUserAddedText(file.name);
+      if (cardUuid === null) {
+        return res.status(500).json({ error: "Failed to clear user-added text" });
+      }
+      
+      // Update index for modified file
+      await indexService.reindexFile(file.path);
+      
+      res.json({ success: true, cardUuid });
+    } catch (error) {
+      console.error("Clear user-added text error:", error);
+      res.status(500).json({ error: "Failed to clear user-added text" });
+    }
+  });
+
+  // Verify card content integrity against original source file
+  app.get("/api/files/:id/verify-content", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Only verify card files
+      if (!file.name.endsWith('.card.txt')) {
+        return res.status(400).json({ error: "Can only verify card files" });
+      }
+      
+      const result = await orcsService.verifyContentIntegrity(file.name);
+      res.json(result);
+    } catch (error) {
+      console.error("Verify content error:", error);
+      res.status(500).json({ error: "Failed to verify content integrity" });
+    }
+  });
+
+  // Restore original content from source file
+  app.post("/api/files/:id/restore-content", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Only restore card files
+      if (!file.name.endsWith('.card.txt')) {
+        return res.status(400).json({ error: "Can only restore content in card files" });
+      }
+      
+      const result = await orcsService.restoreOriginalContent(file.name);
+      if (!result.success) {
+        return res.status(500).json({ error: result.message });
+      }
+      
+      // Update index for modified file
+      await indexService.reindexFile(file.path);
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Restore content error:", error);
+      res.status(500).json({ error: "Failed to restore content" });
+    }
+  });
+
   // Tag operations
   app.get("/api/tags", async (req, res) => {
     try {
@@ -153,6 +297,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const tagData = insertTagSchema.parse(req.body);
       const tag = await orcsService.createTag(tagData);
+      
+      // Update index with new tag
+      const tagFilePath = orcsService.getTagFilePath(tag);
+      await indexService.reindexTag(tag.id, tagFilePath);
+      
       res.json(tag);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -167,6 +316,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const updates = req.body;
       const tag = await orcsService.updateTag(req.params.id, updates);
+      
+      // Update index with modified tag
+      const tagFilePath = orcsService.getTagFilePath(tag);
+      await indexService.reindexTag(tag.id, tagFilePath);
+      
       res.json(tag);
     } catch (error) {
       console.error("Tag update error:", error);
@@ -180,6 +334,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!success) {
         return res.status(404).json({ error: "Tag not found" });
       }
+      
+      // Remove deleted tag from index
+      await indexService.removeTagFromIndex(req.params.id);
+      
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete tag" });
@@ -197,6 +355,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const result = await orcsService.mergeTags(masterTagId, tagIdsToMerge);
+      
+      // Update index: update merged master tag, remove merged tags
+      const masterTagFilePath = orcsService.getTagFilePath(result);
+      await indexService.reindexTag(masterTagId, masterTagFilePath);
+      for (const mergedTagId of tagIdsToMerge) {
+        await indexService.removeTagFromIndex(mergedTagId);
+      }
+      
       res.json(result);
     } catch (error) {
       console.error("Tag merge error:", error);
@@ -409,6 +575,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Index rebuild failed:', error);
       res.status(500).json({ error: 'Index rebuild failed' });
+    }
+  });
+
+  // Master Index API routes
+  app.get('/api/system/index', async (req, res) => {
+    try {
+      const index = await indexService.getIndex();
+      res.json(index);
+    } catch (error) {
+      console.error('Failed to get index:', error);
+      res.status(500).json({ error: 'Failed to get index' });
+    }
+  });
+
+  app.post('/api/system/reindex', async (req, res) => {
+    try {
+      const index = await indexService.buildFullIndex();
+      res.json({ 
+        message: 'System reindexed successfully',
+        stats: index.stats 
+      });
+    } catch (error) {
+      console.error('Reindex failed:', error);
+      res.status(500).json({ error: 'Reindex failed' });
+    }
+  });
+
+  app.get('/api/system/broken-connections', async (req, res) => {
+    try {
+      const brokenConnections = await indexService.validateConnections();
+      res.json(brokenConnections);
+    } catch (error) {
+      console.error('Failed to validate connections:', error);
+      res.status(500).json({ error: 'Failed to validate connections' });
+    }
+  });
+
+  app.get('/api/system/stats', async (req, res) => {
+    try {
+      const index = await indexService.getIndex();
+      res.json(index.stats);
+    } catch (error) {
+      console.error('Failed to get stats:', error);
+      res.status(500).json({ error: 'Failed to get stats' });
     }
   });
 

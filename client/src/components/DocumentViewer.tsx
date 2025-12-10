@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Table, Save, FileText, RefreshCw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Edit, Table, Save, FileText, RefreshCw, Plus, Send, Trash2, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { Tag, TextSelection, File } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
@@ -15,15 +16,69 @@ interface DocumentViewerProps {
   onTagClick: (tag: Tag, isCtrlClick?: boolean) => void;
   onFileNotFound?: (staleFileId: string) => void;
   onEntityDragConnection?: (sourceEntity: Tag, targetEntity: Tag) => void;
+  onSelectFileByCardUuid?: (cardUuid: string) => void;
 }
 
-export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFileNotFound, onEntityDragConnection }: DocumentViewerProps) {
+export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFileNotFound, onEntityDragConnection, onSelectFileByCardUuid }: DocumentViewerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const userAddedRef = useRef<HTMLDivElement>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [metadataContent, setMetadataContent] = useState<string>('');
   const [showMetadataForm, setShowMetadataForm] = useState(false);
   const [draggedEntityId, setDraggedEntityId] = useState<string | null>(null);
+  const [showAddText, setShowAddText] = useState(false);
+  const [newUserText, setNewUserText] = useState('');
   const queryClient = useQueryClient();
+
+  // Mutation to append user text
+  const appendTextMutation = useMutation({
+    mutationFn: async ({ fileId, text }: { fileId: string; text: string }) => {
+      const response = await apiRequest('POST', `/api/files/${fileId}/append-text`, { text });
+      return response.json();
+    },
+    onSuccess: async (data: { success: boolean; cardUuid: string }) => {
+      // Refresh file list first
+      await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Use cardUuid to re-select the file after modification
+      if (data.cardUuid && onSelectFileByCardUuid) {
+        onSelectFileByCardUuid(data.cardUuid);
+      }
+      setNewUserText('');
+      setShowAddText(false);
+    },
+  });
+
+  // Mutation to clear user-added text
+  const clearUserAddedMutation = useMutation({
+    mutationFn: async (fileId: string) => {
+      const response = await apiRequest('DELETE', `/api/files/${fileId}/user-added`);
+      return response.json();
+    },
+    onSuccess: async (data: { success: boolean; cardUuid: string }) => {
+      // Refresh file list first
+      await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Use cardUuid to re-select the file after modification
+      if (data.cardUuid && onSelectFileByCardUuid) {
+        onSelectFileByCardUuid(data.cardUuid);
+      }
+    },
+  });
+
+  // Mutation to restore original content
+  const restoreContentMutation = useMutation({
+    mutationFn: async (fileId: string) => {
+      const response = await apiRequest('POST', `/api/files/${fileId}/restore-content`);
+      return response.json();
+    },
+    onSuccess: async (data: { success: boolean; cardUuid: string; message: string }) => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Invalidate the verify query to refresh integrity status
+      await queryClient.invalidateQueries({ queryKey: ['/api/files', selectedFile, 'verify-content'] });
+      if (data.cardUuid && onSelectFileByCardUuid) {
+        onSelectFileByCardUuid(data.cardUuid);
+      }
+    },
+  });
 
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ['/api/files'],
@@ -66,6 +121,26 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
 
   const selectedFileData = files.find(f => f.id === resolvedFileId);
   const fileType = selectedFileData?.type;
+  const isCardFile = selectedFileData?.name.endsWith('.card.txt');
+
+  // Query to verify content integrity for card files
+  interface VerifyResult {
+    isValid: boolean;
+    missingText: string[];
+    sourceFile: string | null;
+    cardUuid: string | null;
+  }
+  
+  const { data: verifyResult, isLoading: isVerifying, refetch: refetchVerify } = useQuery<VerifyResult>({
+    queryKey: ['/api/files', resolvedFileId, 'verify-content'],
+    queryFn: async () => {
+      const response = await fetch(`/api/files/${resolvedFileId}/verify-content`);
+      if (!response.ok) throw new Error('Failed to verify');
+      return response.json();
+    },
+    enabled: !!resolvedFileId && isCardFile,
+    staleTime: 30000, // Cache for 30 seconds
+  });
 
   // Detect when selected file becomes invalid and notify parent
   useEffect(() => {
@@ -138,6 +213,18 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     return cardContent;
   };
 
+  // Extract user added content from card file
+  const extractUserAddedContent = (cardContent: string): string | null => {
+    // Look for content between "=== USER ADDED START ===" and "=== USER ADDED END ==="
+    const match = cardContent.match(/=== USER ADDED START ===\n([\s\S]*?)\n=== USER ADDED END ===/);
+    
+    if (match) {
+      return match[1].trim();
+    }
+    
+    return null;
+  };
+
   // Extract source file info from card metadata
   const getSourceFileInfo = (cardContent: string): { filename: string; type: 'txt' | 'csv' | null } => {
     const sourceFileMatch = cardContent.match(/source_file:\s*"([^"]+)"/);
@@ -180,26 +267,30 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   };
 
   // Check if current file is a card file and extract original content
-  const getDisplayContent = (): { content: string; sourceType: 'txt' | 'csv' | null } => {
-    if (!fileContent?.content) return { content: '', sourceType: null };
+  const getDisplayContent = (): { content: string; userAddedContent: string | null; sourceType: 'txt' | 'csv' | null } => {
+    if (!fileContent?.content) return { content: '', userAddedContent: null, sourceType: null };
     
     // If this is a card file (.card.txt), extract the original content section
     if (selectedFileData?.name.includes('.card.txt')) {
       const originalContent = extractOriginalContent(fileContent.content);
+      const userAdded = extractUserAddedContent(fileContent.content);
       const sourceInfo = getSourceFileInfo(fileContent.content);
       
       // Process markdown tags in the content for highlighting
       const processedContent = processMarkdownTags(originalContent);
+      const processedUserAdded = userAdded ? processMarkdownTags(userAdded) : null;
       
       return { 
-        content: processedContent, 
+        content: processedContent,
+        userAddedContent: processedUserAdded,
         sourceType: sourceInfo.type 
       };
     }
     
     // For original files, return content as-is
     return { 
-      content: fileContent.content, 
+      content: fileContent.content,
+      userAddedContent: null,
       sourceType: selectedFileData?.type as 'txt' | 'csv' | null 
     };
   };
@@ -663,6 +754,77 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             </div>
           </div>
 
+          {/* Content Integrity Check Banner - Loading State */}
+          {isCardFile && isVerifying && !verifyResult && (
+            <div 
+              className="mb-4 p-2 rounded-lg bg-slate-500/10 border border-slate-500/20 flex items-center gap-2"
+              data-testid="integrity-loading"
+            >
+              <RefreshCw className="w-4 h-4 text-slate-400 animate-spin" />
+              <span className="text-slate-400 text-xs">Verifying content integrity...</span>
+            </div>
+          )}
+
+          {/* Content Integrity Check Banner - Warning */}
+          {isCardFile && verifyResult && !verifyResult.isValid && (
+            <div 
+              className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3"
+              data-testid="integrity-warning"
+            >
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-amber-300 font-medium text-sm">Content Integrity Issue Detected</div>
+                <div className="text-amber-200/70 text-xs mt-1">
+                  The card content doesn't match the original source file.
+                  {verifyResult.missingText.length > 0 && (
+                    verifyResult.missingText[0] === '(content order mismatch)' 
+                      ? <span> Content structure or order has changed.</span>
+                      : <span> Differences: <span className="font-mono">{verifyResult.missingText.slice(0, 5).join(', ')}{verifyResult.missingText.length > 5 ? '...' : ''}</span></span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      if (selectedFile && confirm('This will restore the original content from the source file. Tag markup will be removed but your USER ADDED section will be preserved. Continue?')) {
+                        restoreContentMutation.mutate(selectedFile);
+                      }
+                    }}
+                    disabled={restoreContentMutation.isPending}
+                    className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10 text-xs h-7"
+                    data-testid="button-restore-content"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-1" />
+                    Restore from Original
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => refetchVerify()}
+                    disabled={isVerifying}
+                    className="text-amber-400/70 hover:text-amber-300 text-xs h-7"
+                    data-testid="button-recheck-integrity"
+                  >
+                    <RefreshCw className={`w-3 h-3 mr-1 ${isVerifying ? 'animate-spin' : ''}`} />
+                    Re-check
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Content Valid Badge (optional - shown briefly or on hover) */}
+          {isCardFile && verifyResult?.isValid && (
+            <div 
+              className="mb-4 p-2 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2"
+              data-testid="integrity-valid"
+            >
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-green-300 text-xs">Content matches original source file</span>
+            </div>
+          )}
+
           <div 
             ref={contentRef}
             className="text-sm leading-relaxed bg-gray-800 p-6 rounded-lg border border-gray-700 select-text text-slate-300 mb-4 min-h-96 max-w-none"
@@ -695,6 +857,109 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               <div key={index}>{element}</div>
             ))}
           </div>
+
+          {/* USER ADDED Section */}
+          {selectedFileData?.name.includes('.card.txt') && (
+            <div className="mt-4">
+              {/* Separator */}
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
+                <span className="text-xs font-medium text-cyan-400 uppercase tracking-wider px-2">User Added</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
+              </div>
+
+              {/* User Added Content */}
+              {displayData.userAddedContent && (
+                <div 
+                  ref={userAddedRef}
+                  className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
+                  style={{ 
+                    userSelect: 'text',
+                    wordBreak: 'break-word',
+                    whiteSpace: 'pre-wrap',
+                    fontSize: '14px',
+                    lineHeight: '1.7'
+                  }}
+                  data-testid="user-added-content"
+                >
+                  {renderHighlightedContent(displayData.userAddedContent)}
+                </div>
+              )}
+
+              {/* Add Text UI */}
+              {showAddText ? (
+                <div className="flex gap-2 items-start" data-testid="add-text-form">
+                  <Input
+                    value={newUserText}
+                    onChange={(e) => setNewUserText(e.target.value)}
+                    placeholder="Enter text to add..."
+                    className="flex-1 bg-gray-800 border-gray-600 text-slate-300"
+                    data-testid="input-add-text"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newUserText.trim() && selectedFile) {
+                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
+                      }
+                    }}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (newUserText.trim() && selectedFile) {
+                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
+                      }
+                    }}
+                    disabled={!newUserText.trim() || appendTextMutation.isPending}
+                    className="bg-cyan-600 hover:bg-cyan-700"
+                    data-testid="button-submit-text"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setShowAddText(false);
+                      setNewUserText('');
+                    }}
+                    className="text-slate-400 hover:text-slate-200"
+                    data-testid="button-cancel-add-text"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowAddText(true)}
+                    className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                    data-testid="button-add-text"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Text
+                  </Button>
+                  {displayData.userAddedContent && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (selectedFile && confirm('Are you sure you want to clear all user-added content?')) {
+                          clearUserAddedMutation.mutate(selectedFile);
+                        }
+                      }}
+                      disabled={clearUserAddedMutation.isPending}
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      data-testid="button-clear-user-added"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </>
       );
     }
@@ -737,6 +1002,76 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               </div>
             </div>
           </div>
+
+          {/* Content Integrity Check Banner for CSV - Loading State */}
+          {isCardFile && isVerifying && !verifyResult && (
+            <div 
+              className="mb-4 p-2 rounded-lg bg-slate-500/10 border border-slate-500/20 flex items-center gap-2"
+              data-testid="integrity-loading-csv"
+            >
+              <RefreshCw className="w-4 h-4 text-slate-400 animate-spin" />
+              <span className="text-slate-400 text-xs">Verifying content integrity...</span>
+            </div>
+          )}
+
+          {/* Content Integrity Check Banner for CSV - Warning */}
+          {isCardFile && verifyResult && !verifyResult.isValid && (
+            <div 
+              className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3"
+              data-testid="integrity-warning-csv"
+            >
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-amber-300 font-medium text-sm">Content Integrity Issue Detected</div>
+                <div className="text-amber-200/70 text-xs mt-1">
+                  The card content doesn't match the original source file.
+                  {verifyResult.missingText.length > 0 && (
+                    verifyResult.missingText[0] === '(content order mismatch)' 
+                      ? <span> Content structure or order has changed.</span>
+                      : <span> Differences: <span className="font-mono">{verifyResult.missingText.slice(0, 5).join(', ')}{verifyResult.missingText.length > 5 ? '...' : ''}</span></span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      if (selectedFile && confirm('This will restore the original content from the source file. Tag markup will be removed but your USER ADDED section will be preserved. Continue?')) {
+                        restoreContentMutation.mutate(selectedFile);
+                      }
+                    }}
+                    disabled={restoreContentMutation.isPending}
+                    className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10 text-xs h-7"
+                    data-testid="button-restore-content-csv"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-1" />
+                    Restore from Original
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => refetchVerify()}
+                    disabled={isVerifying}
+                    className="text-amber-400/70 hover:text-amber-300 text-xs h-7"
+                    data-testid="button-recheck-integrity-csv"
+                  >
+                    <RefreshCw className={`w-3 h-3 mr-1 ${isVerifying ? 'animate-spin' : ''}`} />
+                    Re-check
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isCardFile && verifyResult?.isValid && (
+            <div 
+              className="mb-4 p-2 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2"
+              data-testid="integrity-valid-csv"
+            >
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-green-300 text-xs">Content matches original source file</span>
+            </div>
+          )}
 
           <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
             <div className="overflow-x-auto">
@@ -788,6 +1123,109 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               </table>
             </div>
           </div>
+
+          {/* USER ADDED Section for CSV files */}
+          {selectedFileData?.name.includes('.card.txt') && (
+            <div className="mt-4">
+              {/* Separator */}
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
+                <span className="text-xs font-medium text-cyan-400 uppercase tracking-wider px-2">User Added</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
+              </div>
+
+              {/* User Added Content */}
+              {displayData.userAddedContent && (
+                <div 
+                  ref={userAddedRef}
+                  className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
+                  style={{ 
+                    userSelect: 'text',
+                    wordBreak: 'break-word',
+                    whiteSpace: 'pre-wrap',
+                    fontSize: '14px',
+                    lineHeight: '1.7'
+                  }}
+                  data-testid="user-added-content"
+                >
+                  {renderHighlightedContent(displayData.userAddedContent)}
+                </div>
+              )}
+
+              {/* Add Text UI */}
+              {showAddText ? (
+                <div className="flex gap-2 items-start" data-testid="add-text-form">
+                  <Input
+                    value={newUserText}
+                    onChange={(e) => setNewUserText(e.target.value)}
+                    placeholder="Enter text to add..."
+                    className="flex-1 bg-gray-800 border-gray-600 text-slate-300"
+                    data-testid="input-add-text"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newUserText.trim() && selectedFile) {
+                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
+                      }
+                    }}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (newUserText.trim() && selectedFile) {
+                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
+                      }
+                    }}
+                    disabled={!newUserText.trim() || appendTextMutation.isPending}
+                    className="bg-cyan-600 hover:bg-cyan-700"
+                    data-testid="button-submit-text"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setShowAddText(false);
+                      setNewUserText('');
+                    }}
+                    className="text-slate-400 hover:text-slate-200"
+                    data-testid="button-cancel-add-text"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowAddText(true)}
+                    className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                    data-testid="button-add-text"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Add Text
+                  </Button>
+                  {displayData.userAddedContent && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (selectedFile && confirm('Are you sure you want to clear all user-added content?')) {
+                          clearUserAddedMutation.mutate(selectedFile);
+                        }
+                      }}
+                      disabled={clearUserAddedMutation.isPending}
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      data-testid="button-clear-user-added"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </>
       );
     }

@@ -163,9 +163,9 @@ export class OrcsService {
       await fs.unlink(oldFilepath);
       
       console.log(`Migrated tag file: ${path.basename(oldFilepath)} -> ${newFilename}`);
-    } catch (error) {
+    } catch (error: any) {
       // Only log error if it's not a "file not found" error (migration already completed)
-      if (error.code !== 'ENOENT') {
+      if (error?.code !== 'ENOENT') {
         console.error(`Failed to migrate tag file ${oldFilepath}:`, error);
       }
     }
@@ -483,11 +483,15 @@ export class OrcsService {
     return { nodes, edges };
   }
 
-  private async saveTagToFile(tag: Tag): Promise<void> {
+  getTagFilePath(tag: Tag): string {
     const dir = TAG_DIRECTORIES[tag.type];
     const extension = this.getFileExtension(tag.type);
     const filename = `${tag.name}_${tag.id}.${extension}`;
-    const filepath = path.join(dir, filename);
+    return path.join(dir, filename);
+  }
+
+  private async saveTagToFile(tag: Tag): Promise<void> {
+    const filepath = this.getTagFilePath(tag);
     
     const orcsContent = this.formatTagAsOrcs(tag);
     await fs.writeFile(filepath, orcsContent, 'utf-8');
@@ -621,15 +625,26 @@ export class OrcsService {
         const originalContent = originalContentSections[0];
         const afterOriginalContent = originalContentSections[1];
         
-        // Create regex for this specific tag
-        const tagRegex = new RegExp(`\\[${tag.type}:${tag.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\]\\(${tag.id}\\)`, 'g');
+        // FIXED: Use a regex that matches by tag ID only, with non-greedy capture for the name
+        // This handles cases where the tag name in the object differs from the original text
+        // Pattern: [type:name](uuid) where name is non-greedy to avoid over-matching
+        const tagByIdRegex = new RegExp(`\\[${tag.type}:([^\\]]+?)\\]\\(${tag.id}\\)`, 'g');
         
-        // In TAG INDEX and metadata sections: completely remove the tag
-        const cleanedBeforeContent = beforeOriginalContent.replace(tagRegex, '');
-        const cleanedAfterContent = afterOriginalContent.replace(tagRegex, '');
+        // In TAG INDEX and metadata sections: completely remove the tag (including any trailing newline if line is now empty)
+        const cleanTagFromSection = (content: string): string => {
+          // First, replace the tag with empty string
+          let cleaned = content.replace(tagByIdRegex, '');
+          // Clean up any leftover empty lines that only have whitespace
+          cleaned = cleaned.replace(/^\s*[\r\n]/gm, '\n');
+          return cleaned;
+        };
         
-        // In ORIGINAL CONTENT section: replace tag with plain text to preserve content
-        const cleanedOriginalContent = originalContent.replace(tagRegex, tag.name);
+        const cleanedBeforeContent = cleanTagFromSection(beforeOriginalContent);
+        const cleanedAfterContent = cleanTagFromSection(afterOriginalContent);
+        
+        // In ORIGINAL CONTENT section: replace tag with the CAPTURED TEXT (preserves original)
+        // The $1 captures whatever text was actually in the brackets, not tag.name
+        const cleanedOriginalContent = originalContent.replace(tagByIdRegex, '$1');
         
         // Reconstruct the card content
         const updatedContent = cleanedBeforeContent + 
@@ -672,6 +687,8 @@ export class OrcsService {
     let tagIndexEnd = -1;
     let originalContentStart = -1;
     let originalContentEnd = -1;
+    let userAddedStart = -1;
+    let userAddedEnd = -1;
 
     // Find the boundaries of different sections
     for (let i = 0; i < lines.length; i++) {
@@ -684,6 +701,10 @@ export class OrcsService {
         originalContentStart = i;
       } else if (line === '=== ORIGINAL CONTENT END ===') {
         originalContentEnd = i;
+      } else if (line === '=== USER ADDED START ===') {
+        userAddedStart = i;
+      } else if (line === '=== USER ADDED END ===') {
+        userAddedEnd = i;
       }
     }
 
@@ -694,13 +715,22 @@ export class OrcsService {
     // Extract current content between ORIGINAL CONTENT markers
     const currentContent = lines.slice(originalContentStart + 1, originalContentEnd).join('\n');
     
-    // Check if content already has markdown tags for this tag ID
-    if (currentContent.includes(`](${tag.id})`)) {
+    // Extract USER ADDED content if section exists
+    let userAddedContent = '';
+    if (userAddedStart !== -1 && userAddedEnd !== -1) {
+      userAddedContent = lines.slice(userAddedStart + 1, userAddedEnd).join('\n');
+    }
+    
+    // Check if content already has markdown tags for this tag ID in either section
+    if (currentContent.includes(`](${tag.id})`) || userAddedContent.includes(`](${tag.id})`)) {
       return cardContent; // Already tagged
     }
     
-    // Generate tag markup for the content
-    const taggedContent = this.generateTagMarkup(currentContent, tag);
+    // Generate tag markup for the original content
+    const taggedOriginalContent = this.generateTagMarkup(currentContent, tag);
+    
+    // Generate tag markup for user added content if it exists
+    const taggedUserAddedContent = userAddedContent ? this.generateTagMarkup(userAddedContent, tag) : '';
     
     // Update TAG INDEX section
     const existingTagIndex = lines.slice(tagIndexStart + 1, tagIndexEnd).filter(line => line.trim());
@@ -709,16 +739,365 @@ export class OrcsService {
       existingTagIndex.push(newTagEntry);
     }
     
-    // Build new card content with updated TAG INDEX and marked content
-    const newLines = [
-      ...lines.slice(0, tagIndexStart + 1),
-      ...existingTagIndex,
-      ...lines.slice(tagIndexEnd, originalContentStart + 1),
-      taggedContent,
-      ...lines.slice(originalContentEnd)
-    ];
+    // Build new card content with updated sections
+    let newLines: string[];
+    
+    if (userAddedStart !== -1 && userAddedEnd !== -1) {
+      // Include USER ADDED section
+      newLines = [
+        ...lines.slice(0, tagIndexStart + 1),
+        ...existingTagIndex,
+        ...lines.slice(tagIndexEnd, originalContentStart + 1),
+        taggedOriginalContent,
+        ...lines.slice(originalContentEnd, userAddedStart + 1),
+        taggedUserAddedContent,
+        ...lines.slice(userAddedEnd)
+      ];
+    } else {
+      // No USER ADDED section yet
+      newLines = [
+        ...lines.slice(0, tagIndexStart + 1),
+        ...existingTagIndex,
+        ...lines.slice(tagIndexEnd, originalContentStart + 1),
+        taggedOriginalContent,
+        ...lines.slice(originalContentEnd)
+      ];
+    }
 
     return newLines.join('\n');
+  }
+  
+  // Append user-added text to a card's USER ADDED section
+  // Returns the card's UUID for stable re-selection, or null on failure
+  async appendUserText(cardFilename: string, text: string): Promise<string | null> {
+    try {
+      const cardPath = path.join(USER_DATA_DIR, 'raw', cardFilename);
+      const cardContent = await fs.readFile(cardPath, 'utf-8');
+      
+      // Extract the card's UUID for stable reference
+      const uuidMatch = cardContent.match(/^uuid:\s*"([^"]+)"/m);
+      const cardUuid = uuidMatch ? uuidMatch[1] : null;
+      
+      const lines = cardContent.split('\n');
+      let userAddedStart = -1;
+      let userAddedEnd = -1;
+      let originalContentEnd = -1;
+      
+      // Find section boundaries
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line === '=== ORIGINAL CONTENT END ===') {
+          originalContentEnd = i;
+        } else if (line === '=== USER ADDED START ===') {
+          userAddedStart = i;
+        } else if (line === '=== USER ADDED END ===') {
+          userAddedEnd = i;
+        }
+      }
+      
+      if (originalContentEnd === -1) {
+        console.error('Card does not have expected format');
+        return null;
+      }
+      
+      let newLines: string[];
+      
+      if (userAddedStart !== -1 && userAddedEnd !== -1) {
+        // USER ADDED section exists - append to it
+        const existingUserContent = lines.slice(userAddedStart + 1, userAddedEnd);
+        newLines = [
+          ...lines.slice(0, userAddedStart + 1),
+          ...existingUserContent,
+          text,
+          ...lines.slice(userAddedEnd)
+        ];
+      } else {
+        // No USER ADDED section - create it after ORIGINAL CONTENT END
+        newLines = [
+          ...lines.slice(0, originalContentEnd + 1),
+          '',
+          '=== USER ADDED START ===',
+          text,
+          '=== USER ADDED END ===',
+          ...lines.slice(originalContentEnd + 1)
+        ];
+      }
+      
+      await fs.writeFile(cardPath, newLines.join('\n'), 'utf-8');
+      console.log(`Appended user text to card: ${cardFilename}`);
+      return cardUuid;
+    } catch (error) {
+      console.error('Failed to append user text:', error);
+      return null;
+    }
+  }
+  
+  // Clear user-added text from a card's USER ADDED section
+  // Returns the card's UUID for stable re-selection, or null on failure
+  async clearUserAddedText(cardFilename: string): Promise<string | null> {
+    try {
+      const cardPath = path.join(USER_DATA_DIR, 'raw', cardFilename);
+      const cardContent = await fs.readFile(cardPath, 'utf-8');
+      
+      // Extract the card's UUID for stable reference
+      const uuidMatch = cardContent.match(/^uuid:\s*"([^"]+)"/m);
+      const cardUuid = uuidMatch ? uuidMatch[1] : null;
+      
+      const lines = cardContent.split('\n');
+      let userAddedStart = -1;
+      let userAddedEnd = -1;
+      
+      // Find USER ADDED section boundaries
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line === '=== USER ADDED START ===') {
+          userAddedStart = i;
+        } else if (line === '=== USER ADDED END ===') {
+          userAddedEnd = i;
+        }
+      }
+      
+      if (userAddedStart === -1 || userAddedEnd === -1) {
+        // No USER ADDED section, nothing to clear
+        return cardUuid;
+      }
+      
+      // Remove the entire USER ADDED section (including delimiters)
+      // Also remove the blank line before it if present
+      const startIndex = userAddedStart > 0 && lines[userAddedStart - 1].trim() === '' 
+        ? userAddedStart - 1 
+        : userAddedStart;
+      const newLines = [
+        ...lines.slice(0, startIndex),
+        ...lines.slice(userAddedEnd + 1)
+      ];
+      
+      await fs.writeFile(cardPath, newLines.join('\n'), 'utf-8');
+      console.log(`Cleared user-added text from card: ${cardFilename}`);
+      return cardUuid;
+    } catch (error) {
+      console.error('Failed to clear user-added text:', error);
+      return null;
+    }
+  }
+
+  // Verify card content integrity against original source file
+  async verifyContentIntegrity(cardFilename: string): Promise<{
+    isValid: boolean;
+    missingText: string[];
+    sourceFile: string | null;
+    cardUuid: string | null;
+  }> {
+    try {
+      const cardPath = path.join(USER_DATA_DIR, 'raw', cardFilename);
+      const cardContent = await fs.readFile(cardPath, 'utf-8');
+      
+      // Extract card UUID and source file reference
+      const uuidMatch = cardContent.match(/^uuid:\s*"([^"]+)"/m);
+      const sourceFileMatch = cardContent.match(/^source_file:\s*"([^"]+)"/m);
+      
+      const cardUuid = uuidMatch ? uuidMatch[1] : null;
+      const sourceFile = sourceFileMatch ? sourceFileMatch[1] : null;
+      
+      if (!sourceFile) {
+        return { isValid: false, missingText: ['Source file reference not found in card'], sourceFile: null, cardUuid };
+      }
+      
+      // Read original source file
+      const sourcePath = path.join(USER_DATA_DIR, 'raw', sourceFile);
+      let originalContent: string;
+      try {
+        originalContent = await fs.readFile(sourcePath, 'utf-8');
+      } catch {
+        return { isValid: false, missingText: ['Original source file not found: ' + sourceFile], sourceFile, cardUuid };
+      }
+      
+      // Extract ORIGINAL CONTENT section from card
+      const originalStartMatch = cardContent.match(/=== ORIGINAL CONTENT START ===/);
+      const originalEndMatch = cardContent.match(/=== ORIGINAL CONTENT END ===/);
+      
+      if (!originalStartMatch || !originalEndMatch) {
+        return { isValid: false, missingText: ['ORIGINAL CONTENT section not found in card'], sourceFile, cardUuid };
+      }
+      
+      const startIdx = cardContent.indexOf('=== ORIGINAL CONTENT START ===') + '=== ORIGINAL CONTENT START ==='.length;
+      const endIdx = cardContent.indexOf('=== ORIGINAL CONTENT END ===');
+      const cardOriginalContent = cardContent.substring(startIdx, endIdx).trim();
+      
+      // Strip markdown tags from card content for comparison
+      const strippedContent = this.stripTagsFromContent(cardOriginalContent);
+      
+      // Normalize content for comparison - handle both TXT and CSV formats
+      const normalizeContent = (content: string): string => {
+        // Preserve CSV structure by normalizing line-by-line, then join
+        // This prevents false positives from CSV column/row differences
+        return content
+          .split('\n')
+          .map(line => line.replace(/\s+/g, ' ').trim())
+          .filter(line => line.length > 0)
+          .join('\n')
+          .toLowerCase(); // Case-insensitive comparison
+      };
+      
+      const normalizedCard = normalizeContent(strippedContent);
+      const normalizedOriginal = normalizeContent(originalContent);
+      
+      if (normalizedCard === normalizedOriginal) {
+        return { isValid: true, missingText: [], sourceFile, cardUuid };
+      }
+      
+      // Content doesn't match - find what's different for better error messages
+      // Split on whitespace and common delimiters, filter out punctuation-only tokens
+      const extractWords = (text: string): string[] => {
+        return text
+          .split(/[\s,\n\r]+/)
+          .map(w => w.replace(/^[^\w]+|[^\w]+$/g, '').toLowerCase())
+          .filter(w => w.length > 2);
+      };
+      
+      const originalWords = extractWords(normalizedOriginal);
+      const cardWordsList = extractWords(normalizedCard);
+      const cardWords = new Set(cardWordsList);
+      const originalWordsSet = new Set(originalWords);
+      const missingText: string[] = [];
+      const extraText: string[] = [];
+      
+      // Find words in original that are not in card (missing)
+      for (const word of originalWords) {
+        if (!cardWords.has(word)) {
+          missingText.push(word);
+        }
+      }
+      
+      // Find words in card that are not in original (extra - could indicate corruption)
+      for (const word of cardWordsList) {
+        if (!originalWordsSet.has(word)) {
+          extraText.push(word);
+        }
+      }
+      
+      const uniqueMissing = [...new Set(missingText)];
+      const uniqueExtra = [...new Set(extraText)];
+      
+      // Always report as invalid since normalizedCard !== normalizedOriginal
+      // Even if word sets match, the order/structure is different
+      const differences: string[] = [];
+      if (uniqueMissing.length > 0) {
+        differences.push(...uniqueMissing.slice(0, 5));
+      }
+      if (uniqueExtra.length > 0 && differences.length < 5) {
+        differences.push(...uniqueExtra.slice(0, 5 - differences.length).map(w => `+${w}`));
+      }
+      if (differences.length === 0) {
+        // Words match but order is different
+        differences.push('(content order mismatch)');
+      }
+      
+      return { isValid: false, missingText: differences, sourceFile, cardUuid };
+    } catch (error) {
+      console.error('Failed to verify content integrity:', error);
+      return { isValid: false, missingText: ['Error reading files'], sourceFile: null, cardUuid: null };
+    }
+  }
+
+  // Restore original content from source file, preserving tag index and user added section
+  async restoreOriginalContent(cardFilename: string): Promise<{
+    success: boolean;
+    cardUuid: string | null;
+    message: string;
+  }> {
+    try {
+      const cardPath = path.join(USER_DATA_DIR, 'raw', cardFilename);
+      const cardContent = await fs.readFile(cardPath, 'utf-8');
+      
+      // Extract card UUID and source file reference
+      const uuidMatch = cardContent.match(/^uuid:\s*"([^"]+)"/m);
+      const sourceFileMatch = cardContent.match(/^source_file:\s*"([^"]+)"/m);
+      
+      const cardUuid = uuidMatch ? uuidMatch[1] : null;
+      const sourceFile = sourceFileMatch ? sourceFileMatch[1] : null;
+      
+      if (!sourceFile) {
+        return { success: false, cardUuid, message: 'Source file reference not found in card' };
+      }
+      
+      // Read original source file
+      const sourcePath = path.join(USER_DATA_DIR, 'raw', sourceFile);
+      let originalContent: string;
+      try {
+        originalContent = await fs.readFile(sourcePath, 'utf-8');
+      } catch {
+        return { success: false, cardUuid, message: 'Original source file not found: ' + sourceFile };
+      }
+      
+      // Parse card sections
+      const lines = cardContent.split('\n');
+      
+      // Find section boundaries
+      let headerEnd = -1;
+      let tagIndexStart = -1;
+      let tagIndexEnd = -1;
+      let originalContentStart = -1;
+      let originalContentEnd = -1;
+      let userAddedStart = -1;
+      let userAddedEnd = -1;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line === '=== TAG INDEX START ===') tagIndexStart = i;
+        else if (line === '=== TAG INDEX END ===') tagIndexEnd = i;
+        else if (line === '=== ORIGINAL CONTENT START ===') originalContentStart = i;
+        else if (line === '=== ORIGINAL CONTENT END ===') originalContentEnd = i;
+        else if (line === '=== USER ADDED START ===') userAddedStart = i;
+        else if (line === '=== USER ADDED END ===') userAddedEnd = i;
+      }
+      
+      if (originalContentStart === -1 || originalContentEnd === -1) {
+        return { success: false, cardUuid, message: 'ORIGINAL CONTENT section not found in card' };
+      }
+      
+      // Build restored card content
+      const newLines: string[] = [];
+      
+      // Add header (everything before TAG INDEX or ORIGINAL CONTENT)
+      headerEnd = tagIndexStart !== -1 ? tagIndexStart : originalContentStart;
+      for (let i = 0; i < headerEnd; i++) {
+        newLines.push(lines[i]);
+      }
+      
+      // Clear tag index but keep section markers
+      if (tagIndexStart !== -1 && tagIndexEnd !== -1) {
+        newLines.push('=== TAG INDEX START ===');
+        newLines.push('=== TAG INDEX END ===');
+        newLines.push('');
+      }
+      
+      // Add restored original content
+      newLines.push('=== ORIGINAL CONTENT START ===');
+      newLines.push(originalContent.trim());
+      newLines.push('=== ORIGINAL CONTENT END ===');
+      
+      // Preserve USER ADDED section if it exists
+      if (userAddedStart !== -1 && userAddedEnd !== -1) {
+        newLines.push('');
+        for (let i = userAddedStart; i <= userAddedEnd; i++) {
+          newLines.push(lines[i]);
+        }
+      }
+      
+      await fs.writeFile(cardPath, newLines.join('\n'), 'utf-8');
+      console.log(`Restored original content for card: ${cardFilename}`);
+      return { success: true, cardUuid, message: 'Content restored from original source file' };
+    } catch (error) {
+      console.error('Failed to restore original content:', error);
+      return { success: false, cardUuid: null, message: 'Error restoring content' };
+    }
+  }
+
+  // Helper: Strip markdown-style tags from content to get plain text
+  private stripTagsFromContent(content: string): string {
+    const tagPattern = /\[(entity|relationship|attribute|comment|kv):([^\]]+)\]\([a-f0-9-]+\)/gi;
+    return content.replace(tagPattern, '$2');
   }
 
   private generateTagMarkup(content: string, tag: Tag): string {

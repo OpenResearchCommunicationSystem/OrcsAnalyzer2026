@@ -1,5 +1,16 @@
 {
+  "version": "2025.003",
+  "lastUpdated": "2025-12-10T21:41:40.262Z",
   "files": [],
   "tags": [],
-  "lastUpdated": "2025-12-10T21:46:19.635Z"
+  "connections": [],
+  "brokenConnections": [],
+  "stats": {
+    "totalFiles": 0,
+    "totalTags": 0,
+    "totalConnections": 0,
+    "brokenConnectionCount": 0,
+    "entityCount": 0,
+    "relationshipCount": 0
+  }
 }

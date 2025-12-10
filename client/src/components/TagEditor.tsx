@@ -31,7 +31,7 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
   const [showEditNameModal, setShowEditNameModal] = useState(false);
   const [editingName, setEditingName] = useState('');
   
-  const { updateTag, deleteTag, isUpdating, isDeleting } = useTagOperations();
+  const { updateTag, deleteTagAsync, isUpdating, isDeleting } = useTagOperations();
 
   // Fetch all tags for similarity detection
   const { data: allTags = [] } = useQuery<Tag[]>({
@@ -229,7 +229,7 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
   const handleDelete = async () => {
     if (selectedTag && confirm('Are you sure you want to delete this tag?')) {
       try {
-        await deleteTag(selectedTag.id);
+        await deleteTagAsync(selectedTag.id);
         onClose();
       } catch (error) {
         console.error('Failed to delete tag:', error);
