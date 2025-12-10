@@ -118,7 +118,7 @@ export default function OrcsMain() {
   };
 
   return (
-    <div className="desktop-layout min-h-screen flex flex-col bg-gray-900 text-slate-50" style={{ minHeight: '1200px' }}>
+    <div className="desktop-layout min-h-screen flex flex-col bg-gray-900 text-slate-50">
       {/* Header */}
       <header style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-b border-gray-700 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-4">
