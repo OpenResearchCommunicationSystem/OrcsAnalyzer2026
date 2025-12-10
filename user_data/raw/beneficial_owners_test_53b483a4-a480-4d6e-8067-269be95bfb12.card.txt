@@ -1,0 +1,30 @@
+=== ORCS CARD ===
+version: "2025.003"
+uuid: "53b483a4-a480-4d6e-8067-269be95bfb12"
+source_file: "beneficial_owners_test.csv"
+source_reference: "orbus.com"
+classification: "Proprietary Information"
+handling:
+  - ""
+created: "2025-12-10T23:26:39.278Z"
+modified: "2025-12-10T23:27:27.088Z"
+source_hash: "sha256:4f3d3400bdd7a10631980c2c7576859c0bdaaa8ad5340e46584014d4f9bc6b15"
+file_type: "csv"
+file_size: 169
+analyst: ""
+
+=== TAG INDEX START ===
+[entity:John Green](3b14002a-4d55-41d8-9963-061d3b6a51f3)
+=== TAG INDEX END ===
+
+=== ORIGINAL CONTENT START ===
+Company,Ultimate Beneficial Owner,Ownership %
+VisionEdge Analytics,Ava Cheng,45
+FutureFoods,Maria Lopez,60
+CyberNova,Jasmine O'Neil,35
+VisionEdge Analytics,[entity:John Green](3b14002a-4d55-41d8-9963-061d3b6a51f3),54
+=== ORIGINAL CONTENT END ===
+
+=== USER ADDED START ===
+
+=== USER ADDED END ===

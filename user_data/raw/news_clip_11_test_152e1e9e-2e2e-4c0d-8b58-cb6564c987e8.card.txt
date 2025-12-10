@@ -14,11 +14,13 @@ file_size: 251
 analyst: "Test Analyst Name"
 
 === TAG INDEX START ===
-
+[entity:TechCorp](cfb00afe-aa19-40a2-851a-b28bbe5a9fe4)
+[entity:BioNex Systems](e860cdf2-c05b-40ab-b98a-d13ef05f9648)
+[relationship:acquisition](e59dd245-36ae-4c33-873e-b2533fe8f870)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
-BREAKING: TechCorp has announced the acquisition of BioNex Systems in a deal valued at $3.2 billion. The merger is expected to complete in Q3 2025, pending regulatory approval.
+BREAKING: [entity:TechCorp](cfb00afe-aa19-40a2-851a-b28bbe5a9fe4) has announced the [relationship:acquisition](e59dd245-36ae-4c33-873e-b2533fe8f870) of [entity:BioNex Systems](e860cdf2-c05b-40ab-b98a-d13ef05f9648) in a deal valued at $3.2 billion. The merger is expected to complete in Q3 2025, pending regulatory approval.
 CEO John Smith commented, "This is a landmark moment for both companies."
 
 === ORIGINAL CONTENT END ===

@@ -268,8 +268,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   };
 
   // Check if current file is a card file and extract original content
-  const getDisplayContent = (): { content: string; userAddedContent: string | null; sourceType: 'txt' | 'csv' | null } => {
-    if (!fileContent?.content) return { content: '', userAddedContent: null, sourceType: null };
+  const getDisplayContent = (): { content: string; rawContent: string; userAddedContent: string | null; sourceType: 'txt' | 'csv' | null } => {
+    if (!fileContent?.content) return { content: '', rawContent: '', userAddedContent: null, sourceType: null };
     
     // If this is a card file (.card.txt), extract the original content section
     if (selectedFileData?.name.includes('.card.txt')) {
@@ -277,12 +277,15 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       const userAdded = extractUserAddedContent(fileContent.content);
       const sourceInfo = getSourceFileInfo(fileContent.content);
       
-      // Process markdown tags in the content for highlighting
-      const processedContent = processMarkdownTags(originalContent);
+      // For CSV content, DON'T process markdown tags here - do it per-cell after parsing
+      // For TXT content, process markdown tags for highlighting
+      const isCSV = sourceInfo.type === 'csv';
+      const processedContent = isCSV ? originalContent : processMarkdownTags(originalContent);
       const processedUserAdded = userAdded ? processMarkdownTags(userAdded) : null;
       
       return { 
         content: processedContent,
+        rawContent: originalContent, // Keep raw content for CSV parsing
         userAddedContent: processedUserAdded,
         sourceType: sourceInfo.type 
       };
@@ -291,6 +294,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     // For original files, return content as-is
     return { 
       content: fileContent.content,
+      rawContent: fileContent.content,
       userAddedContent: null,
       sourceType: selectedFileData?.type as 'txt' | 'csv' | null 
     };
@@ -1099,7 +1103,9 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                         {rowIndex + 1}
                       </td>
                       {headers.map((_, colIndex) => {
-                        const cellValue = row[colIndex] || '';
+                        const rawCellValue = row[colIndex] || '';
+                        // Process markdown tags to HTML for each cell AFTER CSV parsing
+                        const cellValue = processMarkdownTags(rawCellValue);
                         const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === colIndex;
                         
                         return (
@@ -1108,8 +1114,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                             className={`px-3 py-2 text-slate-300 cursor-pointer hover:bg-gray-600 transition-colors ${
                               isSelected ? 'bg-blue-900 border border-blue-500' : ''
                             }`}
-                            onClick={() => handleCellSelection(rowIndex, colIndex, cellValue)}
-                            title={cellValue.replace(/<[^>]*>/g, '')} // Strip HTML for tooltip
+                            onClick={() => handleCellSelection(rowIndex, colIndex, rawCellValue)}
+                            title={rawCellValue.replace(/\[[^\]]+\]\([^)]+\)/g, (m) => m.match(/\[([^:]+):([^\]]+)\]/)?.[2] || m)} // Show plain text in tooltip
                           >
                             <div 
                               className="max-w-xs truncate"
@@ -1393,17 +1399,21 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                           <tbody>
                             {rows.map((row, rowIndex) => (
                               <tr key={rowIndex}>
-                                {row.map((cell, colIndex) => (
-                                  <td 
-                                    key={colIndex}
-                                    className={`border border-gray-600 px-3 py-2 text-slate-300 cursor-pointer hover:bg-gray-700 ${
-                                      selectedCell?.row === rowIndex + 1 && selectedCell?.col === colIndex ? 'bg-blue-900/30' : ''
-                                    }`}
-                                    onClick={() => handleCellSelection(rowIndex + 1, colIndex, cell)}
-                                  >
-                                    {cell}
-                                  </td>
-                                ))}
+                                {row.map((cell, colIndex) => {
+                                  // Process markdown tags to HTML for each cell
+                                  const processedCell = processMarkdownTags(cell);
+                                  return (
+                                    <td 
+                                      key={colIndex}
+                                      className={`border border-gray-600 px-3 py-2 text-slate-300 cursor-pointer hover:bg-gray-700 ${
+                                        selectedCell?.row === rowIndex + 1 && selectedCell?.col === colIndex ? 'bg-blue-900/30' : ''
+                                      }`}
+                                      onClick={() => handleCellSelection(rowIndex + 1, colIndex, cell)}
+                                    >
+                                      <span dangerouslySetInnerHTML={{ __html: processedCell }} />
+                                    </td>
+                                  );
+                                })}
                               </tr>
                             ))}
                           </tbody>
