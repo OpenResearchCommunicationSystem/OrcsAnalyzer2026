@@ -22,3 +22,7 @@ source_hash: "sha256:fb55a6e8a3b5293db0e9456bc4ffbeb9f0b01fbb65d9031e1a60604b313
 === ORIGINAL CONTENT START ===
 LinkedIn Update — just joined the board of directors at [entity:VisionEdge Analytics](5e8a2c5a-12a3-4d7e-9699-c23f77432696). He [relationship:previously held executive roles](1e818ce4-b6b3-4238-b7e1-19595effc358) at [entity:CloudVest](4057a24c-dd6a-4a78-b9c1-9e6606869275) Holdings and [entity:CyberNova](03fd1c2f-831e-453d-aad7-5fabfcf0f140).
 === ORIGINAL CONTENT END ===
+
+=== USER ADDED START ===
+John Green
+=== USER ADDED END ===

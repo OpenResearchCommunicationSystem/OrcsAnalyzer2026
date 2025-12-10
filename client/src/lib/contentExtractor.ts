@@ -186,4 +186,71 @@ export class ContentExtractor {
     
     return true;
   }
+
+  /**
+   * Strip markdown-style tags from content to get plain text
+   * Removes patterns like [entity:Name](uuid) and [relationship:label](uuid)
+   */
+  static stripTagsFromContent(content: string): string {
+    // Pattern matches [type:text](uuid) and extracts just the text
+    const tagPattern = /\[(entity|relationship|attribute|comment|kv):([^\]]+)\]\([a-f0-9-]+\)/gi;
+    return content.replace(tagPattern, '$2');
+  }
+
+  /**
+   * Compare card content (with tags stripped) against original source content
+   * Returns details about any mismatches found
+   */
+  static compareContentIntegrity(cardContent: string, originalContent: string): ContentIntegrityResult {
+    const strippedCardContent = this.stripTagsFromContent(cardContent);
+    
+    // Normalize whitespace for comparison
+    const normalizedCard = strippedCardContent.replace(/\s+/g, ' ').trim();
+    const normalizedOriginal = originalContent.replace(/\s+/g, ' ').trim();
+    
+    if (normalizedCard === normalizedOriginal) {
+      return {
+        isValid: true,
+        missingText: [],
+        extraText: []
+      };
+    }
+    
+    // Find missing words/phrases from the original
+    const originalWords = normalizedOriginal.split(/\s+/);
+    const cardWords = normalizedCard.split(/\s+/);
+    const originalWordSet = new Set(originalWords);
+    const cardWordSet = new Set(cardWords);
+    
+    const missingText: string[] = [];
+    const extraText: string[] = [];
+    
+    originalWords.forEach(word => {
+      if (!cardWordSet.has(word) && word.length > 2 && !missingText.includes(word)) {
+        missingText.push(word);
+      }
+    });
+    
+    cardWords.forEach(word => {
+      if (!originalWordSet.has(word) && word.length > 2 && !extraText.includes(word)) {
+        extraText.push(word);
+      }
+    });
+    
+    return {
+      isValid: false,
+      missingText,
+      extraText,
+      originalContent: normalizedOriginal,
+      cardContent: normalizedCard
+    };
+  }
+}
+
+export interface ContentIntegrityResult {
+  isValid: boolean;
+  missingText: string[];
+  extraText: string[];
+  originalContent?: string;
+  cardContent?: string;
 }

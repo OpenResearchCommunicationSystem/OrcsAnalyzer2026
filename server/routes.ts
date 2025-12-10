@@ -181,6 +181,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Verify card content integrity against original source file
+  app.get("/api/files/:id/verify-content", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Only verify card files
+      if (!file.name.endsWith('.card.txt')) {
+        return res.status(400).json({ error: "Can only verify card files" });
+      }
+      
+      const result = await orcsService.verifyContentIntegrity(file.name);
+      res.json(result);
+    } catch (error) {
+      console.error("Verify content error:", error);
+      res.status(500).json({ error: "Failed to verify content integrity" });
+    }
+  });
+
+  // Restore original content from source file
+  app.post("/api/files/:id/restore-content", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Only restore card files
+      if (!file.name.endsWith('.card.txt')) {
+        return res.status(400).json({ error: "Can only restore content in card files" });
+      }
+      
+      const result = await orcsService.restoreOriginalContent(file.name);
+      if (!result.success) {
+        return res.status(500).json({ error: result.message });
+      }
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Restore content error:", error);
+      res.status(500).json({ error: "Failed to restore content" });
+    }
+  });
+
   // Tag operations
   app.get("/api/tags", async (req, res) => {
     try {

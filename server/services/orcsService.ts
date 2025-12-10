@@ -866,6 +866,179 @@ export class OrcsService {
     }
   }
 
+  // Verify card content integrity against original source file
+  async verifyContentIntegrity(cardFilename: string): Promise<{
+    isValid: boolean;
+    missingText: string[];
+    sourceFile: string | null;
+    cardUuid: string | null;
+  }> {
+    try {
+      const cardPath = path.join(USER_DATA_DIR, 'raw', cardFilename);
+      const cardContent = await fs.readFile(cardPath, 'utf-8');
+      
+      // Extract card UUID and source file reference
+      const uuidMatch = cardContent.match(/^uuid:\s*"([^"]+)"/m);
+      const sourceFileMatch = cardContent.match(/^source_file:\s*"([^"]+)"/m);
+      
+      const cardUuid = uuidMatch ? uuidMatch[1] : null;
+      const sourceFile = sourceFileMatch ? sourceFileMatch[1] : null;
+      
+      if (!sourceFile) {
+        return { isValid: false, missingText: ['Source file reference not found in card'], sourceFile: null, cardUuid };
+      }
+      
+      // Read original source file
+      const sourcePath = path.join(USER_DATA_DIR, 'raw', sourceFile);
+      let originalContent: string;
+      try {
+        originalContent = await fs.readFile(sourcePath, 'utf-8');
+      } catch {
+        return { isValid: false, missingText: ['Original source file not found: ' + sourceFile], sourceFile, cardUuid };
+      }
+      
+      // Extract ORIGINAL CONTENT section from card
+      const originalStartMatch = cardContent.match(/=== ORIGINAL CONTENT START ===/);
+      const originalEndMatch = cardContent.match(/=== ORIGINAL CONTENT END ===/);
+      
+      if (!originalStartMatch || !originalEndMatch) {
+        return { isValid: false, missingText: ['ORIGINAL CONTENT section not found in card'], sourceFile, cardUuid };
+      }
+      
+      const startIdx = cardContent.indexOf('=== ORIGINAL CONTENT START ===') + '=== ORIGINAL CONTENT START ==='.length;
+      const endIdx = cardContent.indexOf('=== ORIGINAL CONTENT END ===');
+      const cardOriginalContent = cardContent.substring(startIdx, endIdx).trim();
+      
+      // Strip markdown tags from card content for comparison
+      const strippedContent = this.stripTagsFromContent(cardOriginalContent);
+      
+      // Normalize whitespace for comparison
+      const normalizedCard = strippedContent.replace(/\s+/g, ' ').trim();
+      const normalizedOriginal = originalContent.replace(/\s+/g, ' ').trim();
+      
+      if (normalizedCard === normalizedOriginal) {
+        return { isValid: true, missingText: [], sourceFile, cardUuid };
+      }
+      
+      // Find missing words
+      const originalWords = normalizedOriginal.split(/\s+/);
+      const cardWords = new Set(normalizedCard.split(/\s+/));
+      const missingText: string[] = [];
+      
+      for (let i = 0; i < originalWords.length; i++) {
+        const word = originalWords[i];
+        if (!cardWords.has(word) && word.length > 2) {
+          missingText.push(word);
+        }
+      }
+      
+      return { isValid: false, missingText: [...new Set(missingText)], sourceFile, cardUuid };
+    } catch (error) {
+      console.error('Failed to verify content integrity:', error);
+      return { isValid: false, missingText: ['Error reading files'], sourceFile: null, cardUuid: null };
+    }
+  }
+
+  // Restore original content from source file, preserving tag index and user added section
+  async restoreOriginalContent(cardFilename: string): Promise<{
+    success: boolean;
+    cardUuid: string | null;
+    message: string;
+  }> {
+    try {
+      const cardPath = path.join(USER_DATA_DIR, 'raw', cardFilename);
+      const cardContent = await fs.readFile(cardPath, 'utf-8');
+      
+      // Extract card UUID and source file reference
+      const uuidMatch = cardContent.match(/^uuid:\s*"([^"]+)"/m);
+      const sourceFileMatch = cardContent.match(/^source_file:\s*"([^"]+)"/m);
+      
+      const cardUuid = uuidMatch ? uuidMatch[1] : null;
+      const sourceFile = sourceFileMatch ? sourceFileMatch[1] : null;
+      
+      if (!sourceFile) {
+        return { success: false, cardUuid, message: 'Source file reference not found in card' };
+      }
+      
+      // Read original source file
+      const sourcePath = path.join(USER_DATA_DIR, 'raw', sourceFile);
+      let originalContent: string;
+      try {
+        originalContent = await fs.readFile(sourcePath, 'utf-8');
+      } catch {
+        return { success: false, cardUuid, message: 'Original source file not found: ' + sourceFile };
+      }
+      
+      // Parse card sections
+      const lines = cardContent.split('\n');
+      
+      // Find section boundaries
+      let headerEnd = -1;
+      let tagIndexStart = -1;
+      let tagIndexEnd = -1;
+      let originalContentStart = -1;
+      let originalContentEnd = -1;
+      let userAddedStart = -1;
+      let userAddedEnd = -1;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line === '=== TAG INDEX START ===') tagIndexStart = i;
+        else if (line === '=== TAG INDEX END ===') tagIndexEnd = i;
+        else if (line === '=== ORIGINAL CONTENT START ===') originalContentStart = i;
+        else if (line === '=== ORIGINAL CONTENT END ===') originalContentEnd = i;
+        else if (line === '=== USER ADDED START ===') userAddedStart = i;
+        else if (line === '=== USER ADDED END ===') userAddedEnd = i;
+      }
+      
+      if (originalContentStart === -1 || originalContentEnd === -1) {
+        return { success: false, cardUuid, message: 'ORIGINAL CONTENT section not found in card' };
+      }
+      
+      // Build restored card content
+      const newLines: string[] = [];
+      
+      // Add header (everything before TAG INDEX or ORIGINAL CONTENT)
+      headerEnd = tagIndexStart !== -1 ? tagIndexStart : originalContentStart;
+      for (let i = 0; i < headerEnd; i++) {
+        newLines.push(lines[i]);
+      }
+      
+      // Clear tag index but keep section markers
+      if (tagIndexStart !== -1 && tagIndexEnd !== -1) {
+        newLines.push('=== TAG INDEX START ===');
+        newLines.push('=== TAG INDEX END ===');
+        newLines.push('');
+      }
+      
+      // Add restored original content
+      newLines.push('=== ORIGINAL CONTENT START ===');
+      newLines.push(originalContent.trim());
+      newLines.push('=== ORIGINAL CONTENT END ===');
+      
+      // Preserve USER ADDED section if it exists
+      if (userAddedStart !== -1 && userAddedEnd !== -1) {
+        newLines.push('');
+        for (let i = userAddedStart; i <= userAddedEnd; i++) {
+          newLines.push(lines[i]);
+        }
+      }
+      
+      await fs.writeFile(cardPath, newLines.join('\n'), 'utf-8');
+      console.log(`Restored original content for card: ${cardFilename}`);
+      return { success: true, cardUuid, message: 'Content restored from original source file' };
+    } catch (error) {
+      console.error('Failed to restore original content:', error);
+      return { success: false, cardUuid: null, message: 'Error restoring content' };
+    }
+  }
+
+  // Helper: Strip markdown-style tags from content to get plain text
+  private stripTagsFromContent(content: string): string {
+    const tagPattern = /\[(entity|relationship|attribute|comment|kv):([^\]]+)\]\([a-f0-9-]+\)/gi;
+    return content.replace(tagPattern, '$2');
+  }
+
   private generateTagMarkup(content: string, tag: Tag): string {
     let markedContent = content;
     
