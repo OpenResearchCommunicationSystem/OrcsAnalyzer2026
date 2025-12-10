@@ -39,8 +39,8 @@ export function MetadataForm({ fileId, fileName, initialMetadata, onClose, onSav
     uuid: "",
     source_file: fileName,
     source_reference: "",
-    classification: "Proprietary Information",
-    handling: ["Copyright 2025 TechWatch Intelligence", "Distribution: Internal Use Only"],
+    classification: "",
+    handling: [""],
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     file_type: "",
@@ -233,9 +233,9 @@ export function MetadataForm({ fileId, fileName, initialMetadata, onClose, onSav
           {/* Classification */}
           <div>
             <Label htmlFor="classification" className="text-slate-300">Classification</Label>
-            <Select value={formData.classification} onValueChange={(value) => handleInputChange('classification', value)}>
+            <Select value={formData.classification || undefined} onValueChange={(value) => handleInputChange('classification', value)}>
               <SelectTrigger className="bg-gray-700 border-gray-600 text-slate-200">
-                <SelectValue />
+                <SelectValue placeholder="Select classification level" />
               </SelectTrigger>
               <SelectContent className="bg-gray-700 border-gray-600">
                 <SelectItem value="Unclassified">Unclassified</SelectItem>

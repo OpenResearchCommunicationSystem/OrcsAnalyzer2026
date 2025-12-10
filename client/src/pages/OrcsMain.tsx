@@ -6,6 +6,7 @@ import { GraphVisualization } from "@/components/GraphVisualization";
 import { TagEditor } from "@/components/TagEditor";
 import { TagCreationModal } from "@/components/TagCreationModal";
 import { RelationshipConnectionModal } from "@/components/RelationshipConnectionModal";
+import { MetadataForm } from "@/components/MetadataForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -30,8 +31,12 @@ export default function OrcsMain() {
   // Entity connection state for creating relationships
   const [selectedEntities, setSelectedEntities] = useState<Tag[]>([]);
   const [showConnectionModal, setShowConnectionModal] = useState(false);
+  
+  // New file metadata modal state
+  const [showNewFileMetadata, setShowNewFileMetadata] = useState(false);
+  const [newlyUploadedFile, setNewlyUploadedFile] = useState<{ id: string; name: string } | null>(null);
 
-  const { uploadFile, isUploading } = useFileOperations();
+  const { uploadFileAsync, isUploading } = useFileOperations();
   const { stats }: { stats?: Stats } = useTagOperations();
   const { toast } = useToast();
   
@@ -76,10 +81,24 @@ export default function OrcsMain() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.txt,.csv';
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        uploadFile(file);
+        try {
+          const uploadedFile = await uploadFileAsync(file);
+          // Find the card file that was created (look for .card.txt file)
+          await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+          const refreshedFiles = await queryClient.fetchQuery<File[]>({ queryKey: ['/api/files'] });
+          const cardFile = refreshedFiles?.find((f: File) => 
+            f.name.includes('.card.txt') && f.name.includes(file.name.replace(/\.(txt|csv)$/, ''))
+          );
+          if (cardFile) {
+            setNewlyUploadedFile({ id: cardFile.id, name: cardFile.name });
+            setShowNewFileMetadata(true);
+          }
+        } catch (error) {
+          console.error('Upload failed:', error);
+        }
       }
     };
     input.click();
@@ -386,6 +405,25 @@ export default function OrcsMain() {
           onTagCreated={() => {
             setShowTagModal(false);
             setSelectedText(null);
+          }}
+        />
+      )}
+
+      {/* New File Metadata Modal */}
+      {showNewFileMetadata && newlyUploadedFile && (
+        <MetadataForm
+          fileId={newlyUploadedFile.id}
+          fileName={newlyUploadedFile.name}
+          initialMetadata=""
+          onClose={() => {
+            setShowNewFileMetadata(false);
+            setNewlyUploadedFile(null);
+          }}
+          onSave={() => {
+            setShowNewFileMetadata(false);
+            setNewlyUploadedFile(null);
+            queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+            toast({ title: 'Metadata saved', description: 'Card metadata has been updated' });
           }}
         />
       )}

@@ -65,6 +65,7 @@ export function useFileOperations() {
 
   return {
     uploadFile: uploadFileMutation.mutate,
+    uploadFileAsync: uploadFileMutation.mutateAsync,
     isUploading: uploadFileMutation.isPending,
     deleteFile: deleteFileMutation.mutate,
     isDeleting: deleteFileMutation.isPending,
