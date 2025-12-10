@@ -265,7 +265,7 @@ export default function OrcsMain() {
           />
 
           {/* DEBUG: Document area boundary */}
-          <div className="flex-1 flex flex-col min-h-0 border-2 border-dashed border-red-500">
+          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto border-2 border-dashed border-red-500">
           
           {/* Document Header */}
           <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="border-b border-gray-700 px-6 py-2 text-xs text-slate-400 flex-shrink-0">
