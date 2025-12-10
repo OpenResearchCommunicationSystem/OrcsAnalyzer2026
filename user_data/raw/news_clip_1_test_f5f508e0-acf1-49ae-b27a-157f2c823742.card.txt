@@ -1,0 +1,25 @@
+# ORCS Metadata Card
+version: "2025.003"
+uuid: "f5f508e0-acf1-49ae-b27a-157f2c823742"
+source_file: "news_clip_1_test.txt"
+source_reference: ""  # External URL or reference
+classification: "Proprietary Information"
+handling:
+  - "Copyright 2025 TechWatch Intelligence"
+  - "Distribution: Internal Use Only"
+created: "2025-12-10T21:42:25.317Z"
+modified: "2025-12-10T21:42:25.317Z"
+source_hash: "sha256:1c48b7ca1b276d5be8dea72f61d52937190fd0dae8071c2589921e8af453dcd1"
+
+metadata:
+  file_type: "txt"
+  file_size: 251
+  analyst: ""
+  confidence: ""
+
+tag_index: []
+  # Tags will be added here as:
+  # - id: "tag_id"
+  #   type: "entity"
+  #   name: "TagName"
+  #   reference: "news_clip_1_test.txt[row,col]"
