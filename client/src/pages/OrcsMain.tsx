@@ -85,13 +85,17 @@ export default function OrcsMain() {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         try {
-          const uploadedFile = await uploadFileAsync(file);
-          // Find the card file that was created (look for .card.txt file)
-          await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
-          const refreshedFiles = await queryClient.fetchQuery<File[]>({ queryKey: ['/api/files'] });
+          await uploadFileAsync(file);
+          // Fetch fresh file list directly from API
+          const response = await fetch('/api/files');
+          const refreshedFiles: File[] = await response.json();
+          // Find the card file that was created
+          const baseName = file.name.replace(/\.(txt|csv)$/, '');
           const cardFile = refreshedFiles?.find((f: File) => 
-            f.name.includes('.card.txt') && f.name.includes(file.name.replace(/\.(txt|csv)$/, ''))
+            f.name.includes('.card.txt') && f.name.includes(baseName)
           );
+          // Invalidate to refresh UI
+          await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
           if (cardFile) {
             setNewlyUploadedFile({ id: cardFile.id, name: cardFile.name });
             setShowNewFileMetadata(true);
