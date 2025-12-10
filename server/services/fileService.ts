@@ -217,6 +217,116 @@ export class FileService {
     }
   }
 
+  // Update only the metadata fields while preserving ORIGINAL CONTENT and USER ADDED sections
+  async updateCardMetadata(filename: string, metadata: {
+    source_reference?: string;
+    classification?: string;
+    handling?: string[];
+    analyst?: string;
+  }): Promise<void> {
+    const baseName = path.parse(filename).name;
+    
+    const metadataFile = await this.findMetadataFile(baseName);
+    if (!metadataFile) {
+      throw new Error(`Card file not found for: ${filename}`);
+    }
+    
+    // Read the existing card file
+    const existingContent = await fs.readFile(metadataFile.path, 'utf-8');
+    
+    // Split the file into sections to safely preserve content
+    const tagIndexStart = existingContent.indexOf('=== TAG INDEX START ===');
+    const originalContentStart = existingContent.indexOf('=== ORIGINAL CONTENT START ===');
+    const userAddedStart = existingContent.indexOf('=== USER ADDED START ===');
+    
+    // If the card has the expected structure, parse header and preserve content
+    if (tagIndexStart > 0 && originalContentStart > 0) {
+      // Extract header (before TAG INDEX)
+      let header = existingContent.substring(0, tagIndexStart);
+      
+      // Extract everything from TAG INDEX onwards (content we must preserve)
+      const preservedContent = existingContent.substring(tagIndexStart);
+      
+      // Update header fields only
+      if (metadata.source_reference !== undefined) {
+        header = header.replace(
+          /^source_reference:\s*"[^"]*"/m,
+          `source_reference: "${metadata.source_reference}"`
+        );
+      }
+      
+      if (metadata.classification !== undefined) {
+        header = header.replace(
+          /^classification:\s*"[^"]*"/m,
+          `classification: "${metadata.classification}"`
+        );
+      }
+      
+      if (metadata.analyst !== undefined) {
+        header = header.replace(
+          /^analyst:\s*"[^"]*"/m,
+          `analyst: "${metadata.analyst}"`
+        );
+      }
+      
+      if (metadata.handling !== undefined && metadata.handling.length > 0) {
+        // Match handling section including all indented lines that follow
+        const handlingRegex = /^handling:\n((?:[ \t]+-[^\n]*\n?)*)/m;
+        const newHandling = `handling:\n${metadata.handling.map(h => `  - "${h}"`).join('\n')}\n`;
+        header = header.replace(handlingRegex, newHandling);
+      }
+      
+      // Update modified timestamp
+      const now = new Date().toISOString();
+      header = header.replace(
+        /^modified:\s*"[^"]*"/m,
+        `modified: "${now}"`
+      );
+      
+      // Reconstruct the file with updated header and preserved content
+      const updatedContent = header + preservedContent;
+      await fs.writeFile(metadataFile.path, updatedContent, 'utf-8');
+    } else {
+      // Fallback for cards without expected structure - update in place
+      let updatedContent = existingContent;
+      
+      if (metadata.source_reference !== undefined) {
+        updatedContent = updatedContent.replace(
+          /^source_reference:\s*"[^"]*"/m,
+          `source_reference: "${metadata.source_reference}"`
+        );
+      }
+      
+      if (metadata.classification !== undefined) {
+        updatedContent = updatedContent.replace(
+          /^classification:\s*"[^"]*"/m,
+          `classification: "${metadata.classification}"`
+        );
+      }
+      
+      if (metadata.analyst !== undefined) {
+        updatedContent = updatedContent.replace(
+          /^analyst:\s*"[^"]*"/m,
+          `analyst: "${metadata.analyst}"`
+        );
+      }
+      
+      if (metadata.handling !== undefined && metadata.handling.length > 0) {
+        const handlingRegex = /^handling:\n((?:[ \t]+-[^\n]*\n?)*)/m;
+        const newHandling = `handling:\n${metadata.handling.map(h => `  - "${h}"`).join('\n')}\n`;
+        updatedContent = updatedContent.replace(handlingRegex, newHandling);
+      }
+      
+      const now = new Date().toISOString();
+      updatedContent = updatedContent.replace(
+        /^modified:\s*"[^"]*"/m,
+        `modified: "${now}"`
+      );
+      
+      await fs.writeFile(metadataFile.path, updatedContent, 'utf-8');
+    }
+  }
+
   private formatOrcsCard(card: OrcsCard): string {
     const lines = [
       '=== CLASSIFICATION: ' + card.classification + ' ===',

@@ -2,17 +2,16 @@
 version: "2025.003"
 uuid: "152e1e9e-2e2e-4c0d-8b58-cb6564c987e8"
 source_file: "news_clip_11_test.txt"
-source_reference: ""
-classification: "Proprietary Information"
+source_reference: "test-reference-12345"
+classification: "Confidential"
 handling:
-  - "Copyright 2025 TechWatch Intelligence"
-  - "Distribution: Internal Use Only"
+  - "Test handling instruction"
 created: "2025-12-10T22:58:39.550Z"
-modified: "2025-12-10T22:58:39.550Z"
+modified: "2025-12-10T23:21:47.402Z"
 source_hash: "sha256:1c48b7ca1b276d5be8dea72f61d52937190fd0dae8071c2589921e8af453dcd1"
 file_type: "txt"
 file_size: 251
-analyst: ""
+analyst: "Test Analyst Name"
 
 === TAG INDEX START ===
 

@@ -138,15 +138,17 @@ export function MetadataForm({ fileId, fileName, initialMetadata, onClose, onSav
   };
 
   const saveMetadataMutation = useMutation({
-    mutationFn: async (metadata: string) => {
-      console.log('Saving metadata:', { fileId, metadataLength: metadata.length });
-      const response = await apiRequest('PUT', `/api/files/${fileId}/metadata`, { metadata });
+    mutationFn: async (data: { source_reference: string; classification: string; handling: string[]; analyst: string }) => {
+      console.log('Saving card metadata:', { fileId, data });
+      const response = await apiRequest('PATCH', `/api/files/${fileId}/card-metadata`, data);
       console.log('Save response:', response);
       return response;
     },
     onSuccess: () => {
       console.log('Metadata saved successfully');
       queryClient.invalidateQueries({ queryKey: [`/api/files/${fileId}/metadata`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files', fileId, 'content'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       onSave();
       onClose();
     },
@@ -158,8 +160,12 @@ export function MetadataForm({ fileId, fileName, initialMetadata, onClose, onSav
   });
 
   const handleSave = () => {
-    const yamlContent = generateYamlContent(formData);
-    saveMetadataMutation.mutate(yamlContent);
+    saveMetadataMutation.mutate({
+      source_reference: formData.source_reference,
+      classification: formData.classification,
+      handling: formData.handling.filter(h => h.trim() !== ''),
+      analyst: formData.analyst
+    });
   };
 
   const handleInputChange = (field: keyof ParsedMetadata, value: string) => {

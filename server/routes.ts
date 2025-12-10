@@ -158,6 +158,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update card metadata fields only (preserves ORIGINAL CONTENT and USER ADDED sections)
+  app.patch("/api/files/:id/card-metadata", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      const { source_reference, classification, handling, analyst } = req.body;
+      
+      console.log("Card metadata update request:", { fileId, source_reference, classification, handling, analyst });
+      
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        console.error("File not found:", fileId);
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Only allow updating card files
+      if (!file.name.endsWith('.card.txt')) {
+        return res.status(400).json({ error: "Can only update metadata for card files" });
+      }
+      
+      await fileService.updateCardMetadata(file.name, {
+        source_reference,
+        classification,
+        handling,
+        analyst
+      });
+      
+      console.log("Card metadata saved successfully for:", file.name);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Card metadata update error:", error);
+      res.status(500).json({ error: "Failed to update card metadata", details: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
   // Append user-added text to a card file
   app.post("/api/files/:id/append-text", async (req, res) => {
     try {
