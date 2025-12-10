@@ -11,14 +11,11 @@ created: "2025-06-15T05:32:35.959Z"
 modified: "2025-06-15T05:32:35.959Z"
 source_hash: "sha256:1c8b7a0b9f2e8a6c4d5e3f1a2b9c8d7e6f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c"
 
-=== TAG INDEX START === 
-[entity:Jasmine O'Neil](bcbaa31a-9ee1-492e-8606-b58f6d704f5f)
-[entity:Forum in Berlin](7ec57b78-2783-45e6-9a4a-21cec6dcd236)
-[relationship:checked in at the](ee78a6b5-8982-4b37-ae1e-0b5a442055be)
+=== TAG INDEX START ===
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
-Facebook Status — [entity:Jasmine O'Neil](bcbaa31a-9ee1-492e-8606-b58f6d704f5f) [relationship:checked in at the](ee78a6b5-8982-4b37-ae1e-0b5a442055be) [entity:Forum in Berlin](7ec57b78-2783-45e6-9a4a-21cec6dcd236). "Excited to speak on the ethics of AI in infrastructure planning!"
+Facebook Status — Jasmine O'Neil checked in at the Global Clean Energy Forum in Berlin. "Excited to speak on the ethics of AI in infrastructure planning!"
 === ORIGINAL CONTENT END ===
 
 === USER ADDED START ===

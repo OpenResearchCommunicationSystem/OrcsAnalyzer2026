@@ -136,3 +136,63 @@ export const insertTagConnectionSchema = tagConnectionSchema.omit({ id: true, cr
 
 export type TagConnection = z.infer<typeof tagConnectionSchema>;
 export type InsertTagConnection = z.infer<typeof insertTagConnectionSchema>;
+
+// Master Index Types - IDE-style indexing system
+export const indexedFileSchema = z.object({
+  id: z.string(),
+  path: z.string(),
+  name: z.string(),
+  type: z.string(),
+  hash: z.string(),
+  timestamp: z.number(),
+  cardUuid: z.string().optional(),
+  sourceFile: z.string().optional(),
+});
+
+export const indexedTagSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: tagTypeSchema,
+  filePath: z.string(),
+  references: z.array(z.string()),
+  aliases: z.array(z.string()),
+});
+
+export const indexedConnectionSchema = z.object({
+  id: z.string(),
+  sourceEntityId: z.string(),
+  targetEntityId: z.string(),
+  relationshipId: z.string().optional(),
+  direction: connectionDirectionSchema,
+  filePath: z.string(),
+});
+
+export const brokenConnectionSchema = z.object({
+  connectionId: z.string(),
+  reason: z.enum(['missing_source', 'missing_target', 'missing_relationship', 'orphaned_file']),
+  details: z.string(),
+  filePath: z.string(),
+});
+
+export const masterIndexSchema = z.object({
+  version: z.string(),
+  lastUpdated: z.string(),
+  files: z.array(indexedFileSchema),
+  tags: z.array(indexedTagSchema),
+  connections: z.array(indexedConnectionSchema),
+  brokenConnections: z.array(brokenConnectionSchema),
+  stats: z.object({
+    totalFiles: z.number(),
+    totalTags: z.number(),
+    totalConnections: z.number(),
+    brokenConnectionCount: z.number(),
+    entityCount: z.number(),
+    relationshipCount: z.number(),
+  }),
+});
+
+export type IndexedFile = z.infer<typeof indexedFileSchema>;
+export type IndexedTag = z.infer<typeof indexedTagSchema>;
+export type IndexedConnection = z.infer<typeof indexedConnectionSchema>;
+export type BrokenConnection = z.infer<typeof brokenConnectionSchema>;
+export type MasterIndex = z.infer<typeof masterIndexSchema>;
