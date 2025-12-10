@@ -13,8 +13,9 @@ source_hash: "sha256:abc123def456"
 
 === TAG INDEX START === 
 [entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef)
+[comment:AI startup for .5B](be327d4f-3331-4a1e-86fe-aa2bc2d78984)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
-BREAKING: [entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef) announces major acquisition of AI startup for .5B
+BREAKING: [entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef) announces major acquisition of [comment:AI startup for .5B](be327d4f-3331-4a1e-86fe-aa2bc2d78984)
 === ORIGINAL CONTENT END ===

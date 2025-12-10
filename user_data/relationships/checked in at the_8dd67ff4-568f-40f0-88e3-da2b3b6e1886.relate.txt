@@ -1,0 +1,15 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: 8dd67ff4-568f-40f0-88e3-da2b3b6e1886
+TAG_TYPE: relationship
+NAME: checked in at the
+ENTITY_TYPE: location
+CREATED: 2025-12-10T15:02:41.463Z
+MODIFIED: 2025-12-10T15:02:41.463Z
+
+SEARCH_ALIASES:
+
+CARD_REFERENCES:
+  - social_post_2_e5515c0c-d148-4877-a732-fe976d13aa41.card.txt
+
+=== END ORCS ENTITY ===
