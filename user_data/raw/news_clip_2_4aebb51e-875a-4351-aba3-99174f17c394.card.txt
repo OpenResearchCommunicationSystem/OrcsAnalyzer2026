@@ -14,9 +14,10 @@ source_hash: "sha256:2f65a60dc6f740c42719d48123ed9f042c70d201f83b1358c6138da11fa
 === TAG INDEX START === 
 [entity:Maria Lopez](a848f90e-c298-488c-aa6a-c874c54e65f3)
 [entity:FutureFoods](1714ade0-0ac1-4792-ad86-a05effa07a28)
+[entity:sustainable food systems](95ffe5b9-168f-4429-a4a3-17c578020266)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
-In a tweet posted Thursday, CEO [entity:Maria Lopez](a848f90e-c298-488c-aa6a-c874c54e65f3) of [entity:FutureFoods](1714ade0-0ac1-4792-ad86-a05effa07a28) stated, "We're committed to sustainable food systems — not just buzzwords, real impact."
+In a tweet posted Thursday, CEO [entity:Maria Lopez](a848f90e-c298-488c-aa6a-c874c54e65f3) of [entity:FutureFoods](1714ade0-0ac1-4792-ad86-a05effa07a28) stated, "We're committed to [entity:sustainable food systems](95ffe5b9-168f-4429-a4a3-17c578020266) — not just buzzwords, real impact."
 The post has since garnered over 12,000 likes and 3,500 shares.
 === ORIGINAL CONTENT END ===
