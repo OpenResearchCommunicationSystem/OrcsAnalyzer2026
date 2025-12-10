@@ -154,8 +154,8 @@ export default function OrcsMain() {
 
       {/* Main Content Area - Optimized for HD Desktop */}
       <div className="flex-1 flex overflow-hidden min-h-0">
-        {/* Left Sidebar - File Management (Fixed Width for Desktop) */}
-        <div className="w-96 min-w-96 flex-shrink-0">
+        {/* Left Sidebar - File Management */}
+        <div className="w-72 lg:w-80 xl:w-96 flex-shrink-0">
           <FileManagerSidebar
             selectedFile={selectedFile}
             onFileSelect={handleFileSelect}
@@ -198,8 +198,8 @@ export default function OrcsMain() {
           </div>
         </div>
 
-        {/* Right Sidebar - Graph & Tag Editor (Fixed Width for Desktop) */}
-        <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="w-[480px] min-w-[480px] border-l border-gray-700 flex flex-col flex-shrink-0">
+        {/* Right Sidebar - Graph & Tag Editor */}
+        <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="w-80 lg:w-96 xl:w-[420px] 2xl:w-[480px] border-l border-gray-700 flex flex-col flex-shrink-0">
           {/* Tab Navigation */}
           <div className="border-b border-gray-700">
             <div className="flex">
