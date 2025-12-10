@@ -1,5 +1,143 @@
 {
-  "files": [],
+  "version": "2025.001",
+  "lastUpdated": "2025-12-10T20:37:36.940Z",
+  "files": [
+    {
+      "id": "289d1fc0d060c1bb33b8dd1ba88379a1",
+      "path": "/home/runner/workspace/user_data/raw/beneficial_owners.csv",
+      "name": "beneficial_owners.csv",
+      "type": "csv",
+      "hash": "4f3d3400bdd7a10631980c2c7576859c0bdaaa8ad5340e46584014d4f9bc6b15",
+      "timestamp": 1751031817893.7913
+    },
+    {
+      "id": "ca6b055f9907121092721fbd3d88acb9",
+      "path": "/home/runner/workspace/user_data/raw/beneficial_owners_dd246fd6-1602-4ef1-bf3b-2479ebfb341c.card.txt",
+      "name": "beneficial_owners_dd246fd6-1602-4ef1-bf3b-2479ebfb341c.card.txt",
+      "type": "orcs_card",
+      "hash": "ad4429106e4f3dd13aa5e236248d8f5d3304d54461b62b5683cf6cb3a3a34a63",
+      "timestamp": 1765396031903.081,
+      "cardUuid": "dd246fd6-1602-4ef1-bf3b-2479ebfb341c",
+      "sourceFile": "beneficial_owners.csv"
+    },
+    {
+      "id": "cc0cc2ac41f15a6e2a271be5596526f7",
+      "path": "/home/runner/workspace/user_data/raw/board_members.csv",
+      "name": "board_members.csv",
+      "type": "csv",
+      "hash": "885c3b15d090b18c15c561a09ca694abe1a1d9ba1ac226b97032e38f8322bce9",
+      "timestamp": 1749965567623.2297
+    },
+    {
+      "id": "060182e5ae5d67fe20cfce5a89241c33",
+      "path": "/home/runner/workspace/user_data/raw/board_members_9cdb718e-c999-465a-aa59-82e715a0c40b.card.txt",
+      "name": "board_members_9cdb718e-c999-465a-aa59-82e715a0c40b.card.txt",
+      "type": "orcs_card",
+      "hash": "378fc4213ff675ffd2f45021c504fefc61a6daefef62d72bf885c7f1e2e55587",
+      "timestamp": 1765398068790.409,
+      "cardUuid": "9cdb718e-c999-465a-aa59-82e715a0c40b",
+      "sourceFile": "board_members.csv"
+    },
+    {
+      "id": "3b9afbfb5ed46e7ad31e250d466f9338",
+      "path": "/home/runner/workspace/user_data/raw/news_clip_1.txt",
+      "name": "news_clip_1.txt",
+      "type": "txt",
+      "hash": "1c48b7ca1b276d5be8dea72f61d52937190fd0dae8071c2589921e8af453dcd1",
+      "timestamp": 1749965531311.257
+    },
+    {
+      "id": "6f005a625cbc2e5dbe65bffff5bfd1ef",
+      "path": "/home/runner/workspace/user_data/raw/news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt",
+      "name": "news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt",
+      "type": "orcs_card",
+      "hash": "0c3444aa49cf19a76ac71a88ec2fdfb441f12b6fb869be8f8b15f2b443a6508c",
+      "timestamp": 1765398041255.4314,
+      "cardUuid": "c0c59139-5114-4243-aa89-3c7d924487bc",
+      "sourceFile": "news_clip_1.txt"
+    },
+    {
+      "id": "f1a54d470e20ed8be12767f3a568363a",
+      "path": "/home/runner/workspace/user_data/raw/news_clip_2.txt",
+      "name": "news_clip_2.txt",
+      "type": "txt",
+      "hash": "2f65a60dc6f740c42719d48123ed9f042c70d201f83b1358c6138da11fa4cea0",
+      "timestamp": 1749965540410.2502
+    },
+    {
+      "id": "7033e9dfd174880328bfb7c23b50e3cd",
+      "path": "/home/runner/workspace/user_data/raw/news_clip_2_4aebb51e-875a-4351-aba3-99174f17c394.card.txt",
+      "name": "news_clip_2_4aebb51e-875a-4351-aba3-99174f17c394.card.txt",
+      "type": "orcs_card",
+      "hash": "c9d47b0ce67ce68e4bdbb24aea79260d62e5a3cc2136f4b986be7e42ba16bfe1",
+      "timestamp": 1765384796713.2966,
+      "cardUuid": "4aebb51e-875a-4351-aba3-99174f17c394",
+      "sourceFile": "news_clip_2.txt"
+    },
+    {
+      "id": "66c2ea6baba3aa4aad2c3927c3455912",
+      "path": "/home/runner/workspace/user_data/raw/social_post_1.txt",
+      "name": "social_post_1.txt",
+      "type": "txt",
+      "hash": "fb55a6e8a3b5293db0e9456bc4ffbeb9f0b01fbb65d9031e1a60604b3138bed6",
+      "timestamp": 1749965548134.2444
+    },
+    {
+      "id": "85879701f64d1bac715f6e0d4bc50258",
+      "path": "/home/runner/workspace/user_data/raw/social_post_1_e4b01400-1127-43ec-b4b3-ea495cd0dfe8.card.txt",
+      "name": "social_post_1_e4b01400-1127-43ec-b4b3-ea495cd0dfe8.card.txt",
+      "type": "orcs_card",
+      "hash": "2c6bf179780efacd5b02f1fc20b25d93338b0aaba3d94ad4a69e70d641567c22",
+      "timestamp": 1765398083051.3972,
+      "cardUuid": "e4b01400-1127-43ec-b4b3-ea495cd0dfe8",
+      "sourceFile": "social_post_1.txt"
+    },
+    {
+      "id": "2f058b934e004cefd08cd9f5c101d56e",
+      "path": "/home/runner/workspace/user_data/raw/social_post_2.txt",
+      "name": "social_post_2.txt",
+      "type": "txt",
+      "hash": "740c7909e777bd6abcd8b0f5a0868e1899a164a41496d454f371fa2137c7c674",
+      "timestamp": 1749965553673.2402
+    },
+    {
+      "id": "977cea1b7c3b7700a459c050184e2684",
+      "path": "/home/runner/workspace/user_data/raw/social_post_2_e5515c0c-d148-4877-a732-fe976d13aa41.card.txt",
+      "name": "social_post_2_e5515c0c-d148-4877-a732-fe976d13aa41.card.txt",
+      "type": "orcs_card",
+      "hash": "5da4dd240f8dee1957739a547af0e6935d4966a16a6ba64ead363f31d4e8f2cc",
+      "timestamp": 1765398087959.3933,
+      "cardUuid": "e5515c0c-d148-4877-a732-fe976d13aa41",
+      "sourceFile": "social_post_2.txt"
+    },
+    {
+      "id": "539fd153436abd7ddfc716d67fa9d017",
+      "path": "/home/runner/workspace/user_data/raw/test_news.txt",
+      "name": "test_news.txt",
+      "type": "txt",
+      "hash": "ef3559cefd383eea4f3cdf70ad5af91909346f038850fff34d5ed90893271169",
+      "timestamp": 1749964789672.8176
+    },
+    {
+      "id": "d64d23630985c81340ab5596eb75e40b",
+      "path": "/home/runner/workspace/user_data/raw/test_news_b581bdea-4dbb-41d4-925b-6091f5ec8aff.card.txt",
+      "name": "test_news_b581bdea-4dbb-41d4-925b-6091f5ec8aff.card.txt",
+      "type": "orcs_card",
+      "hash": "16694908f9e08416f3717e41bbe61fab5fcc53cd6260162b14a882d8b8470407",
+      "timestamp": 1765398041249.4314,
+      "cardUuid": "b581bdea-4dbb-41d4-925b-6091f5ec8aff",
+      "sourceFile": "test_news.txt"
+    }
+  ],
   "tags": [],
-  "lastUpdated": "2025-12-10T20:36:31.530Z"
+  "connections": [],
+  "brokenConnections": [],
+  "stats": {
+    "totalFiles": 14,
+    "totalTags": 0,
+    "totalConnections": 0,
+    "brokenConnectionCount": 0,
+    "entityCount": 0,
+    "relationshipCount": 0
+  }
 }
