@@ -126,7 +126,6 @@ export function useTagOperations() {
     updateTag: (id: string, updates: Partial<Tag>) => updateTagMutation.mutate({ id, updates }),
     isUpdating: updateTagMutation.isPending,
     deleteTag: deleteTagMutation.mutate,
-    deleteTagAsync: deleteTagMutation.mutateAsync,
     isDeleting: deleteTagMutation.isPending,
   };
 }

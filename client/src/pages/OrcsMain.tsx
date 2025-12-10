@@ -9,13 +9,11 @@ import { RelationshipConnectionModal } from "@/components/RelationshipConnection
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Upload, Search, Link2, X, RefreshCw, AlertTriangle } from "lucide-react";
+import { Shield, Upload, Search, Link2, X } from "lucide-react";
 import { useFileOperations } from "@/hooks/useFileOperations";
 import { useTagOperations } from "@/hooks/useTagOperations";
-import { TextSelection, Tag, Stats, File, MasterIndex, BrokenConnection } from "@shared/schema";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { TextSelection, Tag, Stats, File } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
 
 export default function OrcsMain() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -33,44 +31,11 @@ export default function OrcsMain() {
 
   const { uploadFile, isUploading } = useFileOperations();
   const { stats }: { stats?: Stats } = useTagOperations();
-  const { toast } = useToast();
   
   // Fetch files for reference navigation
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ['/api/files'],
   });
-
-  // System index and broken connections
-  const { data: systemIndex } = useQuery<MasterIndex>({
-    queryKey: ['/api/system/index'],
-    refetchInterval: 30000,
-  });
-
-  const { data: brokenConnections = [] } = useQuery<BrokenConnection[]>({
-    queryKey: ['/api/system/broken-connections'],
-    refetchInterval: 60000,
-  });
-
-  const reindexMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest('POST', '/api/system/reindex');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/system/index'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/system/broken-connections'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/graph-data'] });
-      toast({ title: 'System reindexed', description: 'All data has been refreshed' });
-    },
-    onError: () => {
-      toast({ title: 'Reindex failed', description: 'Please try again', variant: 'destructive' });
-    },
-  });
-
-  const handleSystemRefresh = () => {
-    reindexMutation.mutate();
-  };
 
   const handleFileUpload = () => {
     const input = document.createElement('input');
@@ -200,14 +165,6 @@ export default function OrcsMain() {
     }
   };
 
-  // Handle re-selection by cardUuid after file modifications (e.g., adding user text)
-  const handleSelectFileByCardUuid = (cardUuid: string) => {
-    const matchingFile = files.find(f => f.cardUuid === cardUuid);
-    if (matchingFile) {
-      setSelectedFile(matchingFile.id);
-    }
-  };
-
   return (
     <div className="desktop-layout min-h-screen flex flex-col bg-gray-900 text-slate-50">
       {/* Header */}
@@ -280,7 +237,6 @@ export default function OrcsMain() {
               onTagClick={handleTagClick}
               onFileNotFound={handleFileNotFound}
               onEntityDragConnection={handleEntityDragConnection}
-              onSelectFileByCardUuid={handleSelectFileByCardUuid}
             />
             
             <TagToolbar
@@ -412,35 +368,12 @@ export default function OrcsMain() {
             <span>|</span>
             <span>Tags: <span className="text-slate-300">{stats?.totalTags || 0}</span></span>
             <span>|</span>
-            <span>Files: <span className="text-slate-300">{systemIndex?.stats.totalFiles || stats?.totalFiles || 0}</span></span>
-            <span>|</span>
-            <span>Connections: <span className="text-slate-300">{systemIndex?.stats.totalConnections || 0}</span></span>
-            {brokenConnections.length > 0 && (
-              <>
-                <span>|</span>
-                <span className="flex items-center gap-1 text-amber-400">
-                  <AlertTriangle className="w-3 h-3" />
-                  {brokenConnections.length} broken
-                </span>
-              </>
-            )}
+            <span>Files: <span className="text-slate-300">{stats?.totalFiles || 0}</span></span>
           </div>
           <div className="flex items-center space-x-4">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleSystemRefresh}
-              disabled={reindexMutation.isPending}
-              className="h-6 px-2 text-xs text-slate-400 hover:text-slate-200"
-              data-testid="button-system-refresh"
-            >
-              <RefreshCw className={`w-3 h-3 mr-1 ${reindexMutation.isPending ? 'animate-spin' : ''}`} />
-              {reindexMutation.isPending ? 'Reindexing...' : 'Refresh'}
-            </Button>
-            <span>|</span>
             <span>ORCS v2025.003</span>
             <span>|</span>
-            <span>{systemIndex?.lastUpdated ? `Indexed: ${new Date(systemIndex.lastUpdated).toLocaleTimeString()}` : 'Auto-saved'}</span>
+            <span>Auto-saved</span>
           </div>
         </div>
       </div>

@@ -28,14 +28,6 @@ Preferred communication style: Simple, everyday language.
 - **File Organization**: Hierarchical directory structure under `user_data/` for `.card.txt` files and various tag files (`.entity.txt`, `.relate.txt`, etc.).
 - **ORCS Card System**: Structured intelligence document format with embedded original content, analysis, metadata, classification, handling instructions, and citation tracking. Uses a clear delimiter-based format for content separation.
 - **Tagging System**: Five types (Entity, Relationship, Attribute, Comment, Key-Value Pair) with text selection-based tagging, character offset tracking, and visual indicators. Includes search aliases.
-- **IDE-Style Master Index**: Persistent JSON-based master index (`user_data/index.json`) with:
-  - Hash-based change detection using SHA256 for efficient file modification tracking
-  - Incremental indexing: file/tag changes trigger targeted reindexing, not full rebuilds
-  - Connection/relationship graph tracking with broken connection detection
-  - **Orphaned Reference Detection**: Identifies tags that reference non-existent files (CARD_REFERENCES validation)
-  - **ORCS Tag Format Parsing**: Parses ORCS-style tag files (UUID:, NAME:, TAG_TYPE:, CARD_REFERENCES:, SEARCH_ALIASES:)
-  - Startup indexing on server start, manual refresh via UI button
-  - API endpoints: `GET /api/system/index`, `POST /api/system/reindex`, `GET /api/system/broken-connections`
 - **Search & Indexing**: Persistent index, automatic indexing, keyword extraction, content-based search.
 - **Graph Visualization**: Interactive, SVG-based relationship visualization.
 - **File System Resilience**: Three-tier lookup strategy (Default Location, Repository-Wide, Content Search) for UUIDs and file paths, with user recovery options for misplaced files.
@@ -49,12 +41,6 @@ Preferred communication style: Simple, everyday language.
 - **CSV Tagging**: Full support for tagging CSV content with proper markdown insertion into card files and visual highlighting.
 - **Interactive Tag Buttons**: Tagged text functions as interactive buttons for navigation.
 - **Entity Connection System**: Node-edge-node relationship pattern connecting entities. Supports Ctrl+click multi-select for entity connection, RelationshipConnectionModal for selecting relationship labels (existing, document-based, or custom), and numeric direction values (0=none, 1=forward, 2=backward, 3=bidirectional). Custom labels create "manual link" relationship tags appended to documents.
-- **USER ADDED Section**: Card files support a separate "USER ADDED" section (delimited by `=== USER ADDED START/END ===`) for analyst-added content that maintains separation from original source documents. Features include:
-  - Cyan-styled separator and content area for visual distinction
-  - "Add Text" button in document viewer (works for both TXT and CSV card views)
-  - API endpoint `POST /api/files/:id/append-text` for appending text
-  - Tagging support for user-added content using existing workflows
-  - Clean audit trail separating source content from analyst additions
 
 ## External Dependencies
 

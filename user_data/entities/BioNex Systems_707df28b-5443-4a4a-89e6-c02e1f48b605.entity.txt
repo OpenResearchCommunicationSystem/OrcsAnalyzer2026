@@ -1,0 +1,16 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: 707df28b-5443-4a4a-89e6-c02e1f48b605
+TAG_TYPE: entity
+NAME: BioNex Systems
+ENTITY_TYPE: organization
+CREATED: 2025-06-27T10:58:19.010Z
+MODIFIED: 2025-06-27T11:12:56.081Z
+
+SEARCH_ALIASES:
+
+CARD_REFERENCES:
+  - board_members_9cdb718e-c999-465a-aa59-82e715a0c40b.card.txt
+  - news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt
+
+=== END ORCS ENTITY ===

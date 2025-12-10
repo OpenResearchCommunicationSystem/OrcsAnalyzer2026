@@ -1,0 +1,21 @@
+=== ORCS CARD === 
+version: "2025.003"
+uuid: "b581bdea-4dbb-41d4-925b-6091f5ec8aff"
+source_file: "test_news.txt"
+source_reference: "https://techcorp.com/press-releases/ai-acquisition"
+classification: "Proprietary Information"
+handling:
+  - "Copyright 2025 TechWatch Intelligence"
+  - "Distribution: Internal Use Only"
+created: "2025-06-15T05:20:00.000Z"
+modified: "2025-06-15T05:20:00.000Z"
+source_hash: "sha256:abc123def456"
+
+=== TAG INDEX START === 
+[entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef)
+[comment:AI startup for .5B](be327d4f-3331-4a1e-86fe-aa2bc2d78984)
+=== TAG INDEX END ===
+
+=== ORIGINAL CONTENT START ===
+BREAKING: [entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef) announces major acquisition of [comment:AI startup for .5B](be327d4f-3331-4a1e-86fe-aa2bc2d78984)
+=== ORIGINAL CONTENT END ===

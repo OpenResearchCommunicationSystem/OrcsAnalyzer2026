@@ -1,0 +1,16 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: 4057a24c-dd6a-4a78-b9c1-9e6606869275
+TAG_TYPE: entity
+NAME: CloudVest
+ENTITY_TYPE: organization
+CREATED: 2025-06-27T10:04:14.470Z
+MODIFIED: 2025-06-27T10:59:04.196Z
+
+SEARCH_ALIASES:
+  - CloudVest Holdings
+
+CARD_REFERENCES:
+  - social_post_1_e4b01400-1127-43ec-b4b3-ea495cd0dfe8.card.txt
+
+=== END ORCS ENTITY ===

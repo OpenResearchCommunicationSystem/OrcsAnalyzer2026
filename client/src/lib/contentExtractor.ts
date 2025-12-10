@@ -5,7 +5,6 @@
 
 export interface CleanContent {
   content: string;
-  userAddedContent?: string; // Content from USER ADDED section
   sourceType: 'text' | 'csv' | null;
   hasMetadata: boolean;
   originalFilename?: string;
@@ -23,8 +22,6 @@ export class ContentExtractor {
   private static readonly DELIMITERS = {
     ORIGINAL_START: '=== ORIGINAL CONTENT START ===',
     ORIGINAL_END: '=== ORIGINAL CONTENT END ===',
-    USER_ADDED_START: '=== USER ADDED START ===',
-    USER_ADDED_END: '=== USER ADDED END ===',
     METADATA_START: '=== ORCS METADATA START ===',
     METADATA_END: '=== ORCS METADATA END ==='
   } as const;
@@ -100,26 +97,19 @@ export class ContentExtractor {
    * Extract content from card file using delimiters
    */
   private static extractFromCard(cardContent: string, filename: string): CleanContent {
-    const { ORIGINAL_START, ORIGINAL_END, USER_ADDED_START, USER_ADDED_END } = this.DELIMITERS;
+    const { ORIGINAL_START, ORIGINAL_END } = this.DELIMITERS;
     
     // Look for content between original content delimiters
-    const originalMatch = cardContent.match(
+    const match = cardContent.match(
       new RegExp(`${this.escapeRegExp(ORIGINAL_START)}\\n([\\s\\S]*?)\\n${this.escapeRegExp(ORIGINAL_END)}`)
     );
     
-    // Look for content between user added delimiters
-    const userAddedMatch = cardContent.match(
-      new RegExp(`${this.escapeRegExp(USER_ADDED_START)}\\n([\\s\\S]*?)\\n${this.escapeRegExp(USER_ADDED_END)}`)
-    );
-    
-    if (originalMatch) {
-      const originalContent = originalMatch[1].trim();
-      const userAddedContent = userAddedMatch ? userAddedMatch[1].trim() : undefined;
+    if (match) {
+      const originalContent = match[1].trim();
       const sourceInfo = this.extractSourceFileInfo(cardContent);
       
       return {
         content: originalContent,
-        userAddedContent,
         sourceType: sourceInfo.type,
         hasMetadata: true,
         originalFilename: sourceInfo.filename
@@ -186,71 +176,4 @@ export class ContentExtractor {
     
     return true;
   }
-
-  /**
-   * Strip markdown-style tags from content to get plain text
-   * Removes patterns like [entity:Name](uuid) and [relationship:label](uuid)
-   */
-  static stripTagsFromContent(content: string): string {
-    // Pattern matches [type:text](uuid) and extracts just the text
-    const tagPattern = /\[(entity|relationship|attribute|comment|kv):([^\]]+)\]\([a-f0-9-]+\)/gi;
-    return content.replace(tagPattern, '$2');
-  }
-
-  /**
-   * Compare card content (with tags stripped) against original source content
-   * Returns details about any mismatches found
-   */
-  static compareContentIntegrity(cardContent: string, originalContent: string): ContentIntegrityResult {
-    const strippedCardContent = this.stripTagsFromContent(cardContent);
-    
-    // Normalize whitespace for comparison
-    const normalizedCard = strippedCardContent.replace(/\s+/g, ' ').trim();
-    const normalizedOriginal = originalContent.replace(/\s+/g, ' ').trim();
-    
-    if (normalizedCard === normalizedOriginal) {
-      return {
-        isValid: true,
-        missingText: [],
-        extraText: []
-      };
-    }
-    
-    // Find missing words/phrases from the original
-    const originalWords = normalizedOriginal.split(/\s+/);
-    const cardWords = normalizedCard.split(/\s+/);
-    const originalWordSet = new Set(originalWords);
-    const cardWordSet = new Set(cardWords);
-    
-    const missingText: string[] = [];
-    const extraText: string[] = [];
-    
-    originalWords.forEach(word => {
-      if (!cardWordSet.has(word) && word.length > 2 && !missingText.includes(word)) {
-        missingText.push(word);
-      }
-    });
-    
-    cardWords.forEach(word => {
-      if (!originalWordSet.has(word) && word.length > 2 && !extraText.includes(word)) {
-        extraText.push(word);
-      }
-    });
-    
-    return {
-      isValid: false,
-      missingText,
-      extraText,
-      originalContent: normalizedOriginal,
-      cardContent: normalizedCard
-    };
-  }
-}
-
-export interface ContentIntegrityResult {
-  isValid: boolean;
-  missingText: string[];
-  extraText: string[];
-  originalContent?: string;
-  cardContent?: string;
 }
