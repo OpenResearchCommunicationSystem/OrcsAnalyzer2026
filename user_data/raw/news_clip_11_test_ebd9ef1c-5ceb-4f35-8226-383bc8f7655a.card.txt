@@ -18,11 +18,12 @@ analyst: ""
 [entity:TechCorp](85821d2e-9038-4c04-ae56-e4aecd04bc97)
 [entity:BioNex Systems](ae14079c-7eb1-4520-8f64-4cebc3dd55a0)
 [relationship:acquisition](043e04be-62eb-4b7d-9b1a-33897afb396c)
+[entity:John Smith](410c196f-735c-4d4e-ad83-c66f8789a731)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
 BREAKING: [entity:TechCorp](85821d2e-9038-4c04-ae56-e4aecd04bc97) has announced the [relationship:acquisition](043e04be-62eb-4b7d-9b1a-33897afb396c) of [entity:BioNex Systems](ae14079c-7eb1-4520-8f64-4cebc3dd55a0) in a deal valued at $3.2 billion. The merger is expected to complete in Q3 2025, pending regulatory approval.
-CEO John Smith commented, "This is a landmark moment for both companies."
+CEO [entity:John Smith](410c196f-735c-4d4e-ad83-c66f8789a731) commented, "This is a landmark moment for both companies."
 
 === ORIGINAL CONTENT END ===
 

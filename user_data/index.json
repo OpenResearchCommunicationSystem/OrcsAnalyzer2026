@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-10T22:18:39.194Z",
+  "lastUpdated": "2025-12-10T22:34:58.454Z",
   "files": [
     {
       "id": "83659c4e8c479740418ba69648a386f5",
@@ -51,16 +51,26 @@
         "news_clip_11_test_ebd9ef1c-5ceb-4f35-8226-383bc8f7655a.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "410c196f-735c-4d4e-ad83-c66f8789a731",
+      "name": "John Smith",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/John Smith_410c196f-735c-4d4e-ad83-c66f8789a731.entity.txt",
+      "references": [
+        "news_clip_11_test_ebd9ef1c-5ceb-4f35-8226-383bc8f7655a.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 2,
-    "totalTags": 3,
+    "totalTags": 4,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 2,
+    "entityCount": 3,
     "relationshipCount": 1
   }
 }
