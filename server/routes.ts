@@ -35,6 +35,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const file = await fileService.saveUploadedFile(req.file.originalname, req.file.buffer);
+      
+      // Update index for the new file
+      if (file.path) {
+        await indexService.reindexFile(file.path);
+      }
+      
       res.json(file);
     } catch (error) {
       console.error("File upload error:", error);
@@ -61,10 +67,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/files/:id", async (req, res) => {
     try {
+      // Get file path before deletion for index update
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === req.params.id);
+      const filePath = file?.path;
+      
       const success = await fileService.deleteFile(req.params.id);
       if (!success) {
         return res.status(404).json({ error: "File not found" });
       }
+      
+      // Remove deleted file from index
+      if (filePath) {
+        await indexService.removeFromIndex(filePath);
+      }
+      
       res.json({ success: true });
     } catch (error) {
       console.error("File deletion error:", error);
@@ -146,6 +163,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ error: "Failed to append text to card" });
       }
       
+      // Update index for modified file
+      await indexService.reindexFile(file.path);
+      
       res.json({ success: true, cardUuid });
     } catch (error) {
       console.error("Append text error:", error);
@@ -174,6 +194,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (cardUuid === null) {
         return res.status(500).json({ error: "Failed to clear user-added text" });
       }
+      
+      // Update index for modified file
+      await indexService.reindexFile(file.path);
       
       res.json({ success: true, cardUuid });
     } catch (error) {
@@ -228,6 +251,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!result.success) {
         return res.status(500).json({ error: result.message });
       }
+      
+      // Update index for modified file
+      await indexService.reindexFile(file.path);
       
       res.json(result);
     } catch (error) {
