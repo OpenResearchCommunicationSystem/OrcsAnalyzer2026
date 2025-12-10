@@ -319,41 +319,139 @@ export class FileService {
 
       // Delete the actual file
       await fs.unlink(fileToDelete.path);
-      
-      // If it's a raw file, also delete the corresponding ORCS card
-      if (fileToDelete.type === 'txt' || fileToDelete.type === 'csv') {
-        const cardFilename = `${path.parse(fileToDelete.name).name}_ORCS_CARD.txt`;
-        const cardPath = path.join(CARDS_DIR, cardFilename);
-        
-        try {
-          await fs.unlink(cardPath);
-        } catch (error) {
-          // Card might not exist, continue anyway
-        }
-      }
-      
-      // If it's an ORCS card, try to find and delete the original file
-      if (fileToDelete.type === 'orcs_card') {
-        const originalName = fileToDelete.name.replace('_ORCS_CARD.txt', '');
-        const rawFiles = await fs.readdir(RAW_DIR);
-        
-        for (const rawFile of rawFiles) {
-          if (path.parse(rawFile).name === originalName) {
-            const rawPath = path.join(RAW_DIR, rawFile);
-            try {
-              await fs.unlink(rawPath);
-            } catch (error) {
-              // Original file might not exist, continue anyway
-            }
-            break;
-          }
-        }
-      }
-      
       return true;
     } catch (error) {
       console.error('File deletion error:', error);
       return false;
+    }
+  }
+
+  /**
+   * Cascade delete: deletes both the original file and its companion card file.
+   * Returns info about what was deleted for index and tag cleanup.
+   * Uses both index lookup AND filesystem fallback to ensure both files are found.
+   */
+  async deleteDocumentCascade(fileId: string, indexedFiles: Array<{
+    id: string;
+    path: string;
+    name: string;
+    type: string;
+    cardUuid?: string;
+    sourceFile?: string;
+  }>): Promise<{
+    success: boolean;
+    deletedPaths: string[];
+    cardUuid?: string;
+    cardFilename?: string;
+  }> {
+    try {
+      const fileToDelete = indexedFiles.find(f => f.id === fileId);
+      
+      if (!fileToDelete) {
+        return { success: false, deletedPaths: [] };
+      }
+
+      const deletedPaths: string[] = [];
+      let cardUuid: string | undefined;
+      let cardFilename: string | undefined;
+
+      // Case 1: Deleting a card file - find and delete the original too
+      if (fileToDelete.type === 'orcs_card' && fileToDelete.cardUuid) {
+        cardUuid = fileToDelete.cardUuid;
+        cardFilename = fileToDelete.name;
+        
+        // Delete the card file
+        await fs.unlink(fileToDelete.path);
+        deletedPaths.push(fileToDelete.path);
+        
+        // Find the original file - try index first, then filesystem fallback
+        let originalPath: string | null = null;
+        
+        if (fileToDelete.sourceFile) {
+          // Try index lookup
+          const originalFile = indexedFiles.find(f => 
+            f.name === fileToDelete.sourceFile && f.type !== 'orcs_card'
+          );
+          if (originalFile) {
+            originalPath = originalFile.path;
+          } else {
+            // Filesystem fallback - check RAW_DIR directly
+            const possiblePath = path.join(RAW_DIR, fileToDelete.sourceFile);
+            try {
+              await fs.access(possiblePath);
+              originalPath = possiblePath;
+            } catch {
+              // Original file doesn't exist on disk - this is acceptable
+              // (may have been manually deleted or was never created)
+              console.log(`[DELETE] Original file not found: ${fileToDelete.sourceFile}`);
+            }
+          }
+        }
+        
+        if (originalPath) {
+          await fs.unlink(originalPath);
+          deletedPaths.push(originalPath);
+        }
+      }
+      // Case 2: Deleting an original file - find and delete the card too
+      else if (fileToDelete.type === 'txt' || fileToDelete.type === 'csv') {
+        // Delete the original file
+        await fs.unlink(fileToDelete.path);
+        deletedPaths.push(fileToDelete.path);
+        
+        // Find the companion card - try index first, then filesystem fallback
+        let cardPath: string | null = null;
+        
+        // Try index lookup
+        const companionCard = indexedFiles.find(f => 
+          f.type === 'orcs_card' && f.sourceFile === fileToDelete.name
+        );
+        if (companionCard) {
+          cardPath = companionCard.path;
+          cardUuid = companionCard.cardUuid;
+          cardFilename = companionCard.name;
+        } else {
+          // Filesystem fallback - scan RAW_DIR for matching card files
+          const baseName = path.parse(fileToDelete.name).name;
+          const rawFiles = await fs.readdir(RAW_DIR);
+          for (const file of rawFiles) {
+            // Match pattern: basename_uuid.card.txt
+            if (file.startsWith(baseName + '_') && file.endsWith('.card.txt')) {
+              cardPath = path.join(RAW_DIR, file);
+              cardFilename = file;
+              // Extract UUID from filename
+              const uuidMatch = file.match(/_([a-f0-9-]+)\.card\.txt$/);
+              if (uuidMatch) {
+                cardUuid = uuidMatch[1];
+              }
+              break;
+            }
+          }
+        }
+        
+        if (cardPath) {
+          await fs.unlink(cardPath);
+          deletedPaths.push(cardPath);
+        } else {
+          // No companion card found - log but don't fail (card may have been deleted separately)
+          console.log(`[DELETE] No companion card found for: ${fileToDelete.name}`);
+        }
+      }
+      // Case 3: Deleting a tag file or other file type - just delete it
+      else {
+        await fs.unlink(fileToDelete.path);
+        deletedPaths.push(fileToDelete.path);
+      }
+
+      return {
+        success: deletedPaths.length > 0,
+        deletedPaths,
+        cardUuid,
+        cardFilename,
+      };
+    } catch (error) {
+      console.error('Cascade deletion error:', error);
+      return { success: false, deletedPaths: [] };
     }
   }
 

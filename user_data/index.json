@@ -1,31 +1,12 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-10T22:01:44.175Z",
-  "files": [
-    {
-      "id": "52bd1ed3957895a8da6b21e0dd505f5f",
-      "path": "/home/runner/workspace/user_data/raw/test_news.txt",
-      "name": "test_news.txt",
-      "type": "txt",
-      "hash": "45adccf34a7b45dae239ba7e655963649e198c2c18341d764714b6188493b981",
-      "timestamp": 1765404104169.5818
-    },
-    {
-      "id": "bb7f91ed23f98c0a9cbb1d60dae48529",
-      "path": "/home/runner/workspace/user_data/raw/test_news_595bec9b-ebe6-4441-9557-7e34a647f19a.card.txt",
-      "name": "test_news_595bec9b-ebe6-4441-9557-7e34a647f19a.card.txt",
-      "type": "orcs_card",
-      "hash": "e08989cac08250f2fd62d67bde5ab29c7eac9a45c672bb046e752123620345a8",
-      "timestamp": 1765404104171.5818,
-      "cardUuid": "595bec9b-ebe6-4441-9557-7e34a647f19a",
-      "sourceFile": "test_news.txt"
-    }
-  ],
+  "lastUpdated": "2025-12-10T22:13:50.660Z",
+  "files": [],
   "tags": [],
   "connections": [],
   "brokenConnections": [],
   "stats": {
-    "totalFiles": 2,
+    "totalFiles": 0,
     "totalTags": 0,
     "totalConnections": 0,
     "brokenConnectionCount": 0,

@@ -507,6 +507,90 @@ export class IndexService {
     await this.saveIndex(this.index!);
   }
 
+  /**
+   * Remove references to a deleted card from all tag files.
+   * Searches for CARD_REFERENCES entries containing the cardFilename and removes them.
+   */
+  async cleanupTagReferences(cardFilename: string): Promise<number> {
+    if (!this.index) {
+      await this.loadIndex();
+    }
+    
+    let cleanedCount = 0;
+    
+    // Find all tags that reference this card
+    const tagsWithReference = this.index!.tags.filter(tag => 
+      tag.references.some(ref => ref === cardFilename || ref.includes(cardFilename))
+    );
+    
+    for (const tag of tagsWithReference) {
+      try {
+        const content = await fs.readFile(tag.filePath, 'utf-8');
+        
+        // Remove the reference line from CARD_REFERENCES section
+        const updatedContent = this.removeCardReference(content, cardFilename);
+        
+        if (updatedContent !== content) {
+          await fs.writeFile(tag.filePath, updatedContent, 'utf-8');
+          cleanedCount++;
+          
+          // Update the tag in the index
+          const updatedReferences = tag.references.filter(ref => 
+            ref !== cardFilename && !ref.includes(cardFilename)
+          );
+          const tagIndex = this.index!.tags.findIndex(t => t.id === tag.id);
+          if (tagIndex !== -1) {
+            this.index!.tags[tagIndex].references = updatedReferences;
+          }
+        }
+      } catch (error) {
+        console.error(`[IndexService] Failed to clean tag reference in ${tag.filePath}:`, error);
+      }
+    }
+    
+    if (cleanedCount > 0) {
+      // Rebuild connections since references changed
+      await this.rebuildConnections();
+      await this.saveIndex(this.index!);
+    }
+    
+    return cleanedCount;
+  }
+
+  private removeCardReference(content: string, cardFilename: string): string {
+    // Match CARD_REFERENCES section and remove the specific reference line
+    const lines = content.split('\n');
+    const result: string[] = [];
+    let inCardRefsSection = false;
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      if (trimmed === 'CARD_REFERENCES:') {
+        inCardRefsSection = true;
+        result.push(line);
+        continue;
+      }
+      
+      // Check if we've left the CARD_REFERENCES section
+      if (inCardRefsSection && !trimmed.startsWith('-') && trimmed !== '') {
+        inCardRefsSection = false;
+      }
+      
+      // Skip lines that reference the deleted card
+      if (inCardRefsSection && trimmed.startsWith('-')) {
+        const refValue = trimmed.replace(/^-\s*/, '');
+        if (refValue === cardFilename || refValue.includes(cardFilename)) {
+          continue; // Skip this line
+        }
+      }
+      
+      result.push(line);
+    }
+    
+    return result.join('\n');
+  }
+
   async reindexTag(tagId: string, tagFilePath: string): Promise<void> {
     if (!this.index) {
       await this.loadIndex();

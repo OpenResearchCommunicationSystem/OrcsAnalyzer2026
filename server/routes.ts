@@ -73,22 +73,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/files/:id", async (req, res) => {
     try {
-      // Get file path before deletion for index update
-      const files = await fileService.getFiles();
-      const file = files.find(f => f.id === req.params.id);
-      const filePath = file?.path;
+      // Get indexed files for cascade delete (includes cardUuid and sourceFile info)
+      const index = await indexService.getIndex();
+      const indexedFiles = index?.files || [];
       
-      const success = await fileService.deleteFile(req.params.id);
-      if (!success) {
+      // Perform cascade delete (deletes both original and card file as a pair)
+      const result = await fileService.deleteDocumentCascade(req.params.id, indexedFiles);
+      
+      if (!result.success) {
         return res.status(404).json({ error: "File not found" });
       }
       
-      // Remove deleted file from index
-      if (filePath) {
-        await indexService.removeFromIndex(filePath);
+      // Remove deleted files from index
+      for (const deletedPath of result.deletedPaths) {
+        await indexService.removeFromIndex(deletedPath);
       }
       
-      res.json({ success: true });
+      // Clean up tag references to the deleted card
+      let tagsCleaned = 0;
+      if (result.cardFilename) {
+        tagsCleaned = await indexService.cleanupTagReferences(result.cardFilename);
+      }
+      
+      // Recalculate stats after all changes
+      await indexService.recalculateStats();
+      
+      console.log(`[DELETE] Cascade deleted ${result.deletedPaths.length} files, cleaned ${tagsCleaned} tag references`);
+      
+      res.json({ 
+        success: true,
+        deletedFiles: result.deletedPaths.length,
+        tagsCleaned,
+      });
     } catch (error) {
       console.error("File deletion error:", error);
       res.status(500).json({ error: "Failed to delete file" });
