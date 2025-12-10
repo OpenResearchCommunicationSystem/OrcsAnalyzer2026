@@ -26,6 +26,7 @@ interface D3Link {
   id: string;
   label: string;
   type: string;
+  direction?: 0 | 1 | 2 | 3; // 0=none, 1=forward, 2=backward, 3=bidirectional
 }
 
 export function GraphVisualization({ onNodeClick }: GraphVisualizationProps) {
@@ -83,7 +84,8 @@ export function GraphVisualization({ onNodeClick }: GraphVisualizationProps) {
           source: d.source,
           target: d.target,
           label: d.label || '',
-          type: d.type || 'unknown'
+          type: d.type || 'unknown',
+          direction: d.direction ?? 0
         }));
 
       // Apply layout positioning
@@ -159,8 +161,10 @@ export function GraphVisualization({ onNodeClick }: GraphVisualizationProps) {
 
       // Create arrow markers for directed edges
       const defs = g.append("defs");
+      
+      // Forward arrow (points to target)
       defs.append("marker")
-        .attr("id", "arrowhead")
+        .attr("id", "arrowhead-forward")
         .attr("viewBox", "-0 -5 10 10")
         .attr("refX", 20)
         .attr("refY", 0)
@@ -171,8 +175,23 @@ export function GraphVisualization({ onNodeClick }: GraphVisualizationProps) {
         .attr("d", "M 0,-5 L 10 ,0 L 0,5")
         .attr("fill", "#f59e0b")
         .style("stroke", "none");
+      
+      // Backward arrow (points to source) - used at start of line
+      defs.append("marker")
+        .attr("id", "arrowhead-backward")
+        .attr("viewBox", "-0 -5 10 10")
+        .attr("refX", -10)
+        .attr("refY", 0)
+        .attr("orient", "auto")
+        .attr("markerWidth", 8)
+        .attr("markerHeight", 8)
+        .append("svg:path")
+        .attr("d", "M 10,-5 L 0,0 L 10,5")
+        .attr("fill", "#f59e0b")
+        .style("stroke", "none");
 
-      // Create links
+      // Create links with directional markers based on direction value
+      // 0=none, 1=forward (source→target), 2=backward (target→source), 3=bidirectional
       const link = g.append("g")
         .attr("class", "links")
         .selectAll("line")
@@ -180,7 +199,20 @@ export function GraphVisualization({ onNodeClick }: GraphVisualizationProps) {
         .enter().append("line")
         .attr("stroke", "#f59e0b")
         .attr("stroke-width", 2)
-        .attr("marker-end", "url(#arrowhead)")
+        .attr("marker-end", (d: D3Link) => {
+          // Forward arrow at target end for direction 1 (forward) or 3 (bidirectional)
+          if (d.direction === 1 || d.direction === 3) {
+            return "url(#arrowhead-forward)";
+          }
+          return "";
+        })
+        .attr("marker-start", (d: D3Link) => {
+          // Backward arrow at source end for direction 2 (backward) or 3 (bidirectional)
+          if (d.direction === 2 || d.direction === 3) {
+            return "url(#arrowhead-backward)";
+          }
+          return "";
+        })
         .attr("opacity", 0.8);
 
       // Create link labels

@@ -14,13 +14,15 @@ interface DocumentViewerProps {
   onTextSelection: (selection: TextSelection) => void;
   onTagClick: (tag: Tag, isCtrlClick?: boolean) => void;
   onFileNotFound?: (staleFileId: string) => void;
+  onEntityDragConnection?: (sourceEntity: Tag, targetEntity: Tag) => void;
 }
 
-export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFileNotFound }: DocumentViewerProps) {
+export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFileNotFound, onEntityDragConnection }: DocumentViewerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [metadataContent, setMetadataContent] = useState<string>('');
   const [showMetadataForm, setShowMetadataForm] = useState(false);
+  const [draggedEntityId, setDraggedEntityId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: files = [] } = useQuery<File[]>({
@@ -154,7 +156,14 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     // Look for markdown-style tags: [entity:TechCorp](uuid) format
     return content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, (match, type, text, uuid) => {
       const colorClass = getTagColorClass(type);
-      return `<button class="${colorClass} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50" data-tag-id="${uuid}" data-tag-type="${type}" type="button" style="cursor: pointer; border: none; font: inherit; padding: 2px 4px; position: relative; z-index: 10;">${text}</button>`;
+      // Make entity tags draggable for connection workflow
+      const draggableAttrs = type === 'entity' 
+        ? `draggable="true" data-entity-draggable="true"` 
+        : '';
+      const dragStyles = type === 'entity'
+        ? 'cursor: grab;'
+        : 'cursor: pointer;';
+      return `<button class="${colorClass} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50" data-tag-id="${uuid}" data-tag-type="${type}" ${draggableAttrs} type="button" style="${dragStyles} border: none; font: inherit; padding: 2px 4px; position: relative; z-index: 10;">${text}</button>`;
     });
   };
 
@@ -276,7 +285,12 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       const afterText = highlightedContent.substring(segment.end);
 
       const highlightClass = getTagHighlightClass(tagType);
-      const highlightedSpan = `<span class="${highlightClass}" data-tag-id="${segment.tag.id}" data-tag-name="${tagName}" title="${tagName} (${tagType})" style="cursor: pointer;">${taggedText}</span>`;
+      // Add draggable attributes for entity tags to support drag-and-drop connections
+      const draggableAttrs = tagType === 'entity' 
+        ? `draggable="true" data-entity-draggable="true"` 
+        : '';
+      const dragCursor = tagType === 'entity' ? 'cursor: grab;' : 'cursor: pointer;';
+      const highlightedSpan = `<span class="${highlightClass}" data-tag-id="${segment.tag.id}" data-tag-type="${tagType}" data-tag-name="${tagName}" title="${tagName} (${tagType})" ${draggableAttrs} style="${dragCursor}">${taggedText}</span>`;
 
       highlightedContent = beforeText + highlightedSpan + afterText;
     });
@@ -449,6 +463,104 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [selectedFileData, onTextSelection, fileContent?.content, isTagClick]);
+
+  // Handle entity drag-and-drop for connection workflow
+  useEffect(() => {
+    // Helper to find the closest entity element from any target (handles text nodes)
+    const findEntityElement = (target: EventTarget | null): HTMLElement | null => {
+      if (!target) return null;
+      const element = target as HTMLElement;
+      // Handle text nodes by getting parent
+      const el = element.nodeType === Node.TEXT_NODE ? element.parentElement : element;
+      if (!el) return null;
+      // Find closest element with entity data
+      return el.closest('[data-tag-type="entity"]') as HTMLElement | null;
+    };
+
+    const handleDragStart = (event: DragEvent) => {
+      const entityEl = findEntityElement(event.target);
+      if (entityEl && entityEl.hasAttribute('data-entity-draggable')) {
+        const tagId = entityEl.getAttribute('data-tag-id');
+        if (tagId) {
+          setDraggedEntityId(tagId);
+          event.dataTransfer?.setData('text/plain', tagId);
+          event.dataTransfer!.effectAllowed = 'link';
+          entityEl.style.opacity = '0.5';
+        }
+      }
+    };
+
+    const handleDragEnd = (event: DragEvent) => {
+      const entityEl = findEntityElement(event.target);
+      if (entityEl) {
+        entityEl.style.opacity = '1';
+      }
+      // Reset all entity outlines
+      document.querySelectorAll('[data-tag-type="entity"]').forEach(el => {
+        (el as HTMLElement).style.outline = '';
+        (el as HTMLElement).style.outlineOffset = '';
+      });
+      setDraggedEntityId(null);
+    };
+
+    const handleDragOver = (event: DragEvent) => {
+      const entityEl = findEntityElement(event.target);
+      if (draggedEntityId && entityEl) {
+        const targetTagId = entityEl.getAttribute('data-tag-id');
+        if (targetTagId && targetTagId !== draggedEntityId) {
+          event.preventDefault();
+          event.dataTransfer!.dropEffect = 'link';
+          entityEl.style.outline = '2px solid #f97316';
+          entityEl.style.outlineOffset = '2px';
+        }
+      }
+    };
+
+    const handleDragLeave = (event: DragEvent) => {
+      const entityEl = findEntityElement(event.target);
+      if (entityEl) {
+        entityEl.style.outline = '';
+        entityEl.style.outlineOffset = '';
+      }
+    };
+
+    const handleDrop = (event: DragEvent) => {
+      event.preventDefault();
+      const entityEl = findEntityElement(event.target);
+      
+      // Reset outline on drop target
+      if (entityEl) {
+        entityEl.style.outline = '';
+        entityEl.style.outlineOffset = '';
+      }
+
+      if (entityEl && draggedEntityId) {
+        const targetTagId = entityEl.getAttribute('data-tag-id');
+        if (targetTagId && targetTagId !== draggedEntityId && onEntityDragConnection) {
+          const sourceEntity = tags.find(t => t.id === draggedEntityId);
+          const targetEntity = tags.find(t => t.id === targetTagId);
+          if (sourceEntity && targetEntity) {
+            onEntityDragConnection(sourceEntity, targetEntity);
+          }
+        }
+      }
+      setDraggedEntityId(null);
+    };
+
+    document.addEventListener('dragstart', handleDragStart, true);
+    document.addEventListener('dragend', handleDragEnd, true);
+    document.addEventListener('dragover', handleDragOver, true);
+    document.addEventListener('dragleave', handleDragLeave, true);
+    document.addEventListener('drop', handleDrop, true);
+
+    return () => {
+      document.removeEventListener('dragstart', handleDragStart, true);
+      document.removeEventListener('dragend', handleDragEnd, true);
+      document.removeEventListener('dragover', handleDragOver, true);
+      document.removeEventListener('dragleave', handleDragLeave, true);
+      document.removeEventListener('drop', handleDrop, true);
+    };
+  }, [draggedEntityId, tags, onEntityDragConnection]);
 
   // Handle clicks on highlighted tags with improved event delegation
   useEffect(() => {

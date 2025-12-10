@@ -16,9 +16,10 @@ entities:
   - a7b2c3d4-e5f6-7890-1234-567890abcdef: TechCorp
 [entity:John Smith](258154c1-df96-42a4-83f2-cea7a178ca6f)
 [entity:BioNex Systems](707df28b-5443-4a4a-89e6-c02e1f48b605)
+[relationship:acquisition of](924289a6-c1aa-4718-aa61-cd5ee84b6bb9)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
-BREAKING: [entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef) has announced the acquisition of [entity:BioNex Systems](707df28b-5443-4a4a-89e6-c02e1f48b605) in a deal valued at $3.2 billion. The merger is expected to complete in Q3 2025, pending regulatory approval.
+BREAKING: [entity:TechCorp](a7b2c3d4-e5f6-7890-1234-567890abcdef) has announced the [relationship:acquisition of](924289a6-c1aa-4718-aa61-cd5ee84b6bb9) [entity:BioNex Systems](707df28b-5443-4a4a-89e6-c02e1f48b605) in a deal valued at $3.2 billion. The merger is expected to complete in Q3 2025, pending regulatory approval.
 CEO [entity:John Smith](258154c1-df96-42a4-83f2-cea7a178ca6f) commented, "This is a landmark moment for both companies."
 === ORIGINAL CONTENT END ===

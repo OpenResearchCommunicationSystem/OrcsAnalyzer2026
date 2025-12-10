@@ -340,6 +340,7 @@ export class OrcsService {
             target: targetNode.id,
             label: relationLabel.toLowerCase(),
             type: 'relationship',
+            direction: 1
           });
         }
       }
@@ -375,6 +376,7 @@ export class OrcsService {
             target: relationship.id,
             label: 'describes',
             type: 'attribute',
+            direction: 0
           });
           connected = true;
         }
@@ -396,6 +398,7 @@ export class OrcsService {
             target: relatedEntities[0].id,
             label: 'describes',
             type: 'attribute',
+            direction: 0
           });
         }
       }
@@ -432,7 +435,8 @@ export class OrcsService {
         source: connection.sourceTagId,
         target: connection.targetTagId,
         label: relationshipName,
-        type: 'connection'
+        type: 'connection',
+        direction: connection.direction ?? 0
       });
       
       // Add edges for attribute connections
@@ -442,7 +446,8 @@ export class OrcsService {
           source: connection.sourceTagId,
           target: attributeId,
           label: 'has attribute',
-          type: 'attribute'
+          type: 'attribute',
+          direction: 0
         });
       }
     }
@@ -468,7 +473,8 @@ export class OrcsService {
             source: tag1.id,
             target: tag2.id,
             label: 'co-occurs',
-            type: 'co-occurrence'
+            type: 'co-occurrence',
+            direction: 0
           });
         }
       }

@@ -63,6 +63,12 @@ export default function OrcsMain() {
     setShowTagModal(true);
   };
 
+  // Handle drag-and-drop entity connection (preferred workflow)
+  const handleEntityDragConnection = (sourceEntity: Tag, targetEntity: Tag) => {
+    setSelectedEntities([sourceEntity, targetEntity]);
+    setShowConnectionModal(true);
+  };
+
   const handleTagClick = (tag: Tag, isCtrlClick?: boolean) => {
     // If Ctrl+click on an entity, add to selection for connection
     if (isCtrlClick && tag.type === 'entity') {
@@ -230,6 +236,7 @@ export default function OrcsMain() {
               onTextSelection={handleTextSelection}
               onTagClick={handleTagClick}
               onFileNotFound={handleFileNotFound}
+              onEntityDragConnection={handleEntityDragConnection}
             />
             
             <TagToolbar
