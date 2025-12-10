@@ -754,7 +754,18 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             </div>
           </div>
 
-          {/* Content Integrity Check Banner */}
+          {/* Content Integrity Check Banner - Loading State */}
+          {isCardFile && isVerifying && !verifyResult && (
+            <div 
+              className="mb-4 p-2 rounded-lg bg-slate-500/10 border border-slate-500/20 flex items-center gap-2"
+              data-testid="integrity-loading"
+            >
+              <RefreshCw className="w-4 h-4 text-slate-400 animate-spin" />
+              <span className="text-slate-400 text-xs">Verifying content integrity...</span>
+            </div>
+          )}
+
+          {/* Content Integrity Check Banner - Warning */}
           {isCardFile && verifyResult && !verifyResult.isValid && (
             <div 
               className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3"
@@ -764,9 +775,11 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               <div className="flex-1">
                 <div className="text-amber-300 font-medium text-sm">Content Integrity Issue Detected</div>
                 <div className="text-amber-200/70 text-xs mt-1">
-                  The card content doesn't match the original source file. 
+                  The card content doesn't match the original source file.
                   {verifyResult.missingText.length > 0 && (
-                    <span> Missing text: <span className="font-mono">{verifyResult.missingText.slice(0, 5).join(', ')}{verifyResult.missingText.length > 5 ? '...' : ''}</span></span>
+                    verifyResult.missingText[0] === '(content order mismatch)' 
+                      ? <span> Content structure or order has changed.</span>
+                      : <span> Differences: <span className="font-mono">{verifyResult.missingText.slice(0, 5).join(', ')}{verifyResult.missingText.length > 5 ? '...' : ''}</span></span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
@@ -990,7 +1003,18 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             </div>
           </div>
 
-          {/* Content Integrity Check Banner for CSV */}
+          {/* Content Integrity Check Banner for CSV - Loading State */}
+          {isCardFile && isVerifying && !verifyResult && (
+            <div 
+              className="mb-4 p-2 rounded-lg bg-slate-500/10 border border-slate-500/20 flex items-center gap-2"
+              data-testid="integrity-loading-csv"
+            >
+              <RefreshCw className="w-4 h-4 text-slate-400 animate-spin" />
+              <span className="text-slate-400 text-xs">Verifying content integrity...</span>
+            </div>
+          )}
+
+          {/* Content Integrity Check Banner for CSV - Warning */}
           {isCardFile && verifyResult && !verifyResult.isValid && (
             <div 
               className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3"
@@ -1000,9 +1024,11 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               <div className="flex-1">
                 <div className="text-amber-300 font-medium text-sm">Content Integrity Issue Detected</div>
                 <div className="text-amber-200/70 text-xs mt-1">
-                  The card content doesn't match the original source file. 
+                  The card content doesn't match the original source file.
                   {verifyResult.missingText.length > 0 && (
-                    <span> Missing text: <span className="font-mono">{verifyResult.missingText.slice(0, 5).join(', ')}{verifyResult.missingText.length > 5 ? '...' : ''}</span></span>
+                    verifyResult.missingText[0] === '(content order mismatch)' 
+                      ? <span> Content structure or order has changed.</span>
+                      : <span> Differences: <span className="font-mono">{verifyResult.missingText.slice(0, 5).join(', ')}{verifyResult.missingText.length > 5 ? '...' : ''}</span></span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-2">

@@ -621,15 +621,26 @@ export class OrcsService {
         const originalContent = originalContentSections[0];
         const afterOriginalContent = originalContentSections[1];
         
-        // Create regex for this specific tag
-        const tagRegex = new RegExp(`\\[${tag.type}:${tag.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\]\\(${tag.id}\\)`, 'g');
+        // FIXED: Use a regex that matches by tag ID only, with non-greedy capture for the name
+        // This handles cases where the tag name in the object differs from the original text
+        // Pattern: [type:name](uuid) where name is non-greedy to avoid over-matching
+        const tagByIdRegex = new RegExp(`\\[${tag.type}:([^\\]]+?)\\]\\(${tag.id}\\)`, 'g');
         
-        // In TAG INDEX and metadata sections: completely remove the tag
-        const cleanedBeforeContent = beforeOriginalContent.replace(tagRegex, '');
-        const cleanedAfterContent = afterOriginalContent.replace(tagRegex, '');
+        // In TAG INDEX and metadata sections: completely remove the tag (including any trailing newline if line is now empty)
+        const cleanTagFromSection = (content: string): string => {
+          // First, replace the tag with empty string
+          let cleaned = content.replace(tagByIdRegex, '');
+          // Clean up any leftover empty lines that only have whitespace
+          cleaned = cleaned.replace(/^\s*[\r\n]/gm, '\n');
+          return cleaned;
+        };
         
-        // In ORIGINAL CONTENT section: replace tag with plain text to preserve content
-        const cleanedOriginalContent = originalContent.replace(tagRegex, tag.name);
+        const cleanedBeforeContent = cleanTagFromSection(beforeOriginalContent);
+        const cleanedAfterContent = cleanTagFromSection(afterOriginalContent);
+        
+        // In ORIGINAL CONTENT section: replace tag with the CAPTURED TEXT (preserves original)
+        // The $1 captures whatever text was actually in the brackets, not tag.name
+        const cleanedOriginalContent = originalContent.replace(tagByIdRegex, '$1');
         
         // Reconstruct the card content
         const updatedContent = cleanedBeforeContent + 
@@ -912,27 +923,73 @@ export class OrcsService {
       // Strip markdown tags from card content for comparison
       const strippedContent = this.stripTagsFromContent(cardOriginalContent);
       
-      // Normalize whitespace for comparison
-      const normalizedCard = strippedContent.replace(/\s+/g, ' ').trim();
-      const normalizedOriginal = originalContent.replace(/\s+/g, ' ').trim();
+      // Normalize content for comparison - handle both TXT and CSV formats
+      const normalizeContent = (content: string): string => {
+        // Preserve CSV structure by normalizing line-by-line, then join
+        // This prevents false positives from CSV column/row differences
+        return content
+          .split('\n')
+          .map(line => line.replace(/\s+/g, ' ').trim())
+          .filter(line => line.length > 0)
+          .join('\n')
+          .toLowerCase(); // Case-insensitive comparison
+      };
+      
+      const normalizedCard = normalizeContent(strippedContent);
+      const normalizedOriginal = normalizeContent(originalContent);
       
       if (normalizedCard === normalizedOriginal) {
         return { isValid: true, missingText: [], sourceFile, cardUuid };
       }
       
-      // Find missing words
-      const originalWords = normalizedOriginal.split(/\s+/);
-      const cardWords = new Set(normalizedCard.split(/\s+/));
-      const missingText: string[] = [];
+      // Content doesn't match - find what's different for better error messages
+      // Split on whitespace and common delimiters, filter out punctuation-only tokens
+      const extractWords = (text: string): string[] => {
+        return text
+          .split(/[\s,\n\r]+/)
+          .map(w => w.replace(/^[^\w]+|[^\w]+$/g, '').toLowerCase())
+          .filter(w => w.length > 2);
+      };
       
-      for (let i = 0; i < originalWords.length; i++) {
-        const word = originalWords[i];
-        if (!cardWords.has(word) && word.length > 2) {
+      const originalWords = extractWords(normalizedOriginal);
+      const cardWordsList = extractWords(normalizedCard);
+      const cardWords = new Set(cardWordsList);
+      const originalWordsSet = new Set(originalWords);
+      const missingText: string[] = [];
+      const extraText: string[] = [];
+      
+      // Find words in original that are not in card (missing)
+      for (const word of originalWords) {
+        if (!cardWords.has(word)) {
           missingText.push(word);
         }
       }
       
-      return { isValid: false, missingText: [...new Set(missingText)], sourceFile, cardUuid };
+      // Find words in card that are not in original (extra - could indicate corruption)
+      for (const word of cardWordsList) {
+        if (!originalWordsSet.has(word)) {
+          extraText.push(word);
+        }
+      }
+      
+      const uniqueMissing = [...new Set(missingText)];
+      const uniqueExtra = [...new Set(extraText)];
+      
+      // Always report as invalid since normalizedCard !== normalizedOriginal
+      // Even if word sets match, the order/structure is different
+      const differences: string[] = [];
+      if (uniqueMissing.length > 0) {
+        differences.push(...uniqueMissing.slice(0, 5));
+      }
+      if (uniqueExtra.length > 0 && differences.length < 5) {
+        differences.push(...uniqueExtra.slice(0, 5 - differences.length).map(w => `+${w}`));
+      }
+      if (differences.length === 0) {
+        // Words match but order is different
+        differences.push('(content order mismatch)');
+      }
+      
+      return { isValid: false, missingText: differences, sourceFile, cardUuid };
     } catch (error) {
       console.error('Failed to verify content integrity:', error);
       return { isValid: false, missingText: ['Error reading files'], sourceFile: null, cardUuid: null };
