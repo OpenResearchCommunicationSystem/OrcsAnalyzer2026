@@ -489,6 +489,24 @@ export class IndexService {
     await this.saveIndex(this.index);
   }
 
+  async recalculateStats(): Promise<void> {
+    if (!this.index) {
+      await this.loadIndex();
+    }
+    
+    this.index!.stats = {
+      totalFiles: this.index!.files.length,
+      totalTags: this.index!.tags.length,
+      totalConnections: this.index!.connections.length,
+      brokenConnectionCount: this.index!.brokenConnections.length,
+      entityCount: this.index!.tags.filter(t => t.type === 'entity').length,
+      relationshipCount: this.index!.tags.filter(t => t.type === 'relationship').length,
+    };
+    
+    this.index!.lastUpdated = new Date().toISOString();
+    await this.saveIndex(this.index!);
+  }
+
   async reindexTag(tagId: string, tagFilePath: string): Promise<void> {
     if (!this.index) {
       await this.loadIndex();

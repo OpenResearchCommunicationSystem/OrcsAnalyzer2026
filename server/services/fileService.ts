@@ -39,7 +39,7 @@ export class FileService {
     }
   }
 
-  async saveUploadedFile(filename: string, content: Buffer): Promise<File> {
+  async saveUploadedFile(filename: string, content: Buffer): Promise<{ file: File, cardPath: string }> {
     await this.ensureDirectories();
     
     const sanitizedName = this.sanitizeFilename(filename);
@@ -60,13 +60,13 @@ export class FileService {
       modified: stats.mtime.toISOString(),
     };
 
-    // Create companion metadata file
-    await this.createMetadataFile(fileData, content.toString('utf-8'));
+    // Create companion ORCS card with embedded content
+    const cardPath = await this.createMetadataFile(fileData, content.toString('utf-8'));
     
-    return fileData;
+    return { file: fileData, cardPath };
   }
 
-  async createMetadataFile(file: File, content: string): Promise<void> {
+  async createMetadataFile(file: File, content: string): Promise<string> {
     const metadataId = uuidv4();
     const now = new Date().toISOString();
     const sourceHash = crypto.createHash('sha256').update(content).digest('hex');
@@ -75,12 +75,12 @@ export class FileService {
     const metadataFilename = `${baseName}_${metadataId}.card.txt`;
     const metadataPath = path.join(RAW_DIR, metadataFilename);
     
-    const yamlContent = [
-      '# ORCS Metadata Card',
+    const cardContent = [
+      '=== ORCS CARD ===',
       `version: "2025.003"`,
       `uuid: "${metadataId}"`,
       `source_file: "${file.name}"`,
-      `source_reference: ""  # External URL or reference`,
+      `source_reference: ""`,
       `classification: "Proprietary Information"`,
       `handling:`,
       `  - "Copyright 2025 TechWatch Intelligence"`,
@@ -88,23 +88,25 @@ export class FileService {
       `created: "${now}"`,
       `modified: "${now}"`,
       `source_hash: "sha256:${sourceHash}"`,
+      `file_type: "${file.type}"`,
+      `file_size: ${file.size}`,
+      `analyst: ""`,
       ``,
-      `metadata:`,
-      `  file_type: "${file.type}"`,
-      `  file_size: ${file.size}`,
-      `  analyst: ""`,
-      `  confidence: ""`,
+      `=== TAG INDEX START ===`,
       ``,
-      `tag_index: []`,
-      `  # Tags will be added here as:`,
-      `  # - id: "tag_id"`,
-      `  #   type: "entity"`,
-      `  #   name: "TagName"`,
-      `  #   reference: "${file.name}[row,col]"`,
-      ``
+      `=== TAG INDEX END ===`,
+      ``,
+      `=== ORIGINAL CONTENT START ===`,
+      content,
+      `=== ORIGINAL CONTENT END ===`,
+      ``,
+      `=== USER ADDED START ===`,
+      ``,
+      `=== USER ADDED END ===`,
     ].join('\n');
     
-    await fs.writeFile(metadataPath, yamlContent, 'utf-8');
+    await fs.writeFile(metadataPath, cardContent, 'utf-8');
+    return metadataPath;
   }
 
   async getMetadataForFile(filename: string): Promise<string | null> {

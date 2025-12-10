@@ -34,12 +34,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Only .txt and .csv files are allowed" });
       }
 
-      const file = await fileService.saveUploadedFile(req.file.originalname, req.file.buffer);
+      const { file, cardPath } = await fileService.saveUploadedFile(req.file.originalname, req.file.buffer);
       
-      // Update index for the new file
+      // Update index for both the original file and the ORCS card
       if (file.path) {
         await indexService.reindexFile(file.path);
       }
+      if (cardPath) {
+        await indexService.reindexFile(cardPath);
+      }
+      
+      // Recalculate stats after indexing
+      await indexService.recalculateStats();
       
       res.json(file);
     } catch (error) {
