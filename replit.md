@@ -40,6 +40,7 @@ Preferred communication style: Simple, everyday language.
 - **Analyst Attribution**: Critical analyst attribution system for comment tags with privacy-configurable user UUID management.
 - **CSV Tagging**: Full support for tagging CSV content with proper markdown insertion into card files and visual highlighting.
 - **Interactive Tag Buttons**: Tagged text functions as interactive buttons for navigation.
+- **Entity Connection System**: Node-edge-node relationship pattern connecting entities. Supports Ctrl+click multi-select for entity connection, RelationshipConnectionModal for selecting relationship labels (existing, document-based, or custom), and numeric direction values (0=none, 1=forward, 2=backward, 3=bidirectional). Custom labels create "manual link" relationship tags appended to documents.
 
 ## External Dependencies
 
