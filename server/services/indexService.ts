@@ -12,7 +12,7 @@ import {
 
 const USER_DATA_DIR = path.join(process.cwd(), 'user_data');
 const INDEX_FILE = path.join(USER_DATA_DIR, 'index.json');
-const INDEX_VERSION = '2025.001';
+const INDEX_VERSION = '2025.002'; // Bumped to force reindex with ORCS format parsing
 
 const TAG_DIRECTORIES = {
   entity: path.join(USER_DATA_DIR, 'entities'),
@@ -99,14 +99,19 @@ export class IndexService {
       newIndex.tags = tags;
       
       const { connections, brokenConnections } = await this.indexConnections(tags);
+      
+      // Detect orphaned references in tags (references to non-existent files)
+      const orphanedRefs = this.detectOrphanedReferences(tags, files);
+      
       newIndex.connections = connections;
-      newIndex.brokenConnections = brokenConnections;
+      const allBrokenConnections = [...brokenConnections, ...orphanedRefs];
+      newIndex.brokenConnections = allBrokenConnections;
       
       newIndex.stats = {
         totalFiles: files.length,
         totalTags: tags.length,
         totalConnections: connections.length,
-        brokenConnectionCount: brokenConnections.length,
+        brokenConnectionCount: allBrokenConnections.length,
         entityCount: tags.filter(t => t.type === 'entity').length,
         relationshipCount: tags.filter(t => t.type === 'relationship').length,
       };
@@ -117,7 +122,7 @@ export class IndexService {
       this.index = newIndex;
       this.rebuildHashMap();
       
-      console.log(`[IndexService] Index built: ${files.length} files, ${tags.length} tags, ${connections.length} connections, ${brokenConnections.length} broken`);
+      console.log(`[IndexService] Index built: ${files.length} files, ${tags.length} tags, ${connections.length} connections, ${allBrokenConnections.length} broken`);
       
       return newIndex;
     } finally {
@@ -208,39 +213,87 @@ export class IndexService {
 
   private parseTagFromContent(content: string, expectedType: TagType, filepath: string): IndexedTag | null {
     try {
-      const idMatch = content.match(/id:\s*"([^"]+)"/);
-      const nameMatch = content.match(/name:\s*"([^"]+)"/);
-      const typeMatch = content.match(/type:\s*"([^"]+)"/);
+      // Parse ORCS tag file format (UUID:, NAME:, TAG_TYPE:, CARD_REFERENCES:, SEARCH_ALIASES:)
+      const uuidMatch = content.match(/^UUID:\s*(.+)$/m);
+      const nameMatch = content.match(/^NAME:\s*(.+)$/m);
+      const typeMatch = content.match(/^TAG_TYPE:\s*(.+)$/m);
       
-      if (!idMatch || !nameMatch) return null;
+      if (!uuidMatch || !nameMatch) {
+        // Fallback to legacy YAML-style format for compatibility
+        const idMatchLegacy = content.match(/id:\s*"([^"]+)"/);
+        const nameMatchLegacy = content.match(/name:\s*"([^"]+)"/);
+        const typeMatchLegacy = content.match(/type:\s*"([^"]+)"/);
+        
+        if (!idMatchLegacy || !nameMatchLegacy) return null;
+        
+        const referencesMatch = content.match(/references:\s*\[([\s\S]*?)\]/);
+        const references: string[] = [];
+        if (referencesMatch) {
+          const refMatches = Array.from(referencesMatch[1].matchAll(/"([^"]+)"/g));
+          for (const match of refMatches) {
+            references.push(match[1]);
+          }
+        }
+        
+        const aliasesMatch = content.match(/aliases:\s*\[([\s\S]*?)\]/);
+        const aliases: string[] = [];
+        if (aliasesMatch) {
+          const aliasMatches = Array.from(aliasesMatch[1].matchAll(/"([^"]+)"/g));
+          for (const match of aliasMatches) {
+            aliases.push(match[1]);
+          }
+        }
+        
+        return {
+          id: idMatchLegacy[1],
+          name: nameMatchLegacy[1],
+          type: (typeMatchLegacy?.[1] as TagType) || expectedType,
+          filePath: filepath,
+          references,
+          aliases,
+        };
+      }
       
-      const referencesMatch = content.match(/references:\s*\[([\s\S]*?)\]/);
+      // Parse ORCS format references (CARD_REFERENCES: followed by "  - filename" lines)
       const references: string[] = [];
-      if (referencesMatch) {
-        const refMatches = Array.from(referencesMatch[1].matchAll(/"([^"]+)"/g));
-        for (const match of refMatches) {
-          references.push(match[1]);
+      const cardRefsMatch = content.match(/CARD_REFERENCES:\s*([\s\S]*?)(?=\n\n|=== END|$)/);
+      if (cardRefsMatch) {
+        const refLines = cardRefsMatch[1].match(/^\s*-\s*(.+)$/gm);
+        if (refLines) {
+          for (const line of refLines) {
+            const refMatch = line.match(/^\s*-\s*(.+)$/);
+            if (refMatch) {
+              references.push(refMatch[1].trim());
+            }
+          }
         }
       }
       
-      const aliasesMatch = content.match(/aliases:\s*\[([\s\S]*?)\]/);
+      // Parse ORCS format aliases (SEARCH_ALIASES: followed by "  - alias" lines)
       const aliases: string[] = [];
+      const aliasesMatch = content.match(/SEARCH_ALIASES:\s*([\s\S]*?)(?=\n\n|CARD_REFERENCES|=== END|$)/);
       if (aliasesMatch) {
-        const aliasMatches = Array.from(aliasesMatch[1].matchAll(/"([^"]+)"/g));
-        for (const match of aliasMatches) {
-          aliases.push(match[1]);
+        const aliasLines = aliasesMatch[1].match(/^\s*-\s*(.+)$/gm);
+        if (aliasLines) {
+          for (const line of aliasLines) {
+            const aliasMatch = line.match(/^\s*-\s*(.+)$/);
+            if (aliasMatch) {
+              aliases.push(aliasMatch[1].trim());
+            }
+          }
         }
       }
       
       return {
-        id: idMatch[1],
-        name: nameMatch[1],
-        type: (typeMatch?.[1] as TagType) || expectedType,
+        id: uuidMatch[1].trim(),
+        name: nameMatch[1].trim(),
+        type: (typeMatch?.[1]?.trim() as TagType) || expectedType,
         filePath: filepath,
         references,
         aliases,
       };
     } catch (error) {
+      console.error('[IndexService] Failed to parse tag:', filepath, error);
       return null;
     }
   }
@@ -326,6 +379,43 @@ export class IndexService {
     }
     
     return { connections, brokenConnections };
+  }
+
+  private detectOrphanedReferences(tags: IndexedTag[], files: IndexedFile[]): BrokenConnection[] {
+    const orphaned: BrokenConnection[] = [];
+    
+    // Build a set of existing file names (just the basename, since CARD_REFERENCES uses filenames only)
+    const existingFiles = new Set(files.map(f => path.basename(f.path)));
+    // Also add card filenames with just the card.txt suffix stripped for flexible matching
+    const existingFilesBare = new Set(files.map(f => {
+      const name = path.basename(f.path);
+      return name.replace('.card.txt', '');
+    }));
+    
+    for (const tag of tags) {
+      if (!tag.references || tag.references.length === 0) continue;
+      
+      for (const ref of tag.references) {
+        const refName = ref.trim();
+        if (!refName) continue;
+        
+        // Check if reference exists in files
+        const exists = existingFiles.has(refName) || 
+                       existingFiles.has(refName + '.card.txt') ||
+                       existingFilesBare.has(refName.replace('.card.txt', ''));
+        
+        if (!exists) {
+          orphaned.push({
+            connectionId: `orphan-${tag.id}-${refName}`,
+            reason: 'orphaned_reference',
+            details: `Tag "${tag.name}" references file "${refName}" which does not exist`,
+            filePath: tag.filePath,
+          });
+        }
+      }
+    }
+    
+    return orphaned;
   }
 
   async saveIndex(index: MasterIndex): Promise<void> {
@@ -465,17 +555,21 @@ export class IndexService {
   private async rebuildConnections(): Promise<void> {
     if (!this.index) return;
     
-    const { connections, brokenConnections } = await this.indexConnections(
-      this.index.tags.map(t => ({
-        ...t,
-        type: t.type as TagType,
-      }))
-    );
+    const tags = this.index.tags.map(t => ({
+      ...t,
+      type: t.type as TagType,
+    }));
+    
+    const { connections, brokenConnections } = await this.indexConnections(tags);
+    
+    // Also detect orphaned references
+    const orphanedRefs = this.detectOrphanedReferences(tags, this.index.files);
+    const allBrokenConnections = [...brokenConnections, ...orphanedRefs];
     
     this.index.connections = connections;
-    this.index.brokenConnections = brokenConnections;
+    this.index.brokenConnections = allBrokenConnections;
     this.index.stats.totalConnections = connections.length;
-    this.index.stats.brokenConnectionCount = brokenConnections.length;
+    this.index.stats.brokenConnectionCount = allBrokenConnections.length;
   }
 
   private getTagTypeFromPath(filepath: string): TagType {
@@ -492,20 +586,23 @@ export class IndexService {
       await this.loadIndex();
     }
     
-    const tags = this.index!.tags;
-    const { brokenConnections } = await this.indexConnections(
-      tags.map(t => ({
-        ...t,
-        type: t.type as TagType,
-      }))
-    );
+    const tags = this.index!.tags.map(t => ({
+      ...t,
+      type: t.type as TagType,
+    }));
     
-    this.index!.brokenConnections = brokenConnections;
-    this.index!.stats.brokenConnectionCount = brokenConnections.length;
+    const { brokenConnections } = await this.indexConnections(tags);
+    
+    // Also detect orphaned references
+    const orphanedRefs = this.detectOrphanedReferences(tags, this.index!.files);
+    const allBrokenConnections = [...brokenConnections, ...orphanedRefs];
+    
+    this.index!.brokenConnections = allBrokenConnections;
+    this.index!.stats.brokenConnectionCount = allBrokenConnections.length;
     
     await this.saveIndex(this.index!);
     
-    return brokenConnections;
+    return allBrokenConnections;
   }
 
   getTagById(tagId: string): IndexedTag | undefined {

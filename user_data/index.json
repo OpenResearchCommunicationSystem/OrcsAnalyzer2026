@@ -1,6 +1,6 @@
 {
-  "version": "2025.001",
-  "lastUpdated": "2025-12-10T20:41:50.092Z",
+  "version": "2025.002",
+  "lastUpdated": "2025-12-10T21:05:00.905Z",
   "files": [
     {
       "id": "289d1fc0d060c1bb33b8dd1ba88379a1",
@@ -129,15 +129,222 @@
       "sourceFile": "test_news.txt"
     }
   ],
-  "tags": [],
+  "tags": [
+    {
+      "id": "696c35b7-d3f1-4909-a41a-3eb02de35bfa",
+      "name": "Ava Cheng",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Ava Cheng_696c35b7-d3f1-4909-a41a-3eb02de35bfa.entity.txt",
+      "references": [
+        "beneficial_owners_dd246fd6-1602-4ef1-bf3b-2479ebfb341c.card.txt",
+        "board_members_9cdb718e-c999-465a-aa59-82e715a0c40b.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "707df28b-5443-4a4a-89e6-c02e1f48b605",
+      "name": "BioNex Systems",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/BioNex Systems_707df28b-5443-4a4a-89e6-c02e1f48b605.entity.txt",
+      "references": [
+        "board_members_9cdb718e-c999-465a-aa59-82e715a0c40b.card.txt",
+        "news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "4057a24c-dd6a-4a78-b9c1-9e6606869275",
+      "name": "CloudVest",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/CloudVest_4057a24c-dd6a-4a78-b9c1-9e6606869275.entity.txt",
+      "references": [
+        "social_post_1_e4b01400-1127-43ec-b4b3-ea495cd0dfe8.card.txt"
+      ],
+      "aliases": [
+        "CloudVest Holdings"
+      ]
+    },
+    {
+      "id": "03fd1c2f-831e-453d-aad7-5fabfcf0f140",
+      "name": "CyberNova",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/CyberNova_03fd1c2f-831e-453d-aad7-5fabfcf0f140.entity.txt",
+      "references": [
+        "social_post_1_e4b01400-1127-43ec-b4b3-ea495cd0dfe8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "7ec57b78-2783-45e6-9a4a-21cec6dcd236",
+      "name": "Forum in Berlin",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Forum in Berlin_7ec57b78-2783-45e6-9a4a-21cec6dcd236.entity.txt",
+      "references": [
+        "social_post_2_e5515c0c-d148-4877-a732-fe976d13aa41.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "1714ade0-0ac1-4792-ad86-a05effa07a28",
+      "name": "FutureFoods",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/FutureFoods_1714ade0-0ac1-4792-ad86-a05effa07a28.entity.txt",
+      "references": [
+        "news_clip_2_4aebb51e-875a-4351-aba3-99174f17c394.card.txt",
+        "beneficial_owners_dd246fd6-1602-4ef1-bf3b-2479ebfb341c.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "bcbaa31a-9ee1-492e-8606-b58f6d704f5f",
+      "name": "Jasmine O'Neil",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Jasmine O'Neil_bcbaa31a-9ee1-492e-8606-b58f6d704f5f.entity.txt",
+      "references": [
+        "social_post_2_e5515c0c-d148-4877-a732-fe976d13aa41.card.txt",
+        "beneficial_owners_dd246fd6-1602-4ef1-bf3b-2479ebfb341c.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "b47ed2a6-b59b-410e-8bf5-4ed81da3b587",
+      "name": "John Green",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/John Green_b47ed2a6-b59b-410e-8bf5-4ed81da3b587.entity.txt",
+      "references": [
+        "beneficial_owners_dd246fd6-1602-4ef1-bf3b-2479ebfb341c.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "258154c1-df96-42a4-83f2-cea7a178ca6f",
+      "name": "John Smith",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/John Smith_258154c1-df96-42a4-83f2-cea7a178ca6f.entity.txt",
+      "references": [
+        "news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt",
+        "board_members_9cdb718e-c999-465a-aa59-82e715a0c40b.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "a848f90e-c298-488c-aa6a-c874c54e65f3",
+      "name": "Maria Lopez",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Maria Lopez_a848f90e-c298-488c-aa6a-c874c54e65f3.entity.txt",
+      "references": [
+        "news_clip_2_4aebb51e-875a-4351-aba3-99174f17c394.card.txt",
+        "beneficial_owners_dd246fd6-1602-4ef1-bf3b-2479ebfb341c.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "f77a528e-9f25-4d0d-81ea-0619bb936ee4",
+      "name": "TechCorp",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/TechCorp_f77a528e-9f25-4d0d-81ea-0619bb936ee4.entity.txt",
+      "references": [
+        "test_news_b581bdea-4dbb-41d4-925b-6091f5ec8aff.card.txt",
+        "news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "5e8a2c5a-12a3-4d7e-9699-c23f77432696",
+      "name": "VisionEdge Analytics",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/VisionEdge Analytics_5e8a2c5a-12a3-4d7e-9699-c23f77432696.entity.txt",
+      "references": [
+        "beneficial_owners_dd246fd6-1602-4ef1-bf3b-2479ebfb341c.card.txt",
+        "social_post_1_e4b01400-1127-43ec-b4b3-ea495cd0dfe8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "95ffe5b9-168f-4429-a4a3-17c578020266",
+      "name": "sustainable food systems",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/sustainable food systems_95ffe5b9-168f-4429-a4a3-17c578020266.entity.txt",
+      "references": [
+        "news_clip_2_4aebb51e-875a-4351-aba3-99174f17c394.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "76a3929e-71bb-4cdc-a54c-de04cff6124c",
+      "name": "BOARD MEMBER",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/BOARD MEMBER_76a3929e-71bb-4cdc-a54c-de04cff6124c.relate.txt",
+      "references": [],
+      "aliases": []
+    },
+    {
+      "id": "97b7ffe2-c403-4296-b12b-c62e2c8de6c9",
+      "name": "BOD member formerly of",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/BOD member formerly of_97b7ffe2-c403-4296-b12b-c62e2c8de6c9.relate.txt",
+      "references": [],
+      "aliases": []
+    },
+    {
+      "id": "b4b10b35-951e-4f94-b9ff-8a70de5ad462",
+      "name": "CEO",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/CEO_b4b10b35-951e-4f94-b9ff-8a70de5ad462.relate.txt",
+      "references": [
+        "board_members_9cdb718e-c999-465a-aa59-82e715a0c40b.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "ee78a6b5-8982-4b37-ae1e-0b5a442055be",
+      "name": "checked in at the",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/checked in at the_ee78a6b5-8982-4b37-ae1e-0b5a442055be.relate.txt",
+      "references": [
+        "social_post_2_e5515c0c-d148-4877-a732-fe976d13aa41.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "42b61d31-9ce2-4547-8501-83f337fae04e",
+      "name": "merger is expected to complete in Q3 2025",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/merger is expected to complete in Q3 2025_42b61d31-9ce2-4547-8501-83f337fae04e.relate.txt",
+      "references": [
+        "news_clip_1_c0c59139-5114-4243-aa89-3c7d924487bc.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "1e818ce4-b6b3-4238-b7e1-19595effc358",
+      "name": "previously held executive roles",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/previously held executive roles_1e818ce4-b6b3-4238-b7e1-19595effc358.relate.txt",
+      "references": [
+        "social_post_1_e4b01400-1127-43ec-b4b3-ea495cd0dfe8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "be327d4f-3331-4a1e-86fe-aa2bc2d78984",
+      "name": "AI startup for .5B",
+      "type": "comment",
+      "filePath": "/home/runner/workspace/user_data/comments/AI startup for .5B_be327d4f-3331-4a1e-86fe-aa2bc2d78984.comment.txt",
+      "references": [
+        "test_news_b581bdea-4dbb-41d4-925b-6091f5ec8aff.card.txt"
+      ],
+      "aliases": []
+    }
+  ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 14,
-    "totalTags": 0,
+    "totalTags": 20,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 0,
-    "relationshipCount": 0
+    "entityCount": 13,
+    "relationshipCount": 6
   }
 }
