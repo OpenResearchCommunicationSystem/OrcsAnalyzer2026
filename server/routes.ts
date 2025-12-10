@@ -237,10 +237,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/connections", async (req, res) => {
     try {
-      const validatedData = insertTagConnectionSchema.parse(req.body);
+      const { customLabel, ...connectionData } = req.body;
+      
+      let relationshipTagId = connectionData.relationshipTagId;
+      
+      // If custom label provided, create a relationship tag first
+      if (customLabel && !relationshipTagId) {
+        const labelText = customLabel.trim() || 'manual link';
+        const relationshipTag = await orcsService.createTag({
+          type: 'relationship',
+          name: labelText,
+          references: [],
+          aliases: [],
+          keyValuePairs: {},
+          description: `Manual connection: ${labelText}`
+        });
+        relationshipTagId = relationshipTag.id;
+      }
+      
+      // Build connection data with required fields
+      const finalConnectionData = {
+        sourceTagId: connectionData.sourceTagId,
+        targetTagId: connectionData.targetTagId,
+        relationshipTagId,
+        attributeTagIds: connectionData.attributeTagIds || [],
+        connectionType: connectionData.connectionType || 'entity_relationship',
+        direction: connectionData.direction ?? 0,
+        strength: connectionData.strength ?? 1,
+        notes: connectionData.notes
+      };
+      
+      const validatedData = insertTagConnectionSchema.parse(finalConnectionData);
       const connection = await storage.createTagConnection(validatedData);
       res.status(201).json(connection);
     } catch (error) {
+      console.error("Connection creation error:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid connection data", details: error.errors });
       }

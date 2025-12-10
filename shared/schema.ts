@@ -106,18 +106,29 @@ export const statsSchema = z.object({
 export type Stats = z.infer<typeof statsSchema>;
 
 // Tag Connection Schema for linking entities with relationships and attributes
+// Direction: 0=none, 1=source→target, 2=target→source, 3=bidirectional
+export const connectionDirectionSchema = z.union([
+  z.literal(0), // none
+  z.literal(1), // forward (source → target)
+  z.literal(2), // backward (target → source)
+  z.literal(3), // bidirectional
+]);
+
 export const tagConnectionSchema = z.object({
   id: z.string(), // UUID
-  sourceTagId: z.string(), // Entity tag ID
-  targetTagId: z.string(), // Related entity tag ID
-  relationshipTagId: z.string().optional(), // Relationship tag ID (if applicable)
+  sourceTagId: z.string(), // Entity tag ID (first selected)
+  targetTagId: z.string(), // Entity tag ID (second selected)
+  relationshipTagId: z.string().optional(), // Relationship tag ID (edge label)
   attributeTagIds: z.array(z.string()).default([]), // Attribute tag IDs
   connectionType: z.enum(['entity_relationship', 'entity_attribute', 'relationship_attribute']),
+  direction: connectionDirectionSchema.default(0), // Edge directionality (0=none, 1=fwd, 2=bwd, 3=both)
   strength: z.number().min(0).max(1).default(1), // Connection strength (0-1)
   notes: z.string().optional(),
   created: z.string(),
   modified: z.string(),
 });
+
+export type ConnectionDirection = z.infer<typeof connectionDirectionSchema>;
 
 export const insertTagConnectionSchema = tagConnectionSchema.omit({ id: true, created: true, modified: true });
 

@@ -12,7 +12,7 @@ import { renderContentWithTables } from '@/lib/markdownTableRenderer';
 interface DocumentViewerProps {
   selectedFile: string | null;
   onTextSelection: (selection: TextSelection) => void;
-  onTagClick: (tag: Tag) => void;
+  onTagClick: (tag: Tag, isCtrlClick?: boolean) => void;
   onFileNotFound?: (staleFileId: string) => void;
 }
 
@@ -452,8 +452,9 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
 
   // Handle clicks on highlighted tags with improved event delegation
   useEffect(() => {
-    const handleTagClick = (event: Event) => {
-      const target = event.target as HTMLElement;
+    const handleTagClickEvent = (event: Event) => {
+      const mouseEvent = event as MouseEvent;
+      const target = mouseEvent.target as HTMLElement;
       
       // Check if clicked element is a tag button or contains tag data
       if (target.hasAttribute('data-tag-id') || target.closest('[data-tag-id]')) {
@@ -470,7 +471,10 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             // Clear any text selection that might interfere
             window.getSelection()?.removeAllRanges();
             setIsTagClick(true);
-            onTagClick(tag);
+            
+            // Pass Ctrl/Meta key state to support entity connection workflow
+            const isCtrlClick = mouseEvent.ctrlKey || mouseEvent.metaKey;
+            onTagClick(tag, isCtrlClick);
             
             // Reset tag click flag after a short delay
             setTimeout(() => setIsTagClick(false), 100);
@@ -480,10 +484,10 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     };
 
     // Use document-level event delegation for more reliable click handling
-    document.addEventListener('click', handleTagClick, { capture: true });
+    document.addEventListener('click', handleTagClickEvent, { capture: true });
     
     return () => {
-      document.removeEventListener('click', handleTagClick, { capture: true });
+      document.removeEventListener('click', handleTagClickEvent, { capture: true });
     };
   }, [tags, onTagClick]);
 

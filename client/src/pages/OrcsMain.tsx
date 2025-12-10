@@ -5,9 +5,11 @@ import { TagToolbar } from "@/components/TagToolbar";
 import { GraphVisualization } from "@/components/GraphVisualization";
 import { TagEditor } from "@/components/TagEditor";
 import { TagCreationModal } from "@/components/TagCreationModal";
+import { RelationshipConnectionModal } from "@/components/RelationshipConnectionModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield, Upload, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Shield, Upload, Search, Link2, X } from "lucide-react";
 import { useFileOperations } from "@/hooks/useFileOperations";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { TextSelection, Tag, Stats, File } from "@shared/schema";
@@ -22,6 +24,10 @@ export default function OrcsMain() {
   const [showTagModal, setShowTagModal] = useState(false);
   const [tagModalType, setTagModalType] = useState<string>('entity');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Entity connection state for creating relationships
+  const [selectedEntities, setSelectedEntities] = useState<Tag[]>([]);
+  const [showConnectionModal, setShowConnectionModal] = useState(false);
 
   const { uploadFile, isUploading } = useFileOperations();
   const { stats }: { stats?: Stats } = useTagOperations();
@@ -57,9 +63,45 @@ export default function OrcsMain() {
     setShowTagModal(true);
   };
 
-  const handleTagClick = (tag: Tag) => {
+  const handleTagClick = (tag: Tag, isCtrlClick?: boolean) => {
+    // If Ctrl+click on an entity, add to selection for connection
+    if (isCtrlClick && tag.type === 'entity') {
+      setSelectedEntities(prev => {
+        // If already selected, remove it
+        if (prev.some(e => e.id === tag.id)) {
+          return prev.filter(e => e.id !== tag.id);
+        }
+        // Add to selection (max 2 entities)
+        const newSelection = [...prev, tag];
+        if (newSelection.length === 2) {
+          // Auto-open connection modal when 2 entities selected
+          setTimeout(() => setShowConnectionModal(true), 100);
+        }
+        return newSelection.slice(-2); // Keep only last 2
+      });
+      return;
+    }
+    
+    // Normal click - select tag for editing
     setSelectedTag(tag);
     setActiveTab('tagEditor');
+  };
+
+  const handleEntitySelect = (entity: Tag) => {
+    setSelectedEntities(prev => {
+      if (prev.some(e => e.id === entity.id)) {
+        return prev.filter(e => e.id !== entity.id);
+      }
+      const newSelection = [...prev, entity];
+      if (newSelection.length === 2) {
+        setTimeout(() => setShowConnectionModal(true), 100);
+      }
+      return newSelection.slice(-2);
+    });
+  };
+
+  const clearEntitySelection = () => {
+    setSelectedEntities([]);
   };
 
   const handleFileNotFound = (staleFileId: string) => {
@@ -239,6 +281,63 @@ export default function OrcsMain() {
           )}
         </div>
       </div>
+
+      {/* Entity Selection Indicator */}
+      {selectedEntities.length > 0 && (
+        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 border border-orange-500/50 rounded-lg px-4 py-3 shadow-lg z-50">
+          <div className="flex items-center gap-3">
+            <Link2 className="w-4 h-4 text-orange-400" />
+            <span className="text-sm text-slate-300">
+              {selectedEntities.length === 1 
+                ? 'Ctrl+click another entity to connect' 
+                : 'Ready to create connection'}
+            </span>
+            <div className="flex items-center gap-2">
+              {selectedEntities.map((entity, i) => (
+                <Badge 
+                  key={entity.id}
+                  className="bg-green-500/20 text-green-300 border-green-500/30"
+                >
+                  {entity.name}
+                </Badge>
+              ))}
+            </div>
+            {selectedEntities.length === 2 && (
+              <Button 
+                size="sm" 
+                onClick={() => setShowConnectionModal(true)}
+                className="bg-orange-600 hover:bg-orange-700 text-xs"
+              >
+                Connect
+              </Button>
+            )}
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={clearEntitySelection}
+              className="text-slate-400 hover:text-slate-200"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Relationship Connection Modal */}
+      <RelationshipConnectionModal
+        isOpen={showConnectionModal}
+        onClose={() => {
+          setShowConnectionModal(false);
+          clearEntitySelection();
+        }}
+        sourceEntity={selectedEntities[0] || null}
+        targetEntity={selectedEntities[1] || null}
+        currentFileId={selectedFile}
+        onConnectionCreated={() => {
+          setShowConnectionModal(false);
+          clearEntitySelection();
+        }}
+      />
 
       {/* Tag Creation Modal */}
       {showTagModal && (
