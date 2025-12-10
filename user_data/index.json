@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-10T21:30:44.415Z",
+  "lastUpdated": "2025-12-10T21:33:43.125Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -75,16 +75,26 @@
       "filePath": "/home/runner/workspace/user_data/relationships/BOD member formerly of_97b7ffe2-c403-4296-b12b-c62e2c8de6c9.relate.txt",
       "references": [],
       "aliases": []
+    },
+    {
+      "id": "ce10b61d-295f-4aef-a1c3-d3824f3aa800",
+      "name": "TechCorp Test",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/TechCorp Test_ce10b61d-295f-4aef-a1c3-d3824f3aa800.entity.txt",
+      "references": [
+        "news_clip_1_test.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 7,
-    "totalTags": 2,
+    "totalTags": 3,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 0,
+    "entityCount": 1,
     "relationshipCount": 2
   }
 }
