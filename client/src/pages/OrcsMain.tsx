@@ -53,7 +53,7 @@ export default function OrcsMain() {
 
   const reindexMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('/api/system/reindex', { method: 'POST' });
+      return apiRequest('POST', '/api/system/reindex');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/system/index'] });
