@@ -9,10 +9,11 @@ import {
   BrokenConnection,
   TagType 
 } from '@shared/schema';
+import { generateStableFileId } from './fileService';
 
 const USER_DATA_DIR = path.join(process.cwd(), 'user_data');
 const INDEX_FILE = path.join(USER_DATA_DIR, 'index.json');
-const INDEX_VERSION = '2025.002'; // Bumped to force reindex with ORCS format parsing
+const INDEX_VERSION = '2025.003'; // Bumped to force reindex with stable file IDs
 
 const TAG_DIRECTORIES = {
   entity: path.join(USER_DATA_DIR, 'entities'),
@@ -159,7 +160,7 @@ export class IndexService {
         }
         
         files.push({
-          id: crypto.createHash('md5').update(filepath).digest('hex'),
+          id: generateStableFileId(filepath),
           path: filepath,
           name: filename,
           type: this.getFileType(filename),
@@ -462,7 +463,7 @@ export class IndexService {
     }
     
     this.index!.files.push({
-      id: crypto.createHash('md5').update(filepath).digest('hex'),
+      id: generateStableFileId(filepath),
       path: filepath,
       name: filename,
       type: this.getFileType(filename),

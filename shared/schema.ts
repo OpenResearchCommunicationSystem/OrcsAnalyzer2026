@@ -169,7 +169,7 @@ export const indexedConnectionSchema = z.object({
 
 export const brokenConnectionSchema = z.object({
   connectionId: z.string(),
-  reason: z.enum(['missing_source', 'missing_target', 'missing_relationship', 'orphaned_file']),
+  reason: z.enum(['missing_source', 'missing_target', 'missing_relationship', 'orphaned_file', 'orphaned_reference']),
   details: z.string(),
   filePath: z.string(),
 });

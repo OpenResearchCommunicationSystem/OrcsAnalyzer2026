@@ -8,6 +8,15 @@ const USER_DATA_DIR = path.join(process.cwd(), 'user_data');
 const RAW_DIR = path.join(USER_DATA_DIR, 'raw');
 const CARDS_DIR = path.join(USER_DATA_DIR, 'cards');
 
+/**
+ * Generate a stable file ID based only on the file path (not modification time).
+ * This ensures the ID remains consistent even when file content changes.
+ */
+export function generateStableFileId(filepath: string): string {
+  const normalizedPath = path.relative(USER_DATA_DIR, filepath);
+  return crypto.createHash('md5').update(normalizedPath).digest('hex');
+}
+
 export class FileService {
   async ensureDirectories(): Promise<void> {
     const dirs = [
@@ -39,7 +48,7 @@ export class FileService {
     await fs.writeFile(filepath, content);
     
     const stats = await fs.stat(filepath);
-    const id = crypto.createHash('md5').update(`${filepath}-${stats.mtime.getTime()}`).digest('hex');
+    const id = generateStableFileId(filepath);
     
     const fileData: File = {
       id,
@@ -252,7 +261,7 @@ export class FileService {
         const filepath = path.join(RAW_DIR, filename);
         const stats = await fs.stat(filepath);
         
-        const id = crypto.createHash('md5').update(`${filepath}-${stats.mtime.getTime()}`).digest('hex');
+        const id = generateStableFileId(filepath);
         
         // Extract cardUuid for card files
         let cardUuid: string | undefined;
@@ -368,7 +377,7 @@ export class FileService {
           const tagType = this.getFileTagType(entry.name);
           if (tagType) {
             const stats = await fs.stat(fullPath);
-            const id = crypto.createHash('md5').update(`${fullPath}-${stats.mtime.getTime()}`).digest('hex');
+            const id = generateStableFileId(fullPath);
             
             files.push({
               id,
