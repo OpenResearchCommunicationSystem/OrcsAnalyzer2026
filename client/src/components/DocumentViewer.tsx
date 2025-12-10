@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Edit, Table, Save, FileText, RefreshCw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Edit, Table, Save, FileText, RefreshCw, Plus, Send } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { Tag, TextSelection, File } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
@@ -19,11 +20,28 @@ interface DocumentViewerProps {
 
 export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFileNotFound, onEntityDragConnection }: DocumentViewerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const userAddedRef = useRef<HTMLDivElement>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [metadataContent, setMetadataContent] = useState<string>('');
   const [showMetadataForm, setShowMetadataForm] = useState(false);
   const [draggedEntityId, setDraggedEntityId] = useState<string | null>(null);
+  const [showAddText, setShowAddText] = useState(false);
+  const [newUserText, setNewUserText] = useState('');
   const queryClient = useQueryClient();
+
+  // Mutation to append user text
+  const appendTextMutation = useMutation({
+    mutationFn: async ({ fileId, text }: { fileId: string; text: string }) => {
+      return apiRequest('POST', `/api/files/${fileId}/append-text`, { text });
+    },
+    onSuccess: () => {
+      // Invalidate queries to refresh content
+      queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/content`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/files/${selectedFile}/metadata`] });
+      setNewUserText('');
+      setShowAddText(false);
+    },
+  });
 
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ['/api/files'],
@@ -138,6 +156,18 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     return cardContent;
   };
 
+  // Extract user added content from card file
+  const extractUserAddedContent = (cardContent: string): string | null => {
+    // Look for content between "=== USER ADDED START ===" and "=== USER ADDED END ==="
+    const match = cardContent.match(/=== USER ADDED START ===\n([\s\S]*?)\n=== USER ADDED END ===/);
+    
+    if (match) {
+      return match[1].trim();
+    }
+    
+    return null;
+  };
+
   // Extract source file info from card metadata
   const getSourceFileInfo = (cardContent: string): { filename: string; type: 'txt' | 'csv' | null } => {
     const sourceFileMatch = cardContent.match(/source_file:\s*"([^"]+)"/);
@@ -180,26 +210,30 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   };
 
   // Check if current file is a card file and extract original content
-  const getDisplayContent = (): { content: string; sourceType: 'txt' | 'csv' | null } => {
-    if (!fileContent?.content) return { content: '', sourceType: null };
+  const getDisplayContent = (): { content: string; userAddedContent: string | null; sourceType: 'txt' | 'csv' | null } => {
+    if (!fileContent?.content) return { content: '', userAddedContent: null, sourceType: null };
     
     // If this is a card file (.card.txt), extract the original content section
     if (selectedFileData?.name.includes('.card.txt')) {
       const originalContent = extractOriginalContent(fileContent.content);
+      const userAdded = extractUserAddedContent(fileContent.content);
       const sourceInfo = getSourceFileInfo(fileContent.content);
       
       // Process markdown tags in the content for highlighting
       const processedContent = processMarkdownTags(originalContent);
+      const processedUserAdded = userAdded ? processMarkdownTags(userAdded) : null;
       
       return { 
-        content: processedContent, 
+        content: processedContent,
+        userAddedContent: processedUserAdded,
         sourceType: sourceInfo.type 
       };
     }
     
     // For original files, return content as-is
     return { 
-      content: fileContent.content, 
+      content: fileContent.content,
+      userAddedContent: null,
       sourceType: selectedFileData?.type as 'txt' | 'csv' | null 
     };
   };
@@ -695,6 +729,90 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               <div key={index}>{element}</div>
             ))}
           </div>
+
+          {/* USER ADDED Section */}
+          {selectedFileData?.name.includes('.card.txt') && (
+            <div className="mt-4">
+              {/* Separator */}
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
+                <span className="text-xs font-medium text-cyan-400 uppercase tracking-wider px-2">User Added</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
+              </div>
+
+              {/* User Added Content */}
+              {displayData.userAddedContent && (
+                <div 
+                  ref={userAddedRef}
+                  className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
+                  style={{ 
+                    userSelect: 'text',
+                    wordBreak: 'break-word',
+                    whiteSpace: 'pre-wrap',
+                    fontSize: '14px',
+                    lineHeight: '1.7'
+                  }}
+                  data-testid="user-added-content"
+                >
+                  {renderHighlightedContent(displayData.userAddedContent)}
+                </div>
+              )}
+
+              {/* Add Text UI */}
+              {showAddText ? (
+                <div className="flex gap-2 items-start" data-testid="add-text-form">
+                  <Input
+                    value={newUserText}
+                    onChange={(e) => setNewUserText(e.target.value)}
+                    placeholder="Enter text to add..."
+                    className="flex-1 bg-gray-800 border-gray-600 text-slate-300"
+                    data-testid="input-add-text"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newUserText.trim() && selectedFile) {
+                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
+                      }
+                    }}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (newUserText.trim() && selectedFile) {
+                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
+                      }
+                    }}
+                    disabled={!newUserText.trim() || appendTextMutation.isPending}
+                    className="bg-cyan-600 hover:bg-cyan-700"
+                    data-testid="button-submit-text"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setShowAddText(false);
+                      setNewUserText('');
+                    }}
+                    className="text-slate-400 hover:text-slate-200"
+                    data-testid="button-cancel-add-text"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowAddText(true)}
+                  className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                  data-testid="button-add-text"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Text
+                </Button>
+              )}
+            </div>
+          )}
         </>
       );
     }
@@ -788,6 +906,90 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               </table>
             </div>
           </div>
+
+          {/* USER ADDED Section for CSV files */}
+          {selectedFileData?.name.includes('.card.txt') && (
+            <div className="mt-4">
+              {/* Separator */}
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
+                <span className="text-xs font-medium text-cyan-400 uppercase tracking-wider px-2">User Added</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
+              </div>
+
+              {/* User Added Content */}
+              {displayData.userAddedContent && (
+                <div 
+                  ref={userAddedRef}
+                  className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
+                  style={{ 
+                    userSelect: 'text',
+                    wordBreak: 'break-word',
+                    whiteSpace: 'pre-wrap',
+                    fontSize: '14px',
+                    lineHeight: '1.7'
+                  }}
+                  data-testid="user-added-content"
+                >
+                  {renderHighlightedContent(displayData.userAddedContent)}
+                </div>
+              )}
+
+              {/* Add Text UI */}
+              {showAddText ? (
+                <div className="flex gap-2 items-start" data-testid="add-text-form">
+                  <Input
+                    value={newUserText}
+                    onChange={(e) => setNewUserText(e.target.value)}
+                    placeholder="Enter text to add..."
+                    className="flex-1 bg-gray-800 border-gray-600 text-slate-300"
+                    data-testid="input-add-text"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newUserText.trim() && selectedFile) {
+                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
+                      }
+                    }}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (newUserText.trim() && selectedFile) {
+                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
+                      }
+                    }}
+                    disabled={!newUserText.trim() || appendTextMutation.isPending}
+                    className="bg-cyan-600 hover:bg-cyan-700"
+                    data-testid="button-submit-text"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setShowAddText(false);
+                      setNewUserText('');
+                    }}
+                    className="text-slate-400 hover:text-slate-200"
+                    data-testid="button-cancel-add-text"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowAddText(true)}
+                  className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                  data-testid="button-add-text"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Text
+                </Button>
+              )}
+            </div>
+          )}
         </>
       );
     }

@@ -5,6 +5,7 @@
 
 export interface CleanContent {
   content: string;
+  userAddedContent?: string; // Content from USER ADDED section
   sourceType: 'text' | 'csv' | null;
   hasMetadata: boolean;
   originalFilename?: string;
@@ -22,6 +23,8 @@ export class ContentExtractor {
   private static readonly DELIMITERS = {
     ORIGINAL_START: '=== ORIGINAL CONTENT START ===',
     ORIGINAL_END: '=== ORIGINAL CONTENT END ===',
+    USER_ADDED_START: '=== USER ADDED START ===',
+    USER_ADDED_END: '=== USER ADDED END ===',
     METADATA_START: '=== ORCS METADATA START ===',
     METADATA_END: '=== ORCS METADATA END ==='
   } as const;
@@ -97,19 +100,26 @@ export class ContentExtractor {
    * Extract content from card file using delimiters
    */
   private static extractFromCard(cardContent: string, filename: string): CleanContent {
-    const { ORIGINAL_START, ORIGINAL_END } = this.DELIMITERS;
+    const { ORIGINAL_START, ORIGINAL_END, USER_ADDED_START, USER_ADDED_END } = this.DELIMITERS;
     
     // Look for content between original content delimiters
-    const match = cardContent.match(
+    const originalMatch = cardContent.match(
       new RegExp(`${this.escapeRegExp(ORIGINAL_START)}\\n([\\s\\S]*?)\\n${this.escapeRegExp(ORIGINAL_END)}`)
     );
     
-    if (match) {
-      const originalContent = match[1].trim();
+    // Look for content between user added delimiters
+    const userAddedMatch = cardContent.match(
+      new RegExp(`${this.escapeRegExp(USER_ADDED_START)}\\n([\\s\\S]*?)\\n${this.escapeRegExp(USER_ADDED_END)}`)
+    );
+    
+    if (originalMatch) {
+      const originalContent = originalMatch[1].trim();
+      const userAddedContent = userAddedMatch ? userAddedMatch[1].trim() : undefined;
       const sourceInfo = this.extractSourceFileInfo(cardContent);
       
       return {
         content: originalContent,
+        userAddedContent,
         sourceType: sourceInfo.type,
         hasMetadata: true,
         originalFilename: sourceInfo.filename

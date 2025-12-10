@@ -27,3 +27,7 @@ Company,Ultimate Beneficial Owner,Ownership %
 CyberNova,[entity:Jasmine O'Neil](bcbaa31a-9ee1-492e-8606-b58f6d704f5f),35
 VisionEdge Analytics,[entity:John Green](b47ed2a6-b59b-410e-8bf5-4ed81da3b587),54
 === ORIGINAL CONTENT END ===
+
+=== USER ADDED START ===
+line of business
+=== USER ADDED END ===

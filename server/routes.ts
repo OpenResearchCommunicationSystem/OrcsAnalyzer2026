@@ -118,6 +118,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Append user-added text to a card file
+  app.post("/api/files/:id/append-text", async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      const { text } = req.body;
+      
+      if (!text || typeof text !== 'string' || text.trim().length === 0) {
+        return res.status(400).json({ error: "Text is required" });
+      }
+      
+      const files = await fileService.getFiles();
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Only allow appending to card files
+      if (!file.name.endsWith('.card.txt')) {
+        return res.status(400).json({ error: "Can only append text to card files" });
+      }
+      
+      const success = await orcsService.appendUserText(file.name, text.trim());
+      if (!success) {
+        return res.status(500).json({ error: "Failed to append text to card" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Append text error:", error);
+      res.status(500).json({ error: "Failed to append text" });
+    }
+  });
+
   // Tag operations
   app.get("/api/tags", async (req, res) => {
     try {

@@ -672,6 +672,8 @@ export class OrcsService {
     let tagIndexEnd = -1;
     let originalContentStart = -1;
     let originalContentEnd = -1;
+    let userAddedStart = -1;
+    let userAddedEnd = -1;
 
     // Find the boundaries of different sections
     for (let i = 0; i < lines.length; i++) {
@@ -684,6 +686,10 @@ export class OrcsService {
         originalContentStart = i;
       } else if (line === '=== ORIGINAL CONTENT END ===') {
         originalContentEnd = i;
+      } else if (line === '=== USER ADDED START ===') {
+        userAddedStart = i;
+      } else if (line === '=== USER ADDED END ===') {
+        userAddedEnd = i;
       }
     }
 
@@ -694,13 +700,22 @@ export class OrcsService {
     // Extract current content between ORIGINAL CONTENT markers
     const currentContent = lines.slice(originalContentStart + 1, originalContentEnd).join('\n');
     
-    // Check if content already has markdown tags for this tag ID
-    if (currentContent.includes(`](${tag.id})`)) {
+    // Extract USER ADDED content if section exists
+    let userAddedContent = '';
+    if (userAddedStart !== -1 && userAddedEnd !== -1) {
+      userAddedContent = lines.slice(userAddedStart + 1, userAddedEnd).join('\n');
+    }
+    
+    // Check if content already has markdown tags for this tag ID in either section
+    if (currentContent.includes(`](${tag.id})`) || userAddedContent.includes(`](${tag.id})`)) {
       return cardContent; // Already tagged
     }
     
-    // Generate tag markup for the content
-    const taggedContent = this.generateTagMarkup(currentContent, tag);
+    // Generate tag markup for the original content
+    const taggedOriginalContent = this.generateTagMarkup(currentContent, tag);
+    
+    // Generate tag markup for user added content if it exists
+    const taggedUserAddedContent = userAddedContent ? this.generateTagMarkup(userAddedContent, tag) : '';
     
     // Update TAG INDEX section
     const existingTagIndex = lines.slice(tagIndexStart + 1, tagIndexEnd).filter(line => line.trim());
@@ -709,16 +724,92 @@ export class OrcsService {
       existingTagIndex.push(newTagEntry);
     }
     
-    // Build new card content with updated TAG INDEX and marked content
-    const newLines = [
-      ...lines.slice(0, tagIndexStart + 1),
-      ...existingTagIndex,
-      ...lines.slice(tagIndexEnd, originalContentStart + 1),
-      taggedContent,
-      ...lines.slice(originalContentEnd)
-    ];
+    // Build new card content with updated sections
+    let newLines: string[];
+    
+    if (userAddedStart !== -1 && userAddedEnd !== -1) {
+      // Include USER ADDED section
+      newLines = [
+        ...lines.slice(0, tagIndexStart + 1),
+        ...existingTagIndex,
+        ...lines.slice(tagIndexEnd, originalContentStart + 1),
+        taggedOriginalContent,
+        ...lines.slice(originalContentEnd, userAddedStart + 1),
+        taggedUserAddedContent,
+        ...lines.slice(userAddedEnd)
+      ];
+    } else {
+      // No USER ADDED section yet
+      newLines = [
+        ...lines.slice(0, tagIndexStart + 1),
+        ...existingTagIndex,
+        ...lines.slice(tagIndexEnd, originalContentStart + 1),
+        taggedOriginalContent,
+        ...lines.slice(originalContentEnd)
+      ];
+    }
 
     return newLines.join('\n');
+  }
+  
+  // Append user-added text to a card's USER ADDED section
+  async appendUserText(cardFilename: string, text: string): Promise<boolean> {
+    try {
+      const cardPath = path.join(USER_DATA_DIR, 'raw', cardFilename);
+      const cardContent = await fs.readFile(cardPath, 'utf-8');
+      
+      const lines = cardContent.split('\n');
+      let userAddedStart = -1;
+      let userAddedEnd = -1;
+      let originalContentEnd = -1;
+      
+      // Find section boundaries
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line === '=== ORIGINAL CONTENT END ===') {
+          originalContentEnd = i;
+        } else if (line === '=== USER ADDED START ===') {
+          userAddedStart = i;
+        } else if (line === '=== USER ADDED END ===') {
+          userAddedEnd = i;
+        }
+      }
+      
+      if (originalContentEnd === -1) {
+        console.error('Card does not have expected format');
+        return false;
+      }
+      
+      let newLines: string[];
+      
+      if (userAddedStart !== -1 && userAddedEnd !== -1) {
+        // USER ADDED section exists - append to it
+        const existingUserContent = lines.slice(userAddedStart + 1, userAddedEnd);
+        newLines = [
+          ...lines.slice(0, userAddedStart + 1),
+          ...existingUserContent,
+          text,
+          ...lines.slice(userAddedEnd)
+        ];
+      } else {
+        // No USER ADDED section - create it after ORIGINAL CONTENT END
+        newLines = [
+          ...lines.slice(0, originalContentEnd + 1),
+          '',
+          '=== USER ADDED START ===',
+          text,
+          '=== USER ADDED END ===',
+          ...lines.slice(originalContentEnd + 1)
+        ];
+      }
+      
+      await fs.writeFile(cardPath, newLines.join('\n'), 'utf-8');
+      console.log(`Appended user text to card: ${cardFilename}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to append user text:', error);
+      return false;
+    }
   }
 
   private generateTagMarkup(content: string, tag: Tag): string {
