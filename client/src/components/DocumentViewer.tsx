@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Edit, Table, Save, FileText, RefreshCw, Plus, Send, Trash2 } from 'lucide-react';
+import { Edit, Table, Save, FileText, RefreshCw, Plus, Send, Trash2, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { Tag, TextSelection, File } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
@@ -64,6 +64,22 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     },
   });
 
+  // Mutation to restore original content
+  const restoreContentMutation = useMutation({
+    mutationFn: async (fileId: string) => {
+      const response = await apiRequest('POST', `/api/files/${fileId}/restore-content`);
+      return response.json();
+    },
+    onSuccess: async (data: { success: boolean; cardUuid: string; message: string }) => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      // Invalidate the verify query to refresh integrity status
+      await queryClient.invalidateQueries({ queryKey: ['/api/files', selectedFile, 'verify-content'] });
+      if (data.cardUuid && onSelectFileByCardUuid) {
+        onSelectFileByCardUuid(data.cardUuid);
+      }
+    },
+  });
+
   const { data: files = [] } = useQuery<File[]>({
     queryKey: ['/api/files'],
   });
@@ -105,6 +121,26 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
 
   const selectedFileData = files.find(f => f.id === resolvedFileId);
   const fileType = selectedFileData?.type;
+  const isCardFile = selectedFileData?.name.endsWith('.card.txt');
+
+  // Query to verify content integrity for card files
+  interface VerifyResult {
+    isValid: boolean;
+    missingText: string[];
+    sourceFile: string | null;
+    cardUuid: string | null;
+  }
+  
+  const { data: verifyResult, isLoading: isVerifying, refetch: refetchVerify } = useQuery<VerifyResult>({
+    queryKey: ['/api/files', resolvedFileId, 'verify-content'],
+    queryFn: async () => {
+      const response = await fetch(`/api/files/${resolvedFileId}/verify-content`);
+      if (!response.ok) throw new Error('Failed to verify');
+      return response.json();
+    },
+    enabled: !!resolvedFileId && isCardFile,
+    staleTime: 30000, // Cache for 30 seconds
+  });
 
   // Detect when selected file becomes invalid and notify parent
   useEffect(() => {
@@ -718,6 +754,64 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             </div>
           </div>
 
+          {/* Content Integrity Check Banner */}
+          {isCardFile && verifyResult && !verifyResult.isValid && (
+            <div 
+              className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3"
+              data-testid="integrity-warning"
+            >
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-amber-300 font-medium text-sm">Content Integrity Issue Detected</div>
+                <div className="text-amber-200/70 text-xs mt-1">
+                  The card content doesn't match the original source file. 
+                  {verifyResult.missingText.length > 0 && (
+                    <span> Missing text: <span className="font-mono">{verifyResult.missingText.slice(0, 5).join(', ')}{verifyResult.missingText.length > 5 ? '...' : ''}</span></span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      if (selectedFile && confirm('This will restore the original content from the source file. Tag markup will be removed but your USER ADDED section will be preserved. Continue?')) {
+                        restoreContentMutation.mutate(selectedFile);
+                      }
+                    }}
+                    disabled={restoreContentMutation.isPending}
+                    className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10 text-xs h-7"
+                    data-testid="button-restore-content"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-1" />
+                    Restore from Original
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => refetchVerify()}
+                    disabled={isVerifying}
+                    className="text-amber-400/70 hover:text-amber-300 text-xs h-7"
+                    data-testid="button-recheck-integrity"
+                  >
+                    <RefreshCw className={`w-3 h-3 mr-1 ${isVerifying ? 'animate-spin' : ''}`} />
+                    Re-check
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Content Valid Badge (optional - shown briefly or on hover) */}
+          {isCardFile && verifyResult?.isValid && (
+            <div 
+              className="mb-4 p-2 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2"
+              data-testid="integrity-valid"
+            >
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-green-300 text-xs">Content matches original source file</span>
+            </div>
+          )}
+
           <div 
             ref={contentRef}
             className="text-sm leading-relaxed bg-gray-800 p-6 rounded-lg border border-gray-700 select-text text-slate-300 mb-4 min-h-96 max-w-none"
@@ -895,6 +989,63 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               </div>
             </div>
           </div>
+
+          {/* Content Integrity Check Banner for CSV */}
+          {isCardFile && verifyResult && !verifyResult.isValid && (
+            <div 
+              className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3"
+              data-testid="integrity-warning-csv"
+            >
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-amber-300 font-medium text-sm">Content Integrity Issue Detected</div>
+                <div className="text-amber-200/70 text-xs mt-1">
+                  The card content doesn't match the original source file. 
+                  {verifyResult.missingText.length > 0 && (
+                    <span> Missing text: <span className="font-mono">{verifyResult.missingText.slice(0, 5).join(', ')}{verifyResult.missingText.length > 5 ? '...' : ''}</span></span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      if (selectedFile && confirm('This will restore the original content from the source file. Tag markup will be removed but your USER ADDED section will be preserved. Continue?')) {
+                        restoreContentMutation.mutate(selectedFile);
+                      }
+                    }}
+                    disabled={restoreContentMutation.isPending}
+                    className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10 text-xs h-7"
+                    data-testid="button-restore-content-csv"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-1" />
+                    Restore from Original
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => refetchVerify()}
+                    disabled={isVerifying}
+                    className="text-amber-400/70 hover:text-amber-300 text-xs h-7"
+                    data-testid="button-recheck-integrity-csv"
+                  >
+                    <RefreshCw className={`w-3 h-3 mr-1 ${isVerifying ? 'animate-spin' : ''}`} />
+                    Re-check
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isCardFile && verifyResult?.isValid && (
+            <div 
+              className="mb-4 p-2 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-2"
+              data-testid="integrity-valid-csv"
+            >
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-green-300 text-xs">Content matches original source file</span>
+            </div>
+          )}
 
           <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
             <div className="overflow-x-auto">
