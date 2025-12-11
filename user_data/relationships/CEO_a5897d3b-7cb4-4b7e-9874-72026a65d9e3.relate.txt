@@ -1,0 +1,15 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: a5897d3b-7cb4-4b7e-9874-72026a65d9e3
+TAG_TYPE: relationship
+NAME: CEO
+CREATED: 2025-12-10T23:43:05.915Z
+MODIFIED: 2025-12-11T00:18:14.209Z
+
+SEARCH_ALIASES:
+
+CARD_REFERENCES:
+  - news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt
+  - social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt
+
+=== END ORCS ENTITY ===

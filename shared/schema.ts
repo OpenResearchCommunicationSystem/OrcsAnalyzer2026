@@ -87,6 +87,10 @@ export type GraphNode = z.infer<typeof graphNodeSchema>;
 export type GraphEdge = z.infer<typeof graphEdgeSchema>;
 export type GraphData = z.infer<typeof graphDataSchema>;
 
+// Section identifier for cross-section tagging
+export const sectionIdSchema = z.enum(['original', 'user_added']);
+export type SectionId = z.infer<typeof sectionIdSchema>;
+
 // Text selection for tagging
 export const textSelectionSchema = z.object({
   text: z.string(),
@@ -94,6 +98,7 @@ export const textSelectionSchema = z.object({
   endOffset: z.number(),
   filename: z.string(),
   reference: z.string(),
+  sectionId: sectionIdSchema.default('original'),
 });
 
 export type TextSelection = z.infer<typeof textSelectionSchema>;

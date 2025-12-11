@@ -1,0 +1,34 @@
+=== ORCS CARD ===
+version: "2025.003"
+uuid: "d9dd9033-3c28-41b0-acfe-ce645ef4a1cd"
+source_file: "social_post_2_test.txt"
+source_reference: "socialstalker.com"
+classification: "Unclassified"
+handling:
+  - ""
+created: "2025-12-10T23:44:24.624Z"
+modified: "2025-12-10T23:44:42.277Z"
+source_hash: "sha256:740c7909e777bd6abcd8b0f5a0868e1899a164a41496d454f371fa2137c7c674"
+file_type: "txt"
+file_size: 157
+analyst: ""
+
+=== TAG INDEX START ===
+[entity:Jasmine O'Neil](e9d8fce6-4843-4ebb-b8bf-68a03dd423ea)
+[entity:Global Clean Energy](b7ee65a3-e2e3-4b1a-ab6a-3bcae3a34490)
+[relationship:attended_event](2c6b5a3a-cb77-44cf-a7cb-0930b40759d3)
+[relationship:test_rel_123](808a9556-5704-4dac-bac2-f477e5c5ab92)
+=== TAG INDEX END ===
+
+=== ORIGINAL CONTENT START ===
+Facebook Status — [entity:Jasmine O'Neil](e9d8fce6-4843-4ebb-b8bf-68a03dd423ea) checked in at the [entity:Global Clean Energy](b7ee65a3-e2e3-4b1a-ab6a-3bcae3a34490) Forum in Berlin. "Excited to speak on the ethics of AI in infrastructure planning!"
+
+=== ORIGINAL CONTENT END ===
+
+=== USER ADDED START ===
+
+attended
+Went To
+joined the meeting
+traveled
+=== USER ADDED END ===

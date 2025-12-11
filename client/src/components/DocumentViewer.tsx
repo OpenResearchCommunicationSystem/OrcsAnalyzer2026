@@ -268,8 +268,14 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   };
 
   // Check if current file is a card file and extract original content
-  const getDisplayContent = (): { content: string; rawContent: string; userAddedContent: string | null; sourceType: 'txt' | 'csv' | null } => {
-    if (!fileContent?.content) return { content: '', rawContent: '', userAddedContent: null, sourceType: null };
+  const getDisplayContent = (): { 
+    content: string; 
+    rawContent: string; 
+    userAddedContent: string | null; 
+    rawUserAddedContent: string | null;
+    sourceType: 'txt' | 'csv' | null 
+  } => {
+    if (!fileContent?.content) return { content: '', rawContent: '', userAddedContent: null, rawUserAddedContent: null, sourceType: null };
     
     // If this is a card file (.card.txt), extract the original content section
     if (selectedFileData?.name.includes('.card.txt')) {
@@ -285,8 +291,9 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       
       return { 
         content: processedContent,
-        rawContent: originalContent, // Keep raw content for CSV parsing
+        rawContent: originalContent, // Keep raw content for CSV parsing and offset calculation
         userAddedContent: processedUserAdded,
+        rawUserAddedContent: userAdded, // Keep raw user-added content for offset calculation
         sourceType: sourceInfo.type 
       };
     }
@@ -296,6 +303,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       content: fileContent.content,
       rawContent: fileContent.content,
       userAddedContent: null,
+      rawUserAddedContent: null,
       sourceType: selectedFileData?.type as 'txt' | 'csv' | null 
     };
   };
@@ -450,7 +458,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         startOffset: 0,
         endOffset: cellValue.length,
         filename: selectedFileData.name,
-        reference: cardUuid ? `${cardUuid}[${row},${col}]` : `${selectedFileData.name}[${row},${col}]`
+        reference: cardUuid ? `${cardUuid}#original[${row},${col}]` : `${selectedFileData.name}#original[${row},${col}]`,
+        sectionId: 'original'
       };
       onTextSelection(textSelection);
       setSelectedCell({ row, col });
@@ -486,67 +495,118 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       }
 
       const selection = window.getSelection();
-      if (selection && selection.toString().trim().length > 0 && contentRef.current && fileContent?.content) {
-        const selectedText = selection.toString();
-        const range = selection.getRangeAt(0);
-        const displayData = getDisplayContent();
+      if (!selection || selection.toString().trim().length === 0 || !selectedFileData) {
+        return;
+      }
+
+      const selectedText = selection.toString();
+      const range = selection.getRangeAt(0);
+      const displayData = getDisplayContent();
+      
+      // Determine which section the selection is in using data attributes
+      // This is more robust than using refs which may not be assigned in all render paths
+      type SectionId = 'original' | 'user_added';
+      let sectionId: SectionId = 'original';
+      let targetElement: HTMLElement | null = null;
+      let sectionContent = '';
+      
+      // Find the section container by checking for data-section attribute
+      const container = range.commonAncestorContainer;
+      const containerElement = container.nodeType === Node.TEXT_NODE 
+        ? container.parentElement 
+        : container as HTMLElement;
+      
+      // Check for user-added section first (more specific)
+      const userAddedSection = containerElement?.closest('[data-section="user-added"]') as HTMLElement | null;
+      const originalSection = containerElement?.closest('[data-section="original"]') as HTMLElement | null;
+      
+      if (userAddedSection) {
+        sectionId = 'user_added';
+        targetElement = userAddedSection;
+        // Use raw content for offset calculation to avoid HTML transformation issues
+        sectionContent = displayData.rawUserAddedContent || '';
+      } else if (originalSection) {
+        sectionId = 'original';
+        targetElement = originalSection;
+        // Use raw content for offset calculation
+        sectionContent = displayData.rawContent;
+      }
+      // Fallback to ref-based detection
+      else if (contentRef.current && contentRef.current.contains(range.commonAncestorContainer)) {
+        sectionId = 'original';
+        targetElement = contentRef.current;
+        sectionContent = displayData.rawContent;
+      }
+      else if (userAddedRef.current && userAddedRef.current.contains(range.commonAncestorContainer)) {
+        sectionId = 'user_added';
+        targetElement = userAddedRef.current;
+        sectionContent = displayData.rawUserAddedContent || '';
+      }
+      
+      if (!targetElement || !sectionContent) {
+        return;
+      }
+      
+      // Calculate offset by counting characters from the beginning of the section element
+      const walker = document.createTreeWalker(
+        targetElement,
+        NodeFilter.SHOW_TEXT,
+        null
+      );
+      
+      let currentOffset = 0;
+      let startOffset = -1;
+      let node;
+      
+      // Walk through all text nodes to find the precise offset
+      while (node = walker.nextNode()) {
+        const nodeText = node.textContent || '';
         
-        // Calculate offset by counting characters from the beginning of the content element
-        const walker = document.createTreeWalker(
-          contentRef.current,
-          NodeFilter.SHOW_TEXT,
-          null
-        );
-        
-        let currentOffset = 0;
-        let startOffset = -1;
-        let node;
-        
-        // Walk through all text nodes to find the precise offset
-        while (node = walker.nextNode()) {
-          const nodeText = node.textContent || '';
-          
-          if (node === range.startContainer) {
-            startOffset = currentOffset + range.startOffset;
-            break;
-          }
-          
-          currentOffset += nodeText.length;
+        if (node === range.startContainer) {
+          startOffset = currentOffset + range.startOffset;
+          break;
         }
         
-        if (startOffset !== -1 && selectedFileData) {
-          const endOffset = startOffset + selectedText.length;
-          
-          // Verify the selection matches the content at these offsets
-          const contentAtOffsets = displayData.content.substring(startOffset, endOffset);
-          
-          // Extract card UUID for card-based references
-          const cardUuid = extractCardUuid(selectedFileData.name);
-          const referenceBase = cardUuid || selectedFileData.name;
-          
-          if (contentAtOffsets === selectedText) {
+        currentOffset += nodeText.length;
+      }
+      
+      if (startOffset !== -1) {
+        const endOffset = startOffset + selectedText.length;
+        
+        // Verify the selection matches the content at these offsets
+        const contentAtOffsets = sectionContent.substring(startOffset, endOffset);
+        
+        // Extract card UUID for card-based references
+        const cardUuid = extractCardUuid(selectedFileData.name);
+        const referenceBase = cardUuid || selectedFileData.name;
+        
+        // Include section in reference format: uuid#section@start-end
+        const sectionMarker = sectionId === 'user_added' ? '#user_added' : '#original';
+        
+        if (contentAtOffsets === selectedText) {
+          const textSelection: TextSelection = {
+            text: selectedText,
+            startOffset,
+            endOffset,
+            filename: selectedFileData.name,
+            reference: `${referenceBase}${sectionMarker}@${startOffset}-${endOffset}`,
+            sectionId
+          };
+          onTextSelection(textSelection);
+        } else {
+          // If offsets don't match, try to find the text in the section content
+          const actualStartIndex = sectionContent.indexOf(selectedText);
+          if (actualStartIndex !== -1) {
+            const actualEndIndex = actualStartIndex + selectedText.length;
             const textSelection: TextSelection = {
               text: selectedText,
-              startOffset,
-              endOffset,
+              startOffset: actualStartIndex,
+              endOffset: actualEndIndex,
               filename: selectedFileData.name,
-              reference: `${referenceBase}@${startOffset}-${endOffset}`
+              reference: `${referenceBase}${sectionMarker}@${actualStartIndex}-${actualEndIndex}`,
+              sectionId
             };
             onTextSelection(textSelection);
-          } else {
-            // If offsets don't match, try to find the text in the display content
-            const actualStartIndex = displayData.content.indexOf(selectedText);
-            if (actualStartIndex !== -1) {
-              const actualEndIndex = actualStartIndex + selectedText.length;
-              const textSelection: TextSelection = {
-                text: selectedText,
-                startOffset: actualStartIndex,
-                endOffset: actualEndIndex,
-                filename: selectedFileData.name,
-                reference: `${referenceBase}@${actualStartIndex}-${actualEndIndex}`
-              };
-              onTextSelection(textSelection);
-            }
           }
         }
       }
@@ -832,6 +892,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
 
           <div 
             ref={contentRef}
+            data-section="original"
             className="text-sm leading-relaxed bg-gray-800 p-6 rounded-lg border border-gray-700 select-text text-slate-300 mb-4 min-h-96 max-w-none"
             style={{ 
               userSelect: 'text',
@@ -851,7 +912,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                     startOffset: 0,
                     endOffset: content.length,
                     filename: selectedFileData.name,
-                    reference: `${selectedFileData.name}[${row},${col}]`
+                    reference: `${selectedFileData.name}#original[${row},${col}]`,
+                    sectionId: 'original'
                   };
                   onTextSelection(textSelection);
                   setSelectedCell({ row, col });
@@ -877,6 +939,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               {displayData.userAddedContent && (
                 <div 
                   ref={userAddedRef}
+                  data-section="user-added"
                   className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
                   style={{ 
                     userSelect: 'text',
@@ -1145,6 +1208,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               {displayData.userAddedContent && (
                 <div 
                   ref={userAddedRef}
+                  data-section="user-added"
                   className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
                   style={{ 
                     userSelect: 'text',
@@ -1370,6 +1434,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               {/* Original Content Area */}
               <div 
                 ref={contentRef}
+                data-section="original"
                 className="text-sm leading-relaxed bg-gray-800 p-6 rounded-lg border border-gray-700 select-text text-slate-300"
                 style={{ 
                   userSelect: 'text',
@@ -1432,7 +1497,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                           startOffset: 0,
                           endOffset: content.length,
                           filename: selectedFileData.name,
-                          reference: `${selectedFileData.name}[${row},${col}]`
+                          reference: `${selectedFileData.name}#original[${row},${col}]`,
+                          sectionId: 'original'
                         };
                         onTextSelection(textSelection);
                         setSelectedCell({ row, col });
@@ -1461,6 +1527,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                   {displayData.userAddedContent && (
                     <div 
                       ref={userAddedRef}
+                      data-section="user-added"
                       className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
                       style={{ 
                         userSelect: 'text',

@@ -14,7 +14,7 @@ file_size: 166
 analyst: ""
 
 === TAG INDEX START ===
-
+[relationship:CEO](a5897d3b-7cb4-4b7e-9874-72026a65d9e3)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
@@ -24,4 +24,6 @@ LinkedIn Update — Thomas Greene just joined the board of directors at VisionEd
 
 === USER ADDED START ===
 
+attended the conference
+collaborated
 === USER ADDED END ===

@@ -662,18 +662,77 @@ export class OrcsService {
     }
   }
 
+  // Parse a reference string to extract section info
+  // Supports formats:
+  //   uuid#section@start-end (new format)
+  //   uuid@start-end (legacy format, assumes 'original')
+  //   filename@start-end (legacy format, assumes 'original')
+  //   uuid#section[row,col] (CSV with section)
+  //   uuid[row,col] (CSV legacy, assumes 'original')
+  private parseReference(ref: string): { cardId: string; sectionId: 'original' | 'user_added'; offsets: string } {
+    // Check for section marker: uuid#section@offsets or uuid#section[row,col]
+    const sectionMatch = ref.match(/^([^#@\[]+)#(original|user_added)([@\[].*)?$/);
+    if (sectionMatch) {
+      return {
+        cardId: sectionMatch[1],
+        sectionId: sectionMatch[2] as 'original' | 'user_added',
+        offsets: sectionMatch[3] || ''
+      };
+    }
+    
+    // Legacy format without section marker - assume 'original'
+    const legacyMatch = ref.match(/^([^@\[]+)([@\[].*)?$/);
+    if (legacyMatch) {
+      return {
+        cardId: legacyMatch[1],
+        sectionId: 'original',
+        offsets: legacyMatch[2] || ''
+      };
+    }
+    
+    return { cardId: ref, sectionId: 'original', offsets: '' };
+  }
+
   private async updateCardContent(tag: Tag): Promise<void> {
     try {
-      // Update all cards referenced by this tag
+      // Group references by card ID and collect sections to tag
+      const cardSections = new Map<string, Set<'original' | 'user_added'>>();
+      
       for (const cardRef of tag.references || []) {
-        const cardPath = path.join(process.cwd(), 'user_data', 'raw', cardRef);
+        const { cardId, sectionId } = this.parseReference(cardRef);
+        
+        if (!cardSections.has(cardId)) {
+          cardSections.set(cardId, new Set());
+        }
+        cardSections.get(cardId)!.add(sectionId);
+      }
+      
+      // Update each card with the specified sections
+      const cardEntries = Array.from(cardSections.entries());
+      for (const [cardId, sections] of cardEntries) {
+        // Try to find the card file
+        let cardPath = path.join(process.cwd(), 'user_data', 'raw', cardId);
+        
+        // Check if cardId is a UUID - need to find the full filename
+        if (cardId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)) {
+          try {
+            const files = await fs.readdir(path.join(process.cwd(), 'user_data', 'raw'));
+            const cardFile = files.find(f => f.includes(cardId) && f.endsWith('.card.txt'));
+            if (cardFile) {
+              cardPath = path.join(process.cwd(), 'user_data', 'raw', cardFile);
+            }
+          } catch (e) {
+            console.error(`Failed to find card for UUID ${cardId}:`, e);
+          }
+        }
         
         try {
           const cardContent = await fs.readFile(cardPath, 'utf-8');
-          const updatedContent = this.insertTagIntoCard(cardContent, tag);
+          const sectionsToTag: Array<'original' | 'user_added'> = Array.from(sections);
+          const updatedContent = this.insertTagIntoCard(cardContent, tag, sectionsToTag);
           await fs.writeFile(cardPath, updatedContent, 'utf-8');
         } catch (error) {
-          console.error(`Failed to update card content for ${cardRef}:`, error);
+          console.error(`Failed to update card content for ${cardId}:`, error);
         }
       }
     } catch (error) {
@@ -681,7 +740,9 @@ export class OrcsService {
     }
   }
 
-  private insertTagIntoCard(cardContent: string, tag: Tag): string {
+  // Insert tag markup into a card at the specified positions
+  // Uses offset-based insertion from references when available, falls back to text matching
+  private insertTagIntoCard(cardContent: string, tag: Tag, sectionsToTag?: Array<'original' | 'user_added'>): string {
     const lines = cardContent.split('\n');
     let tagIndexStart = -1;
     let tagIndexEnd = -1;
@@ -713,7 +774,7 @@ export class OrcsService {
     }
 
     // Extract current content between ORIGINAL CONTENT markers
-    const currentContent = lines.slice(originalContentStart + 1, originalContentEnd).join('\n');
+    let currentContent = lines.slice(originalContentStart + 1, originalContentEnd).join('\n');
     
     // Extract USER ADDED content if section exists
     let userAddedContent = '';
@@ -721,16 +782,52 @@ export class OrcsService {
       userAddedContent = lines.slice(userAddedStart + 1, userAddedEnd).join('\n');
     }
     
-    // Check if content already has markdown tags for this tag ID in either section
-    if (currentContent.includes(`](${tag.id})`) || userAddedContent.includes(`](${tag.id})`)) {
-      return cardContent; // Already tagged
+    // Check if already tagged
+    const alreadyTaggedOriginal = currentContent.includes(`](${tag.id})`);
+    const alreadyTaggedUserAdded = userAddedContent.includes(`](${tag.id})`);
+    
+    // Try offset-based insertion first using tag references
+    let usedOffsetInsertion = false;
+    for (const ref of tag.references || []) {
+      const parsed = this.parseReference(ref);
+      
+      // Check for offset format: @start-end
+      const offsetMatch = parsed.offsets.match(/@(\d+)-(\d+)/);
+      if (offsetMatch) {
+        const startOffset = parseInt(offsetMatch[1], 10);
+        const endOffset = parseInt(offsetMatch[2], 10);
+        
+        if (parsed.sectionId === 'original' && !alreadyTaggedOriginal) {
+          if (startOffset >= 0 && endOffset <= currentContent.length && startOffset < endOffset) {
+            const selectedText = currentContent.substring(startOffset, endOffset);
+            const tagMarkup = `[${tag.type}:${selectedText}](${tag.id})`;
+            currentContent = currentContent.substring(0, startOffset) + tagMarkup + currentContent.substring(endOffset);
+            usedOffsetInsertion = true;
+          }
+        } else if (parsed.sectionId === 'user_added' && !alreadyTaggedUserAdded && userAddedContent) {
+          if (startOffset >= 0 && endOffset <= userAddedContent.length && startOffset < endOffset) {
+            const selectedText = userAddedContent.substring(startOffset, endOffset);
+            const tagMarkup = `[${tag.type}:${selectedText}](${tag.id})`;
+            userAddedContent = userAddedContent.substring(0, startOffset) + tagMarkup + userAddedContent.substring(endOffset);
+            usedOffsetInsertion = true;
+          }
+        }
+      }
     }
     
-    // Generate tag markup for the original content
-    const taggedOriginalContent = this.generateTagMarkup(currentContent, tag);
-    
-    // Generate tag markup for user added content if it exists
-    const taggedUserAddedContent = userAddedContent ? this.generateTagMarkup(userAddedContent, tag) : '';
+    // Fallback to text-matching if no offset-based insertion happened
+    if (!usedOffsetInsertion) {
+      const tagOriginal = !sectionsToTag || sectionsToTag.includes('original');
+      const tagUserAdded = !sectionsToTag || sectionsToTag.includes('user_added');
+      
+      if (tagOriginal && !alreadyTaggedOriginal) {
+        currentContent = this.generateTagMarkup(currentContent, tag);
+      }
+      
+      if (tagUserAdded && userAddedContent && !alreadyTaggedUserAdded) {
+        userAddedContent = this.generateTagMarkup(userAddedContent, tag);
+      }
+    }
     
     // Update TAG INDEX section
     const existingTagIndex = lines.slice(tagIndexStart + 1, tagIndexEnd).filter(line => line.trim());
@@ -748,9 +845,9 @@ export class OrcsService {
         ...lines.slice(0, tagIndexStart + 1),
         ...existingTagIndex,
         ...lines.slice(tagIndexEnd, originalContentStart + 1),
-        taggedOriginalContent,
+        currentContent,
         ...lines.slice(originalContentEnd, userAddedStart + 1),
-        taggedUserAddedContent,
+        userAddedContent,
         ...lines.slice(userAddedEnd)
       ];
     } else {
@@ -759,7 +856,7 @@ export class OrcsService {
         ...lines.slice(0, tagIndexStart + 1),
         ...existingTagIndex,
         ...lines.slice(tagIndexEnd, originalContentStart + 1),
-        taggedOriginalContent,
+        currentContent,
         ...lines.slice(originalContentEnd)
       ];
     }
@@ -976,8 +1073,8 @@ export class OrcsService {
         }
       }
       
-      const uniqueMissing = [...new Set(missingText)];
-      const uniqueExtra = [...new Set(extraText)];
+      const uniqueMissing = Array.from(new Set(missingText));
+      const uniqueExtra = Array.from(new Set(extraText));
       
       // Always report as invalid since normalizedCard !== normalizedOriginal
       // Even if word sets match, the order/structure is different

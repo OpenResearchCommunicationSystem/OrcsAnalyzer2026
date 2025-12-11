@@ -67,6 +67,14 @@ Preferred communication style: Simple, everyday language.
   - API endpoint `POST /api/files/:id/append-text` for appending text
   - Tagging support for user-added content using existing workflows
   - Clean audit trail separating source content from analyst additions
+- **Cross-Section Tagging**: Unified tagging system that works across both ORIGINAL CONTENT and USER ADDED sections:
+  - Text selection works identically in both sections using `data-section` attributes for reliable detection
+  - Section-aware reference format: `uuid#section@start-end` (e.g., `uuid#user_added@12-25`)
+  - Uses raw content (not HTML-processed) for accurate offset calculation
+  - Relationship tags can connect entities across sections (e.g., use a word from USER ADDED as a relationship label for entities in ORIGINAL CONTENT)
+  - Backend parses section info and inserts tags only into the specified section
+  - Highlighting and tag buttons render correctly in both sections
+  - Legacy reference format (`uuid@start-end`) still supported (defaults to 'original')
 
 ## External Dependencies
 
