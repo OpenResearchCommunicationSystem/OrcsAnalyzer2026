@@ -1,0 +1,29 @@
+1. Currently our Comment system is for the card itself. Data Objects will also have individual comments. A snippet has a comment section, bullet, entity, etc. they all have user comment sections. 
+2. Your understand of bullet is correct. the idea is to make a structured datapoint into a formatted bullet point including citations, comments, and classification. Discover once, use many ways. 
+3. Here is where I think I may have failed you. Some connections between entities are edge table, some are entity table, some are both. Additionally, other KVP's like times, dates, locations, even comments etc may apply. Here is a great example. 
+Original text: Bob was in place 1 using phone number 1 when he called gary who was in place 2 using phone number 2 on date at time. 
+
+I could make one snippet. "Bob was in place 1 using phone number 1 when he called Gary who was in place 2 using phone number 2 on date time."
+
+I could also make a bunch of bullets.
+Bob location place 1 kvp date time (relationship)
+Gary location place 2 kvp date time (relationship)
+Bob user of phone number 1 (both relationship and attribute, because phone numbers, home address, employer, etc. are both)
+Gay user of phone number 2 (both relationship and attribute)
+Bob called Gary kvp date time (relationship)
+phone number 1 called phone number 2 kvp date time (relationship)
+
+
+Every entity would have all the bullets and the snippet when I pull up the dossier. so
+Location 1, location 2, Bob, Garry, phone number 1, phone number 2, the KVP date time, all able to cut and paste into a text document. 
+
+The second issue is that the reality of the way reports are worded is that they are confusion or not normalized. I need to be able to make *card comments* inside the text like local phone number 1 [comment: normalized phone number 1] and be able to tag up the commented version. Additionally user could even add the type. This is much more work, but now the data is structured by adding comments.  
+Bob [comment: Robert Richard Renasco] was in place 1 [comment: Place, City, State] using phone number 123-1111 [comment: 18001241111] called Gary [comment: Gary Greg Ganu] who was in place 2 [comment: Place 2, City, State] using phone number 123-2222 [comment: 18001242222] on October 3rd at 1:20 pm [comment: 2025-10-3T13:20:00].
+
+Or one could make a comment that just summarized a longer text: [comment: Robert Richard Renasco was in Place, City, State using phone number 18001241111 to call Gary Greg Ganu who was in Place 2, City, State using phone number 18001242222 on date/time 2025-10-3T13:20:00]
+
+or one could just use wiki links to mark up the document: 
+
+Bob [[Person:: Robert Richard Renasco]] was in place 1 [[Location:: Place, City, State]] using phone number 123-1111 [[Selector:: 18001241111]] called Gary [[Person:: Gary Greg Ganu]] who was in place 2 [[Location:: Place 2, City, State]] using phone number 123-2222 [[Selector:: 18001242222]] on October 3rd at 1:20 pm [[ISOdate:: 2025-10-3T13:20:00]].
+
+Thoughts 

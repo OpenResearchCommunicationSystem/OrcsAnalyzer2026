@@ -1,0 +1,37 @@
+I think we need to fundamentally rethink our structure. I built all previous versions of ORCS using relational databases tied to messages. The concept was this, snippets (highlighted unstructured text + snippet comment) and bullets (structured text that formed a bullet points, subject(node)+verb/predicate(edge)+(bullet comment)+(relationship YN/ Attribute YN)
+Both of these related back to the original card metadata. 
+When one opened the card, one could select to view the following:
+Snippet list (for cut and paste into a document)
+Bullet list (assembled in plain language for cut and paste into a document)
+Relationship Table for export to graph (edge table)
+Attribute Table for export to graph (node table)
+In all cases, the four outputs maintained info from the header data needed for the use case. Example 
+
+Here is what a snippet text would look like
+(Classification) [highlighted text] (comment) [snippet comment]. (Source: source_reference)
+
+Here is what a bullet would look like
+(Classification) [subject entity] [relationship/attribute] [object entity] (comment) [bullet comment]. (Source: source_reference)
+
+the relationship tables would have all the bullet information and all the metadata from the card
+[subject entity] [subject entity type] [relationship] [relationship type] [object entity] [object entity type]
+
+[subject entity] [subject entity type] [attribute type] [attribute] 
+
+in the future we can build in KVP arrays so that locations, timing, etc can be marked up. 
+
+Some thoughts on how we do this: 
+I think we are going to need link tables in our cards.  
+We may need to add "link" in addition to our relationship and attribute tags. possible replacing those in the future, with relationship and attribute being a subset of those none exclusive. 
+
+Final end state for ORCS. 
+- Store human discovery of source material multiple uses, maintaining province. Discover once, use in many ways.
+- Cut and paste snippets and bullet points into documents/presentations 
+- Quickly build entity dossiers/target packages 
+- Export node/edge tables with KVP into knowledge graphs, social network tool, and/or geo-temporal systems
+- Ability to select an edge in our own graph system and turn it into a text bullet point
+- import structured data and merge with existing human discovery
+- Send other uses cards, bullets, snippets, dossiers in human readable text format that can be cut and pasted into email, chat etc. and then 'vacuumed' into another user's system for merging into the other user's ORCS. 
+- Store all information human and machine readable formats at the user's location
+- Ability to plug into local AI systems (possible local MCP server?)..This is a far future issue. 
+- Build a STABLE indexing system that self repairs. 
