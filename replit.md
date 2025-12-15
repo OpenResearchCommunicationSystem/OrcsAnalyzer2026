@@ -26,8 +26,27 @@ Preferred communication style: Simple, everyday language.
 - **Backend**: Express.js with TypeScript, Node.js 20, Multer for file uploads, Zod for validation.
 - **Data Storage**: Card-centric file system (`user_data/`), persistent JSON-based search index (`user_data/index.json`), PostgreSQL 16 (planned with Drizzle ORM).
 - **File Organization**: Hierarchical directory structure under `user_data/` for `.card.txt` files and various tag files (`.entity.txt`, `.relate.txt`, etc.).
-- **ORCS Card System**: Structured intelligence document format with embedded original content, analysis, metadata, classification, handling instructions, and citation tracking. Uses a clear delimiter-based format for content separation.
-- **Tagging System**: Five types (Entity, Relationship, Attribute, Comment, Key-Value Pair) with text selection-based tagging, character offset tracking, and visual indicators. Includes search aliases.
+- **ORCS Card System v2025.004**: Structured intelligence document format with:
+  - ORIGINAL CONTENT section for source documents
+  - TAG INDEX for entity definitions (uuid, name, type)
+  - LINK INDEX for unified relationships (unified Link model with isAttribute/isRelationship flags)
+  - SNIPPET INDEX for manual text highlights with analyst comments
+  - Metadata section with classification, handling instructions, and source references
+  - Uses clear delimiter-based format (`=== SECTION START/END ===`) for content separation
+- **Unified Link Model**: Single model for all relationships:
+  - Connects sourceId to targetId with predicate labels
+  - Boolean flags: isRelationship, isAttribute, isNormalization
+  - Direction: 0=none, 1=forward, 2=backward, 3=bidirectional
+  - Optional offsets for text provenance
+  - Properties object for extensible metadata
+- **Wiki-Link Syntax**: Tri-part inline normalization `[[type:normalized|display]]`:
+  - Preserves original source text while enabling normalized references
+  - Supports: `[[value]]`, `[[type:value]]`, `[[type:canonical|display]]`
+  - Parser utility in shared/wikiLinkParser.ts
+- **Snippet System**: Manual text highlights with analyst attribution:
+  - Offsets for precise text location tracking
+  - Comment field for analyst notes
+  - Classification levels (unclassified, proprietary, confidential, restricted, secret)
 - **IDE-Style Master Index**: Persistent JSON-based master index (`user_data/index.json`) with:
   - Hash-based change detection using SHA256 for efficient file modification tracking
   - Incremental indexing: file/tag changes trigger targeted reindexing, not full rebuilds
@@ -41,7 +60,7 @@ Preferred communication style: Simple, everyday language.
 - **File System Resilience**: Three-tier lookup strategy (Default Location, Repository-Wide, Content Search) for UUIDs and file paths, with user recovery options for misplaced files.
 - **Clean Content Architecture**: Standardized ContentExtractor utility for strict content/metadata separation, preventing metadata loops.
 - **Resizable Document Viewer**: Uses react-resizable-panels for vertical resizable layout:
-  - Card files: 3 panels - Original Content (55%), User Added (25%), Metadata (20%)
+  - Card files: 2 panels - Original Content (70%), Metadata (30%)
   - Non-card files: 2 panels - Original Content (70%), Metadata (30%)
   - Each panel has independent vertical scrolling for long content
   - Drag handles between panels for user-adjustable sizing
@@ -61,20 +80,13 @@ Preferred communication style: Simple, everyday language.
   - Handling Instructions (multiple lines)
   - Analyst name
   - All fields start blank rather than using placeholder values
-- **USER ADDED Section**: Card files support a separate "USER ADDED" section (delimited by `=== USER ADDED START/END ===`) for analyst-added content that maintains separation from original source documents. Features include:
-  - Cyan-styled separator and content area for visual distinction
-  - "Add Text" button in document viewer (works for both TXT and CSV card views)
-  - API endpoint `POST /api/files/:id/append-text` for appending text
-  - Tagging support for user-added content using existing workflows
-  - Clean audit trail separating source content from analyst additions
-- **Cross-Section Tagging**: Unified tagging system that works across both ORIGINAL CONTENT and USER ADDED sections:
-  - Text selection works identically in both sections using `data-section` attributes for reliable detection
-  - Section-aware reference format: `uuid#section@start-end` (e.g., `uuid#user_added@12-25`)
-  - Uses raw content (not HTML-processed) for accurate offset calculation
-  - Relationship tags can connect entities across sections (e.g., use a word from USER ADDED as a relationship label for entities in ORIGINAL CONTENT)
-  - Backend parses section info and inserts tags only into the specified section
-  - Highlighting and tag buttons render correctly in both sections
-  - Legacy reference format (`uuid@start-end`) still supported (defaults to 'original')
+- **Link & Snippet API**: Complete CRUD operations for managing intelligence relationships and highlights:
+  - Links API: `GET/POST /api/cards/:cardId/links`, `GET/PATCH/DELETE /api/cards/:cardId/links/:linkId`
+  - Snippets API: `GET/POST /api/cards/:cardId/snippets`, `GET/PATCH/DELETE /api/cards/:cardId/snippets/:snippetId`
+  - Null-safe updates that preserve immutable fields (id, created, sourceCardId/cardId)
+  - Shared schema validation using Zod from @shared/schema
+- **Bullet Generation**: Auto-generates subject-predicate-object triples from LINK INDEX for quick summaries
+- **Entity Dossiers**: Aggregates all entity mentions, links, and snippets across all cards for comprehensive entity views
 
 ## External Dependencies
 
