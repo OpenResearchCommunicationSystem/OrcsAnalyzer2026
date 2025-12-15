@@ -21,6 +21,11 @@ analyst: "Test Analyst Name"
 [relationship:CEO](a5897d3b-7cb4-4b7e-9874-72026a65d9e3)
 === TAG INDEX END ===
 
+=== SNIPPET INDEX START ===
+# Format: [start-end] "text" | {metadata} |id:uuid
+[248-322] "The merger is expected to complete in Q3 2025, pending regulatory approval" | {comment: "This is unlikely"} |id:2bb67daf-f318-4c4d-9118-009c23bb299e
+=== SNIPPET INDEX END ===
+
 === ORIGINAL CONTENT START ===
 BREAKING: [entity:TechCorp](cfb00afe-aa19-40a2-851a-b28bbe5a9fe4) has announced the [relationship:acquisition](e59dd245-36ae-4c33-873e-b2533fe8f870) of [entity:BioNex Systems](e860cdf2-c05b-40ab-b98a-d13ef05f9648) in a deal valued at $3.2 billion. The merger is expected to complete in Q3 2025, pending regulatory approval.
 [relationship:CEO](a5897d3b-7cb4-4b7e-9874-72026a65d9e3) [entity:John Smith](c620641b-f2e1-475d-bc5f-e5bb9c4c64c0) commented, "This is a landmark moment for both companies."
