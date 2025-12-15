@@ -10,10 +10,10 @@ import { MetadataForm } from "@/components/MetadataForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Upload, Search, Link2, X, RefreshCw, AlertTriangle } from "lucide-react";
+import { Shield, Upload, Search, Link2, X, RefreshCw, AlertTriangle, PanelLeftClose, PanelRightClose, PanelLeft, PanelRight } from "lucide-react";
 import { useFileOperations } from "@/hooks/useFileOperations";
 import { useTagOperations } from "@/hooks/useTagOperations";
-import { TextSelection, Tag, Stats, File, MasterIndex, BrokenConnection } from "@shared/schema";
+import { TextSelection, Tag, Stats, File, MasterIndex, BrokenReference } from "@shared/schema";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +36,10 @@ export default function OrcsMain() {
   const [showNewFileMetadata, setShowNewFileMetadata] = useState(false);
   const [newlyUploadedFile, setNewlyUploadedFile] = useState<{ id: string; name: string } | null>(null);
 
+  // Sidebar collapse state
+  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
+  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
+
   const { uploadFileAsync, isUploading } = useFileOperations();
   const { stats }: { stats?: Stats } = useTagOperations();
   const { toast } = useToast();
@@ -51,7 +55,7 @@ export default function OrcsMain() {
     refetchInterval: 30000,
   });
 
-  const { data: brokenConnections = [] } = useQuery<BrokenConnection[]>({
+  const { data: brokenConnections = [] } = useQuery<BrokenReference[]>({
     queryKey: ['/api/system/broken-connections'],
     refetchInterval: 60000,
   });
@@ -269,13 +273,34 @@ export default function OrcsMain() {
       {/* Main Content Area - Optimized for HD Desktop */}
       <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Left Sidebar - File Management */}
-        <div className="w-72 lg:w-80 xl:w-96 flex-shrink-0">
-          <FileManagerSidebar
-            selectedFile={selectedFile}
-            onFileSelect={handleFileSelect}
-            searchQuery={searchQuery}
-            onTagClick={handleTagClick}
-          />
+        <div 
+          className={`flex-shrink-0 transition-all duration-300 ${
+            leftSidebarCollapsed ? 'w-10' : 'w-72 lg:w-80 xl:w-96'
+          }`}
+          style={{ backgroundColor: 'var(--orcs-panel)' }}
+        >
+          <div className="h-full flex flex-col border-r border-gray-700">
+            {/* Collapse toggle */}
+            <div className="p-1 border-b border-gray-700 flex justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
+                className="h-7 w-7 p-0 text-slate-400 hover:text-slate-200"
+                data-testid="toggle-left-sidebar"
+              >
+                {leftSidebarCollapsed ? <PanelLeft className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+              </Button>
+            </div>
+            {!leftSidebarCollapsed && (
+              <FileManagerSidebar
+                selectedFile={selectedFile}
+                onFileSelect={handleFileSelect}
+                searchQuery={searchQuery}
+                onTagClick={handleTagClick}
+              />
+            )}
+          </div>
         </div>
 
         {/* Central Content Area (Flexible Width) */}
@@ -301,43 +326,67 @@ export default function OrcsMain() {
         </div>
 
         {/* Right Sidebar - Graph & Tag Editor */}
-        <div style={{ backgroundColor: 'var(--orcs-panel)' }} className="w-80 lg:w-96 xl:w-[420px] 2xl:w-[480px] border-l border-gray-700 flex flex-col flex-shrink-0">
-          {/* Tab Navigation */}
-          <div className="border-b border-gray-700">
-            <div className="flex">
-              <button
-                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                  activeTab === 'graph'
-                    ? 'text-blue-400 border-b-2 border-blue-400 bg-gray-800'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                onClick={() => setActiveTab('graph')}
-              >
-                Graph
-              </button>
-              <button
-                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                  activeTab === 'tagEditor'
-                    ? 'text-blue-400 border-b-2 border-blue-400 bg-gray-800'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                onClick={() => setActiveTab('tagEditor')}
-              >
-                Tag Editor
-              </button>
-            </div>
+        <div 
+          style={{ backgroundColor: 'var(--orcs-panel)' }} 
+          className={`border-l border-gray-700 flex flex-col flex-shrink-0 transition-all duration-300 ${
+            rightSidebarCollapsed ? 'w-10' : 'w-80 lg:w-96 xl:w-[420px] 2xl:w-[480px]'
+          }`}
+        >
+          {/* Collapse toggle */}
+          <div className="p-1 border-b border-gray-700 flex justify-start">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setRightSidebarCollapsed(!rightSidebarCollapsed)}
+              className="h-7 w-7 p-0 text-slate-400 hover:text-slate-200"
+              data-testid="toggle-right-sidebar"
+            >
+              {rightSidebarCollapsed ? <PanelRight className="w-4 h-4" /> : <PanelRightClose className="w-4 h-4" />}
+            </Button>
           </div>
 
-          {/* Tab Content */}
-          {activeTab === 'graph' ? (
-            <GraphVisualization onNodeClick={handleTagClick} />
-          ) : (
-            <TagEditor
-              selectedTag={selectedTag}
-              onTagUpdate={(tag) => setSelectedTag(tag)}
-              onClose={() => setSelectedTag(null)}
-              onReferenceClick={handleReferenceClick}
-            />
+          {!rightSidebarCollapsed && (
+            <>
+              {/* Tab Navigation */}
+              <div className="border-b border-gray-700">
+                <div className="flex">
+                  <button
+                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'graph'
+                        ? 'text-blue-400 border-b-2 border-blue-400 bg-gray-800'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                    onClick={() => setActiveTab('graph')}
+                    data-testid="tab-graph"
+                  >
+                    Graph
+                  </button>
+                  <button
+                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'tagEditor'
+                        ? 'text-blue-400 border-b-2 border-blue-400 bg-gray-800'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                    onClick={() => setActiveTab('tagEditor')}
+                    data-testid="tab-tag-editor"
+                  >
+                    Tag Editor
+                  </button>
+                </div>
+              </div>
+
+              {/* Tab Content */}
+              {activeTab === 'graph' ? (
+                <GraphVisualization onNodeClick={handleTagClick} />
+              ) : (
+                <TagEditor
+                  selectedTag={selectedTag}
+                  onTagUpdate={(tag) => setSelectedTag(tag)}
+                  onClose={() => setSelectedTag(null)}
+                  onReferenceClick={handleReferenceClick}
+                />
+              )}
+            </>
           )}
         </div>
       </div>
@@ -438,11 +487,11 @@ export default function OrcsMain() {
           <div className="flex items-center space-x-4">
             <span>Ready</span>
             <span>|</span>
-            <span>Tags: <span className="text-slate-300">{stats?.totalTags || 0}</span></span>
+            <span>Entities: <span className="text-slate-300">{systemIndex?.stats.totalEntities || 0}</span></span>
             <span>|</span>
             <span>Files: <span className="text-slate-300">{systemIndex?.stats.totalFiles || stats?.totalFiles || 0}</span></span>
             <span>|</span>
-            <span>Connections: <span className="text-slate-300">{systemIndex?.stats.totalConnections || 0}</span></span>
+            <span>Links: <span className="text-slate-300">{systemIndex?.stats.totalLinks || 0}</span></span>
             {brokenConnections.length > 0 && (
               <>
                 <span>|</span>
