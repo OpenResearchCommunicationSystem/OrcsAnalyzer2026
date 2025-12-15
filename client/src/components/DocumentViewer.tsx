@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Edit, Table, RefreshCw, AlertTriangle, CheckCircle, RotateCcw, MessageSquare, Link2, Trash2, ChevronDown, ChevronRight, Plus, ArrowRight, ArrowLeftRight, X } from 'lucide-react';
+import { Edit, Table, RefreshCw, AlertTriangle, CheckCircle, RotateCcw, MessageSquare, Link2, Trash2, ChevronDown, ChevronRight, Plus, ArrowRight, ArrowLeftRight, X, Zap } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import type { Tag, TextSelection, File, Snippet, Link as LinkType } from '@shared/schema';
+import type { Tag, TextSelection, File, Snippet, Link as LinkType, Bullet } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
 import { renderContentWithTables } from '@/lib/markdownTableRenderer';
 
@@ -137,9 +137,22 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     enabled: !!cardUuidForQueries,
   });
 
+  // Query bullets for current card - only when cardUuidForQueries is valid
+  const { data: bullets = [] } = useQuery<Bullet[]>({
+    queryKey: ['/api/cards', cardUuidForQueries, 'bullets'],
+    queryFn: async () => {
+      if (!cardUuidForQueries) return [];
+      const response = await fetch(`/api/cards/${cardUuidForQueries}/bullets`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!cardUuidForQueries,
+  });
+
   // State for collapsible sections
   const [showSnippets, setShowSnippets] = useState(true);
   const [showLinks, setShowLinks] = useState(true);
+  const [showBullets, setShowBullets] = useState(true);
   
   // State for link creation form
   const [showLinkForm, setShowLinkForm] = useState(false);
@@ -1685,6 +1698,52 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                               >
                                 <Trash2 className="w-3 h-3" />
                               </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Bullets Section (auto-generated from links) */}
+              {cardUuidForQueries && (
+                <div className="pt-4 border-t border-gray-700">
+                  <button 
+                    onClick={() => setShowBullets(!showBullets)}
+                    className="flex items-center gap-2 text-slate-400 font-sans text-xs uppercase tracking-wide mb-3 hover:text-slate-200 w-full"
+                    data-testid="toggle-bullets"
+                  >
+                    {showBullets ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                    <Zap className="w-3 h-3" />
+                    <span>Bullets ({bullets.length})</span>
+                  </button>
+                  {showBullets && (
+                    <div className="space-y-2 text-xs">
+                      {bullets.length === 0 ? (
+                        <div className="text-slate-500 italic">No bullets yet. Create links to auto-generate bullets.</div>
+                      ) : (
+                        bullets.map((bullet, idx) => (
+                          <div 
+                            key={bullet.linkId || idx}
+                            className="bg-cyan-500/10 border border-cyan-500/30 rounded p-2"
+                            data-testid={`bullet-${bullet.linkId || idx}`}
+                          >
+                            <div className="text-cyan-200">
+                              <span className="font-medium">{bullet.subject?.canonicalName || bullet.subject?.displayName || 'Unknown'}</span>
+                              <span className="mx-1 text-cyan-400">[{bullet.predicate}]</span>
+                              <span className="font-medium">{bullet.object?.canonicalName || bullet.object?.displayName || 'Unknown'}</span>
+                            </div>
+                            {Object.keys(bullet.predicateProperties || {}).length > 0 && (
+                              <div className="text-slate-400 text-[10px] mt-1">
+                                {Object.entries(bullet.predicateProperties).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                              </div>
+                            )}
+                            <div className="text-slate-500 text-[10px] mt-1 flex items-center gap-2">
+                              {bullet.isRelationship && <Badge variant="outline" className="text-[8px] px-1 py-0 border-orange-500/50 text-orange-400">REL</Badge>}
+                              {bullet.isAttribute && <Badge variant="outline" className="text-[8px] px-1 py-0 border-purple-500/50 text-purple-400">ATTR</Badge>}
+                              {bullet.classification && <span className="text-slate-500">({bullet.classification})</span>}
                             </div>
                           </div>
                         ))
