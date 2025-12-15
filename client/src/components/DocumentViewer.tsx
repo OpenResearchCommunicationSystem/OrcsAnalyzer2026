@@ -1,9 +1,10 @@
 import { useRef, useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Edit, Table, RefreshCw, AlertTriangle, CheckCircle, RotateCcw, MessageSquare, Link2, Trash2, ChevronDown, ChevronRight, Plus, ArrowRight, ArrowLeftRight, X, Zap } from 'lucide-react';
+import { Edit, Table, RefreshCw, AlertTriangle, CheckCircle, RotateCcw, MessageSquare, Link2, Trash2, ChevronDown, ChevronRight, Plus, ArrowRight, ArrowLeftRight, X, Zap, BookOpen } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import type { Tag, TextSelection, File, Snippet, Link as LinkType, Bullet } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
@@ -25,6 +26,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   const [showMetadataForm, setShowMetadataForm] = useState(false);
   const [draggedEntityId, setDraggedEntityId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   // Mutation to restore original content
   const restoreContentMutation = useMutation({
@@ -1761,13 +1763,31 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                     {fileSpecificTags.map((tag) => (
                       <div 
                         key={tag.id} 
-                        className="flex items-center space-x-3 cursor-pointer hover:bg-gray-700 p-1 rounded"
+                        className="flex items-center justify-between cursor-pointer hover:bg-gray-700 p-1 rounded group"
                         onClick={() => onTagClick(tag)}
+                        data-testid={`tag-${tag.id}`}
                       >
-                        <span className={`text-${tag.type === 'entity' ? 'green' : tag.type === 'relationship' ? 'amber' : 'purple'}-400`}>
-                          {tag.type}:{tag.name}
-                        </span>
-                        <span className="text-slate-400 truncate">{tag.references.join(', ')}</span>
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                          <span className={`text-${tag.type === 'entity' ? 'green' : tag.type === 'relationship' ? 'amber' : 'purple'}-400`}>
+                            {tag.type}:{tag.name}
+                          </span>
+                          <span className="text-slate-400 truncate">{tag.references.join(', ')}</span>
+                        </div>
+                        {tag.type === 'entity' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLocation(`/dossier/${tag.id}`);
+                            }}
+                            title="View Entity Dossier"
+                            data-testid={`view-dossier-${tag.id}`}
+                          >
+                            <BookOpen className="w-3 h-3" />
+                          </Button>
+                        )}
                       </div>
                     ))}
                   </div>
