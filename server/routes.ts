@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { z } from "zod";
-import { insertTagSchema, insertTagConnectionSchema, textSelectionSchema } from "@shared/schema";
+import { insertTagSchema, insertTagConnectionSchema, textSelectionSchema, insertLinkSchema, insertSnippetSchema, linkSchema, snippetSchema } from "@shared/schema";
 import { fileService } from "./services/fileService";
 import { orcsService } from "./services/orcsService";
 import { indexService } from "./services/indexService";
@@ -608,6 +608,163 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to get stats:', error);
       res.status(500).json({ error: 'Failed to get stats' });
+    }
+  });
+
+  // =====================================================================
+  // LINK API ROUTES
+  // =====================================================================
+
+  app.get('/api/cards/:cardId/links', async (req, res) => {
+    try {
+      const links = await orcsService.getLinksFromCard(req.params.cardId);
+      res.json(links);
+    } catch (error) {
+      console.error('Failed to get links:', error);
+      res.status(500).json({ error: 'Failed to get links' });
+    }
+  });
+
+  app.post('/api/cards/:cardId/links', async (req, res) => {
+    try {
+      const createLinkSchema = insertLinkSchema.omit({ sourceCardId: true });
+      const linkData = createLinkSchema.parse(req.body);
+      const link = await orcsService.createLink(linkData, req.params.cardId);
+      res.status(201).json(link);
+    } catch (error) {
+      console.error('Failed to create link:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Invalid link data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to create link' });
+      }
+    }
+  });
+
+  app.patch('/api/cards/:cardId/links/:linkId', async (req, res) => {
+    try {
+      const updateSchema = linkSchema.partial().omit({ id: true, created: true, sourceCardId: true });
+      const validatedUpdates = updateSchema.parse(req.body);
+      const link = await orcsService.updateLink(req.params.cardId, req.params.linkId, validatedUpdates);
+      if (!link) {
+        return res.status(404).json({ error: 'Link not found' });
+      }
+      res.json(link);
+    } catch (error) {
+      console.error('Failed to update link:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Invalid link data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to update link' });
+      }
+    }
+  });
+
+  app.delete('/api/cards/:cardId/links/:linkId', async (req, res) => {
+    try {
+      const deleted = await orcsService.deleteLink(req.params.cardId, req.params.linkId);
+      if (!deleted) {
+        return res.status(404).json({ error: 'Link not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete link:', error);
+      res.status(500).json({ error: 'Failed to delete link' });
+    }
+  });
+
+  // =====================================================================
+  // SNIPPET API ROUTES
+  // =====================================================================
+
+  app.get('/api/cards/:cardId/snippets', async (req, res) => {
+    try {
+      const snippets = await orcsService.getSnippetsFromCard(req.params.cardId);
+      res.json(snippets);
+    } catch (error) {
+      console.error('Failed to get snippets:', error);
+      res.status(500).json({ error: 'Failed to get snippets' });
+    }
+  });
+
+  app.post('/api/cards/:cardId/snippets', async (req, res) => {
+    try {
+      const snippetData = insertSnippetSchema.parse({
+        ...req.body,
+        cardId: req.params.cardId,
+      });
+      const snippet = await orcsService.createSnippet(snippetData);
+      res.status(201).json(snippet);
+    } catch (error) {
+      console.error('Failed to create snippet:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Invalid snippet data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to create snippet' });
+      }
+    }
+  });
+
+  app.patch('/api/cards/:cardId/snippets/:snippetId', async (req, res) => {
+    try {
+      const updateSchema = snippetSchema.partial().omit({ id: true, created: true, cardId: true });
+      const validatedUpdates = updateSchema.parse(req.body);
+      const snippet = await orcsService.updateSnippet(req.params.cardId, req.params.snippetId, validatedUpdates);
+      if (!snippet) {
+        return res.status(404).json({ error: 'Snippet not found' });
+      }
+      res.json(snippet);
+    } catch (error) {
+      console.error('Failed to update snippet:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Invalid snippet data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to update snippet' });
+      }
+    }
+  });
+
+  app.delete('/api/cards/:cardId/snippets/:snippetId', async (req, res) => {
+    try {
+      const deleted = await orcsService.deleteSnippet(req.params.cardId, req.params.snippetId);
+      if (!deleted) {
+        return res.status(404).json({ error: 'Snippet not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete snippet:', error);
+      res.status(500).json({ error: 'Failed to delete snippet' });
+    }
+  });
+
+  // =====================================================================
+  // BULLET GENERATION API
+  // =====================================================================
+
+  app.get('/api/cards/:cardId/bullets', async (req, res) => {
+    try {
+      const bullets = await orcsService.generateBulletsFromCard(req.params.cardId);
+      res.json(bullets);
+    } catch (error) {
+      console.error('Failed to generate bullets:', error);
+      res.status(500).json({ error: 'Failed to generate bullets' });
+    }
+  });
+
+  // =====================================================================
+  // DOSSIER API
+  // =====================================================================
+
+  app.get('/api/entities/:entityId/dossier', async (req, res) => {
+    try {
+      const dossier = await orcsService.buildDossier(req.params.entityId);
+      if (!dossier.entity) {
+        return res.status(404).json({ error: 'Entity not found' });
+      }
+      res.json(dossier);
+    } catch (error) {
+      console.error('Failed to build dossier:', error);
+      res.status(500).json({ error: 'Failed to build dossier' });
     }
   });
 

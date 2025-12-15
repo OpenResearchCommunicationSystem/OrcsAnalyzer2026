@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { Tag, InsertTag, TagType, GraphData, GraphNode, GraphEdge } from '@shared/schema';
+import { Tag, InsertTag, TagType, GraphData, GraphNode, GraphEdge, Link, InsertLink, Snippet, InsertSnippet, Entity, Bullet } from '@shared/schema';
 import { storage } from '../storage';
 
 const USER_DATA_DIR = path.join(process.cwd(), 'user_data');
@@ -1251,6 +1251,646 @@ export class OrcsService {
         }
       }
       return tag as Tag;
+    }
+    
+    return null;
+  }
+
+  // =====================================================================
+  // LINK CRUD OPERATIONS
+  // =====================================================================
+
+  async createLink(insertLink: Omit<InsertLink, 'sourceCardId'>, cardId: string): Promise<Link> {
+    const linkId = uuidv4();
+    const now = new Date().toISOString();
+    
+    const link: Link = {
+      sourceId: insertLink.sourceId,
+      targetId: insertLink.targetId,
+      predicate: insertLink.predicate,
+      isRelationship: insertLink.isRelationship ?? true,
+      isAttribute: insertLink.isAttribute ?? false,
+      isNormalization: insertLink.isNormalization ?? false,
+      direction: insertLink.direction ?? 1,
+      properties: insertLink.properties ?? {},
+      offsets: insertLink.offsets,
+      id: linkId,
+      sourceCardId: cardId,
+      created: now,
+      modified: now,
+    };
+
+    // Add link to card's LINK INDEX
+    await this.addLinkToCard(cardId, link);
+    
+    return link;
+  }
+
+  async getLinksFromCard(cardId: string): Promise<Link[]> {
+    try {
+      const cardPath = await this.findCardPath(cardId);
+      if (!cardPath) return [];
+      
+      const content = await fs.readFile(cardPath, 'utf-8');
+      return this.parseLinkIndex(content, cardId);
+    } catch (error) {
+      console.error(`Failed to get links from card ${cardId}:`, error);
+      return [];
+    }
+  }
+
+  async updateLink(cardId: string, linkId: string, updates: Partial<Link>): Promise<Link | null> {
+    const links = await this.getLinksFromCard(cardId);
+    const linkIndex = links.findIndex(l => l.id === linkId);
+    
+    if (linkIndex === -1) return null;
+    
+    const existingLink = links[linkIndex];
+    
+    const updatedLink: Link = {
+      id: linkId,
+      sourceCardId: existingLink.sourceCardId,
+      created: existingLink.created,
+      modified: new Date().toISOString(),
+      sourceId: updates.sourceId != null ? updates.sourceId : existingLink.sourceId,
+      targetId: updates.targetId != null ? updates.targetId : existingLink.targetId,
+      predicate: updates.predicate != null ? updates.predicate : existingLink.predicate,
+      isRelationship: updates.isRelationship != null ? updates.isRelationship : existingLink.isRelationship,
+      isAttribute: updates.isAttribute != null ? updates.isAttribute : existingLink.isAttribute,
+      isNormalization: updates.isNormalization != null ? updates.isNormalization : existingLink.isNormalization,
+      direction: updates.direction != null ? updates.direction : existingLink.direction,
+      properties: updates.properties != null ? updates.properties : existingLink.properties,
+      offsets: updates.offsets !== undefined ? updates.offsets : existingLink.offsets,
+    };
+    
+    links[linkIndex] = updatedLink;
+    await this.updateCardLinkIndex(cardId, links);
+    
+    return updatedLink;
+  }
+
+  async deleteLink(cardId: string, linkId: string): Promise<boolean> {
+    const links = await this.getLinksFromCard(cardId);
+    const filteredLinks = links.filter(l => l.id !== linkId);
+    
+    if (filteredLinks.length === links.length) return false;
+    
+    await this.updateCardLinkIndex(cardId, filteredLinks);
+    return true;
+  }
+
+  private async addLinkToCard(cardId: string, link: Link): Promise<void> {
+    const links = await this.getLinksFromCard(cardId);
+    links.push(link);
+    await this.updateCardLinkIndex(cardId, links);
+  }
+
+  private async updateCardLinkIndex(cardId: string, links: Link[]): Promise<void> {
+    const cardPath = await this.findCardPath(cardId);
+    if (!cardPath) {
+      throw new Error(`Card not found: ${cardId}`);
+    }
+    
+    const content = await fs.readFile(cardPath, 'utf-8');
+    const updatedContent = this.replaceLinkIndex(content, links);
+    await fs.writeFile(cardPath, updatedContent, 'utf-8');
+  }
+
+  private parseLinkIndex(cardContent: string, cardId: string): Link[] {
+    const links: Link[] = [];
+    const lines = cardContent.split('\n');
+    let inLinkIndex = false;
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      if (trimmed === '=== LINK INDEX START ===') {
+        inLinkIndex = true;
+        continue;
+      }
+      if (trimmed === '=== LINK INDEX END ===') {
+        inLinkIndex = false;
+        continue;
+      }
+      
+      if (inLinkIndex && !trimmed.startsWith('#') && trimmed.length > 0) {
+        const link = this.parseLinkLine(trimmed, cardId);
+        if (link) {
+          links.push(link);
+        }
+      }
+    }
+    
+    return links;
+  }
+
+  private parseLinkLine(line: string, cardId: string): Link | null {
+    // Format: (sourceUUID) --[PREDICATE:prop=value]--> (targetUUID) {flags} |id:uuid
+    const match = line.match(/^\(([^)]+)\)\s*--\[([^\]]+)\]-->\s*\(([^)]+)\)\s*(\{[^}]*\})?\s*\|id:([a-f0-9-]+)$/);
+    
+    if (!match) return null;
+    
+    const [, sourceId, predicatePart, targetId, flagsPart, id] = match;
+    
+    // Parse predicate and properties: PREDICATE:key=value,key2=value2
+    const colonIndex = predicatePart.indexOf(':');
+    let predicate: string;
+    const properties: Record<string, string> = {};
+    
+    if (colonIndex !== -1) {
+      predicate = predicatePart.substring(0, colonIndex);
+      const propsStr = predicatePart.substring(colonIndex + 1);
+      propsStr.split(',').forEach(prop => {
+        const [key, value] = prop.split('=');
+        if (key && value) {
+          properties[key.trim()] = value.trim();
+        }
+      });
+    } else {
+      predicate = predicatePart;
+    }
+    
+    // Parse flags: {rel: true, attr: false}
+    let isRelationship = true;
+    let isAttribute = false;
+    let isNormalization = false;
+    let direction: 0 | 1 | 2 | 3 = 1;
+    
+    if (flagsPart) {
+      const flagsStr = flagsPart.slice(1, -1); // Remove { }
+      if (flagsStr.includes('rel: true') || flagsStr.includes('rel:true')) isRelationship = true;
+      if (flagsStr.includes('rel: false') || flagsStr.includes('rel:false')) isRelationship = false;
+      if (flagsStr.includes('attr: true') || flagsStr.includes('attr:true')) isAttribute = true;
+      if (flagsStr.includes('norm: true') || flagsStr.includes('norm:true')) isNormalization = true;
+      const dirMatch = flagsStr.match(/dir:\s*(\d)/);
+      if (dirMatch) direction = parseInt(dirMatch[1]) as 0 | 1 | 2 | 3;
+    }
+    
+    return {
+      id,
+      sourceId,
+      targetId,
+      predicate,
+      isRelationship,
+      isAttribute,
+      isNormalization,
+      direction,
+      properties,
+      sourceCardId: cardId,
+      offsets: undefined,
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+    };
+  }
+
+  private formatLinkLine(link: Link): string {
+    // Format: (sourceUUID) --[PREDICATE:prop=value]--> (targetUUID) {flags} |id:uuid
+    let predicatePart = link.predicate;
+    if (Object.keys(link.properties).length > 0) {
+      const propsStr = Object.entries(link.properties).map(([k, v]) => `${k}=${v}`).join(',');
+      predicatePart = `${link.predicate}:${propsStr}`;
+    }
+    
+    const flags: string[] = [];
+    flags.push(`rel: ${link.isRelationship}`);
+    flags.push(`attr: ${link.isAttribute}`);
+    if (link.isNormalization) flags.push('norm: true');
+    if (link.direction !== 1) flags.push(`dir: ${link.direction}`);
+    
+    return `(${link.sourceId}) --[${predicatePart}]--> (${link.targetId}) {${flags.join(', ')}} |id:${link.id}`;
+  }
+
+  private replaceLinkIndex(cardContent: string, links: Link[]): string {
+    const lines = cardContent.split('\n');
+    const result: string[] = [];
+    let inLinkIndex = false;
+    let linkIndexFound = false;
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      if (trimmed === '=== LINK INDEX START ===') {
+        linkIndexFound = true;
+        inLinkIndex = true;
+        result.push(line);
+        result.push('# Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid');
+        links.forEach(link => {
+          result.push(this.formatLinkLine(link));
+        });
+        continue;
+      }
+      
+      if (trimmed === '=== LINK INDEX END ===') {
+        inLinkIndex = false;
+        result.push(line);
+        continue;
+      }
+      
+      if (!inLinkIndex) {
+        result.push(line);
+      }
+    }
+    
+    // If no LINK INDEX section found, create one before SNIPPET INDEX or ORIGINAL CONTENT
+    if (!linkIndexFound) {
+      const insertPoint = result.findIndex(l => 
+        l.trim() === '=== SNIPPET INDEX START ===' || 
+        l.trim() === '=== ORIGINAL CONTENT START ==='
+      );
+      
+      if (insertPoint !== -1) {
+        const linkSection = [
+          '=== LINK INDEX START ===',
+          '# Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid',
+          ...links.map(l => this.formatLinkLine(l)),
+          '=== LINK INDEX END ===',
+          ''
+        ];
+        result.splice(insertPoint, 0, ...linkSection);
+      }
+    }
+    
+    return result.join('\n');
+  }
+
+  // =====================================================================
+  // SNIPPET CRUD OPERATIONS
+  // =====================================================================
+
+  async createSnippet(insertSnippet: InsertSnippet): Promise<Snippet> {
+    const snippetId = uuidv4();
+    const now = new Date().toISOString();
+    
+    const snippet: Snippet = {
+      ...insertSnippet,
+      id: snippetId,
+      created: now,
+    };
+
+    await this.addSnippetToCard(insertSnippet.cardId, snippet);
+    
+    return snippet;
+  }
+
+  async getSnippetsFromCard(cardId: string): Promise<Snippet[]> {
+    try {
+      const cardPath = await this.findCardPath(cardId);
+      if (!cardPath) return [];
+      
+      const content = await fs.readFile(cardPath, 'utf-8');
+      return this.parseSnippetIndex(content, cardId);
+    } catch (error) {
+      console.error(`Failed to get snippets from card ${cardId}:`, error);
+      return [];
+    }
+  }
+
+  async updateSnippet(cardId: string, snippetId: string, updates: Partial<Snippet>): Promise<Snippet | null> {
+    const snippets = await this.getSnippetsFromCard(cardId);
+    const snippetIndex = snippets.findIndex(s => s.id === snippetId);
+    
+    if (snippetIndex === -1) return null;
+    
+    const existingSnippet = snippets[snippetIndex];
+    
+    const updatedSnippet: Snippet = {
+      id: snippetId,
+      cardId: existingSnippet.cardId,
+      text: updates.text != null ? updates.text : existingSnippet.text,
+      offsets: updates.offsets != null ? updates.offsets : existingSnippet.offsets,
+      comment: updates.comment !== undefined ? updates.comment : existingSnippet.comment,
+      analyst: updates.analyst !== undefined ? updates.analyst : existingSnippet.analyst,
+      classification: updates.classification !== undefined ? updates.classification : existingSnippet.classification,
+      created: existingSnippet.created,
+    };
+    
+    snippets[snippetIndex] = updatedSnippet;
+    await this.updateCardSnippetIndex(cardId, snippets);
+    
+    return updatedSnippet;
+  }
+
+  async deleteSnippet(cardId: string, snippetId: string): Promise<boolean> {
+    const snippets = await this.getSnippetsFromCard(cardId);
+    const filteredSnippets = snippets.filter(s => s.id !== snippetId);
+    
+    if (filteredSnippets.length === snippets.length) return false;
+    
+    await this.updateCardSnippetIndex(cardId, filteredSnippets);
+    return true;
+  }
+
+  private async addSnippetToCard(cardId: string, snippet: Snippet): Promise<void> {
+    const snippets = await this.getSnippetsFromCard(cardId);
+    snippets.push(snippet);
+    await this.updateCardSnippetIndex(cardId, snippets);
+  }
+
+  private async updateCardSnippetIndex(cardId: string, snippets: Snippet[]): Promise<void> {
+    const cardPath = await this.findCardPath(cardId);
+    if (!cardPath) {
+      throw new Error(`Card not found: ${cardId}`);
+    }
+    
+    const content = await fs.readFile(cardPath, 'utf-8');
+    const updatedContent = this.replaceSnippetIndex(content, snippets);
+    await fs.writeFile(cardPath, updatedContent, 'utf-8');
+  }
+
+  private parseSnippetIndex(cardContent: string, cardId: string): Snippet[] {
+    const snippets: Snippet[] = [];
+    const lines = cardContent.split('\n');
+    let inSnippetIndex = false;
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      if (trimmed === '=== SNIPPET INDEX START ===') {
+        inSnippetIndex = true;
+        continue;
+      }
+      if (trimmed === '=== SNIPPET INDEX END ===') {
+        inSnippetIndex = false;
+        continue;
+      }
+      
+      if (inSnippetIndex && !trimmed.startsWith('#') && trimmed.length > 0) {
+        const snippet = this.parseSnippetLine(trimmed, cardId);
+        if (snippet) {
+          snippets.push(snippet);
+        }
+      }
+    }
+    
+    return snippets;
+  }
+
+  private parseSnippetLine(line: string, cardId: string): Snippet | null {
+    // Format: [start-end] "text" | {comment: "...", analyst: "...", class: "..."} |id:uuid
+    const match = line.match(/^\[(\d+)-(\d+)\]\s*"([^"]*)"\s*\|\s*(\{[^}]*\})?\s*\|id:([a-f0-9-]+)$/);
+    
+    if (!match) return null;
+    
+    const [, startStr, endStr, text, metaPart, id] = match;
+    
+    let comment: string | undefined;
+    let analyst: string | undefined;
+    let classification: string | undefined;
+    
+    if (metaPart) {
+      const metaStr = metaPart.slice(1, -1); // Remove { }
+      const commentMatch = metaStr.match(/comment:\s*"([^"]*)"/);
+      const analystMatch = metaStr.match(/analyst:\s*"([^"]*)"/);
+      const classMatch = metaStr.match(/class:\s*"([^"]*)"/);
+      
+      if (commentMatch) comment = commentMatch[1];
+      if (analystMatch) analyst = analystMatch[1];
+      if (classMatch) classification = classMatch[1];
+    }
+    
+    return {
+      id,
+      cardId,
+      text,
+      offsets: {
+        start: parseInt(startStr),
+        end: parseInt(endStr),
+      },
+      comment,
+      analyst,
+      classification,
+      created: new Date().toISOString(),
+    };
+  }
+
+  private formatSnippetLine(snippet: Snippet): string {
+    // Format: [start-end] "text" | {comment: "...", analyst: "...", class: "..."} |id:uuid
+    const meta: string[] = [];
+    if (snippet.comment) meta.push(`comment: "${snippet.comment}"`);
+    if (snippet.analyst) meta.push(`analyst: "${snippet.analyst}"`);
+    if (snippet.classification) meta.push(`class: "${snippet.classification}"`);
+    
+    const metaPart = meta.length > 0 ? `{${meta.join(', ')}}` : '{}';
+    const escapedText = snippet.text.replace(/"/g, '\\"');
+    
+    return `[${snippet.offsets.start}-${snippet.offsets.end}] "${escapedText}" | ${metaPart} |id:${snippet.id}`;
+  }
+
+  private replaceSnippetIndex(cardContent: string, snippets: Snippet[]): string {
+    const lines = cardContent.split('\n');
+    const result: string[] = [];
+    let inSnippetIndex = false;
+    let snippetIndexFound = false;
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      if (trimmed === '=== SNIPPET INDEX START ===') {
+        snippetIndexFound = true;
+        inSnippetIndex = true;
+        result.push(line);
+        result.push('# Format: [start-end] "text" | {metadata} |id:uuid');
+        snippets.forEach(snippet => {
+          result.push(this.formatSnippetLine(snippet));
+        });
+        continue;
+      }
+      
+      if (trimmed === '=== SNIPPET INDEX END ===') {
+        inSnippetIndex = false;
+        result.push(line);
+        continue;
+      }
+      
+      if (!inSnippetIndex) {
+        result.push(line);
+      }
+    }
+    
+    // If no SNIPPET INDEX section found, create one before ORIGINAL CONTENT
+    if (!snippetIndexFound) {
+      const insertPoint = result.findIndex(l => 
+        l.trim() === '=== ORIGINAL CONTENT START ==='
+      );
+      
+      if (insertPoint !== -1) {
+        const snippetSection = [
+          '=== SNIPPET INDEX START ===',
+          '# Format: [start-end] "text" | {metadata} |id:uuid',
+          ...snippets.map(s => this.formatSnippetLine(s)),
+          '=== SNIPPET INDEX END ===',
+          ''
+        ];
+        result.splice(insertPoint, 0, ...snippetSection);
+      }
+    }
+    
+    return result.join('\n');
+  }
+
+  // =====================================================================
+  // BULLET GENERATION (Derived from Links)
+  // =====================================================================
+
+  async generateBulletsFromCard(cardId: string): Promise<Bullet[]> {
+    const links = await this.getLinksFromCard(cardId);
+    const bullets: Bullet[] = [];
+    
+    for (const link of links) {
+      if (!link.isRelationship && !link.isAttribute) continue;
+      
+      // Get source and target entities
+      const sourceEntity = await this.getEntityById(link.sourceId);
+      const targetEntity = await this.getEntityById(link.targetId);
+      
+      if (!sourceEntity || !targetEntity) continue;
+      
+      const bullet: Bullet = {
+        subject: sourceEntity,
+        predicate: link.predicate,
+        predicateProperties: link.properties,
+        object: targetEntity,
+        isRelationship: link.isRelationship,
+        isAttribute: link.isAttribute,
+        direction: link.direction,
+        sourceCardId: link.sourceCardId,
+        classification: undefined, // TODO: Get from card metadata
+      };
+      
+      bullets.push(bullet);
+    }
+    
+    return bullets;
+  }
+
+  private async getEntityById(entityId: string): Promise<Entity | undefined> {
+    // Try to find entity tag and convert to Entity interface
+    const tags = await this.getTagsByType('entity');
+    const tag = tags.find(t => t.id === entityId);
+    
+    if (!tag) return undefined;
+    
+    return {
+      id: tag.id,
+      type: tag.entityType || 'entity',
+      canonicalName: tag.name,
+      displayName: tag.name,
+      aliases: tag.aliases || [],
+      properties: tag.keyValuePairs || {},
+      created: tag.created,
+      modified: tag.modified,
+    };
+  }
+
+  // =====================================================================
+  // DOSSIER AGGREGATION
+  // =====================================================================
+
+  async buildDossier(entityId: string): Promise<{
+    entity: Entity | undefined;
+    cards: string[];
+    snippets: Snippet[];
+    bullets: Bullet[];
+    relationships: Bullet[];
+    attributes: Bullet[];
+  }> {
+    const entity = await this.getEntityById(entityId);
+    if (!entity) {
+      return {
+        entity: undefined,
+        cards: [],
+        snippets: [],
+        bullets: [],
+        relationships: [],
+        attributes: [],
+      };
+    }
+    
+    // Find all cards that have links involving this entity
+    const allCardIds = await this.getAllCardIds();
+    const relevantCards: string[] = [];
+    const allSnippets: Snippet[] = [];
+    const allBullets: Bullet[] = [];
+    
+    for (const cardId of allCardIds) {
+      const links = await this.getLinksFromCard(cardId);
+      const hasEntity = links.some(l => l.sourceId === entityId || l.targetId === entityId);
+      
+      if (hasEntity) {
+        relevantCards.push(cardId);
+        
+        // Get snippets from this card
+        const snippets = await this.getSnippetsFromCard(cardId);
+        allSnippets.push(...snippets);
+        
+        // Generate bullets for links involving this entity
+        for (const link of links) {
+          if ((link.sourceId === entityId || link.targetId === entityId) && 
+              (link.isRelationship || link.isAttribute)) {
+            const sourceEntity = await this.getEntityById(link.sourceId);
+            const targetEntity = await this.getEntityById(link.targetId);
+            
+            if (sourceEntity && targetEntity) {
+              allBullets.push({
+                subject: sourceEntity,
+                predicate: link.predicate,
+                predicateProperties: link.properties,
+                object: targetEntity,
+                isRelationship: link.isRelationship,
+                isAttribute: link.isAttribute,
+                direction: link.direction,
+                sourceCardId: link.sourceCardId,
+                classification: undefined,
+              });
+            }
+          }
+        }
+      }
+    }
+    
+    return {
+      entity,
+      cards: relevantCards,
+      snippets: allSnippets,
+      bullets: allBullets,
+      relationships: allBullets.filter(b => b.isRelationship),
+      attributes: allBullets.filter(b => b.isAttribute),
+    };
+  }
+
+  private async getAllCardIds(): Promise<string[]> {
+    const cardIds: string[] = [];
+    const rawDir = path.join(USER_DATA_DIR, 'raw');
+    
+    try {
+      const files = await fs.readdir(rawDir);
+      for (const file of files) {
+        if (file.endsWith('.card.txt')) {
+          // Extract UUID from filename (format: name_uuid.card.txt)
+          const uuidMatch = file.match(/([a-f0-9-]{36})\.card\.txt$/);
+          if (uuidMatch) {
+            cardIds.push(uuidMatch[1]);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to list card files:', error);
+    }
+    
+    return cardIds;
+  }
+
+  private async findCardPath(cardId: string): Promise<string | null> {
+    const rawDir = path.join(USER_DATA_DIR, 'raw');
+    
+    try {
+      const files = await fs.readdir(rawDir);
+      const cardFile = files.find(f => f.includes(cardId) && f.endsWith('.card.txt'));
+      if (cardFile) {
+        return path.join(rawDir, cardFile);
+      }
+    } catch (error) {
+      console.error(`Failed to find card ${cardId}:`, error);
     }
     
     return null;
