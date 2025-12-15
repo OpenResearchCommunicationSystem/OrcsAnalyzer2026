@@ -1218,7 +1218,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     <div className="flex-1 bg-gray-900 flex flex-col min-h-0">
       <ResizablePanelGroup direction="vertical" className="flex-1 min-h-0">
         {/* Panel 1: Original Content */}
-        <ResizablePanel defaultSize={60} minSize={20}>
+        <ResizablePanel defaultSize={67} minSize={20}>
           <div className="h-full flex flex-col min-h-0">
             <div className="px-6 py-2 border-b border-gray-700 flex-shrink-0 bg-gray-800/50">
               <div className="flex items-center justify-between">
@@ -1422,7 +1422,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         <ResizableHandle withHandle className="bg-gray-700 hover:bg-gray-600" />
 
         {/* Panel 2: Analysis Area */}
-        <ResizablePanel defaultSize={20} minSize={10}>
+        <ResizablePanel defaultSize={30} minSize={10}>
           <div className="h-full flex flex-col min-h-0 overflow-hidden">
             <AnalysisArea
               cardUuid={cardUuidForQueries}
@@ -1437,7 +1437,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         <ResizableHandle withHandle className="bg-gray-700 hover:bg-gray-600" />
 
         {/* Panel 3: Metadata (collapsed by default) */}
-        <ResizablePanel defaultSize={10} minSize={5} collapsible collapsedSize={3}>
+        <ResizablePanel defaultSize={3} minSize={3} collapsible collapsedSize={3}>
           <div className="h-full flex flex-col min-h-0">
             <div className="px-6 py-2 border-b border-gray-700 flex-shrink-0 bg-gray-800/50 flex items-center justify-between">
               <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">ORCS Metadata</span>
