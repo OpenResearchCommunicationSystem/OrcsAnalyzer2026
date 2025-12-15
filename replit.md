@@ -85,6 +85,19 @@ Preferred communication style: Simple, everyday language.
   - Snippets API: `GET/POST /api/cards/:cardId/snippets`, `GET/PATCH/DELETE /api/cards/:cardId/snippets/:snippetId`
   - Null-safe updates that preserve immutable fields (id, created, sourceCardId/cardId)
   - Shared schema validation using Zod from @shared/schema
+- **Snippet Creation UI**: Text selection workflow for creating highlights:
+  - Select text in Original Content area to trigger creation UI
+  - Amber-styled panel shows selected text preview with character offsets
+  - Optional comment input for analyst notes
+  - Creates snippet via API with text, offsets, comment, and classification
+  - All interactive elements have data-testid attributes for testing
+- **Link Creation UI**: Form for connecting entities in card's LINK INDEX:
+  - Click + button next to Links header to show form
+  - Source/Target entity dropdowns populated from card's TAG INDEX entities
+  - Predicate text input for relationship label
+  - Relationship/Attribute toggle (mutually exclusive)
+  - Direction toggle (Forward or Bidirectional)
+  - Creates link via API with sourceId, targetId, predicate, flags, direction
 - **Bullet Generation**: Auto-generates subject-predicate-object triples from LINK INDEX for quick summaries
 - **Entity Dossiers**: Aggregates all entity mentions, links, and snippets across all cards for comprehensive entity views
 
