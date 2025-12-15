@@ -156,10 +156,17 @@ export interface Dossier {
 }
 
 // Graph data (updated for new model)
+// Note: Graph nodes can be entities OR legacy tags during migration
 export const graphNodeSchema = z.object({
   id: z.string(),
   label: z.string(),
-  type: entityTypeSchema,
+  // Support both new entity types and legacy tag types during migration
+  type: z.enum([
+    // New entity types
+    'person', 'org', 'location', 'selector', 'date', 'event', 'object', 'concept',
+    // Legacy tag types (for backwards compatibility)
+    'entity', 'relationship', 'attribute', 'comment', 'kv_pair'
+  ]),
   x: z.number().optional(),
   y: z.number().optional(),
 });
@@ -169,8 +176,9 @@ export const graphEdgeSchema = z.object({
   source: z.string(),
   target: z.string(),
   label: z.string(),
+  type: z.enum(['relationship', 'attribute', 'connection', 'co-occurrence']).optional(),
   direction: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).default(1),
-  properties: z.record(z.string()).default({}),
+  properties: z.record(z.string()).optional().default({}),
 });
 
 export const graphDataSchema = z.object({

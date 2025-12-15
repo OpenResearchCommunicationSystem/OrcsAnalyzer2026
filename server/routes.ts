@@ -158,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update card metadata fields only (preserves ORIGINAL CONTENT and USER ADDED sections)
+  // Update card metadata fields only (preserves ORIGINAL CONTENT)
   app.patch("/api/files/:id/card-metadata", async (req, res) => {
     try {
       const fileId = req.params.id;
@@ -191,75 +191,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Card metadata update error:", error);
       res.status(500).json({ error: "Failed to update card metadata", details: error instanceof Error ? error.message : String(error) });
-    }
-  });
-
-  // Append user-added text to a card file
-  app.post("/api/files/:id/append-text", async (req, res) => {
-    try {
-      const fileId = req.params.id;
-      const { text } = req.body;
-      
-      if (!text || typeof text !== 'string' || text.trim().length === 0) {
-        return res.status(400).json({ error: "Text is required" });
-      }
-      
-      const files = await fileService.getFiles();
-      const file = files.find(f => f.id === fileId);
-      
-      if (!file) {
-        return res.status(404).json({ error: "File not found" });
-      }
-      
-      // Only allow appending to card files
-      if (!file.name.endsWith('.card.txt')) {
-        return res.status(400).json({ error: "Can only append text to card files" });
-      }
-      
-      const cardUuid = await orcsService.appendUserText(file.name, text.trim());
-      if (!cardUuid) {
-        return res.status(500).json({ error: "Failed to append text to card" });
-      }
-      
-      // Update index for modified file
-      await indexService.reindexFile(file.path);
-      
-      res.json({ success: true, cardUuid });
-    } catch (error) {
-      console.error("Append text error:", error);
-      res.status(500).json({ error: "Failed to append text" });
-    }
-  });
-
-  // Clear user-added text from a card file
-  app.delete("/api/files/:id/user-added", async (req, res) => {
-    try {
-      const fileId = req.params.id;
-      
-      const files = await fileService.getFiles();
-      const file = files.find(f => f.id === fileId);
-      
-      if (!file) {
-        return res.status(404).json({ error: "File not found" });
-      }
-      
-      // Only allow clearing from card files
-      if (!file.name.endsWith('.card.txt')) {
-        return res.status(400).json({ error: "Can only clear user-added text from card files" });
-      }
-      
-      const cardUuid = await orcsService.clearUserAddedText(file.name);
-      if (cardUuid === null) {
-        return res.status(500).json({ error: "Failed to clear user-added text" });
-      }
-      
-      // Update index for modified file
-      await indexService.reindexFile(file.path);
-      
-      res.json({ success: true, cardUuid });
-    } catch (error) {
-      console.error("Clear user-added text error:", error);
-      res.status(500).json({ error: "Failed to clear user-added text" });
     }
   });
 
