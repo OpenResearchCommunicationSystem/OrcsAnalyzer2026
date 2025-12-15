@@ -19,6 +19,11 @@ analyst: ""
 [entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239)
 === TAG INDEX END ===
 
+=== SNIPPET INDEX START ===
+# Format: [start-end] "text" | {metadata} |id:uuid
+[114-122] "Ava Chen" | {comment: "Test comment"} |id:e9e50a48-012c-41fd-922e-62040fbd05bd
+=== SNIPPET INDEX END ===
+
 === ORIGINAL CONTENT START ===
 Company,Ultimate Beneficial Owner,Ownership %
 [entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239),Ava Cheng,45

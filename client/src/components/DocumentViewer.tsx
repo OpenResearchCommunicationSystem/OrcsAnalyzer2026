@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Edit, Table, RefreshCw, AlertTriangle, CheckCircle, RotateCcw, MessageSquare, Link2, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Edit, Table, RefreshCw, AlertTriangle, CheckCircle, RotateCcw, MessageSquare, Link2, Trash2, ChevronDown, ChevronRight, Plus, ArrowRight, ArrowLeftRight, X } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import type { Tag, TextSelection, File, Snippet, Link as LinkType } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
@@ -140,6 +140,14 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   // State for collapsible sections
   const [showSnippets, setShowSnippets] = useState(true);
   const [showLinks, setShowLinks] = useState(true);
+  
+  // State for link creation form
+  const [showLinkForm, setShowLinkForm] = useState(false);
+  const [linkSourceId, setLinkSourceId] = useState('');
+  const [linkTargetId, setLinkTargetId] = useState('');
+  const [linkPredicate, setLinkPredicate] = useState('');
+  const [linkIsRelationship, setLinkIsRelationship] = useState(true);
+  const [linkDirection, setLinkDirection] = useState<number>(1); // 0=none, 1=forward, 2=backward, 3=bidirectional
 
   // State for pending snippet creation
   const [pendingSnippet, setPendingSnippet] = useState<{ text: string; start: number; end: number } | null>(null);
@@ -187,6 +195,36 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuidForQueries, 'links'] });
     },
   });
+
+  // Mutation to create a link
+  const createLinkMutation = useMutation({
+    mutationFn: async (data: { sourceId: string; targetId: string; predicate: string; isRelationship: boolean; isAttribute: boolean; direction: number }) => {
+      if (!cardUuidForQueries) return;
+      await apiRequest('POST', `/api/cards/${cardUuidForQueries}/links`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuidForQueries, 'links'] });
+      setShowLinkForm(false);
+      setLinkSourceId('');
+      setLinkTargetId('');
+      setLinkPredicate('');
+      setLinkIsRelationship(true);
+      setLinkDirection(1);
+    },
+  });
+
+  // Handler for creating a link
+  const handleCreateLink = () => {
+    if (!linkSourceId || !linkTargetId || !linkPredicate.trim()) return;
+    createLinkMutation.mutate({
+      sourceId: linkSourceId,
+      targetId: linkTargetId,
+      predicate: linkPredicate.trim(),
+      isRelationship: linkIsRelationship,
+      isAttribute: !linkIsRelationship,
+      direction: linkDirection,
+    });
+  };
 
   // Detect when selected file becomes invalid and notify parent
   useEffect(() => {
@@ -631,7 +669,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       document.removeEventListener('mousedown', handleMouseDown);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [selectedFileData, onTextSelection, fileContent?.content, isTagClick]);
+  }, [selectedFileData, onTextSelection, fileContent?.content, isTagClick, isCardFile]);
 
   // Handle entity drag-and-drop for connection workflow
   useEffect(() => {
@@ -1454,21 +1492,159 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               )}
 
               {/* Links Section */}
-              {isCardFile && (
+              {cardUuidForQueries && (
                 <div className="pt-4 border-t border-gray-700">
-                  <button 
-                    onClick={() => setShowLinks(!showLinks)}
-                    className="flex items-center gap-2 text-slate-400 font-sans text-xs uppercase tracking-wide mb-3 hover:text-slate-200 w-full"
-                    data-testid="toggle-links"
-                  >
-                    {showLinks ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                    <Link2 className="w-3 h-3" />
-                    <span>Links ({links.length})</span>
-                  </button>
+                  <div className="flex items-center justify-between mb-3">
+                    <button 
+                      onClick={() => setShowLinks(!showLinks)}
+                      className="flex items-center gap-2 text-slate-400 font-sans text-xs uppercase tracking-wide hover:text-slate-200"
+                      data-testid="toggle-links"
+                    >
+                      {showLinks ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                      <Link2 className="w-3 h-3" />
+                      <span>Links ({links.length})</span>
+                    </button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setShowLinkForm(!showLinkForm)}
+                      className="h-6 px-2 text-orange-400 hover:text-orange-300"
+                      data-testid="button-show-link-form"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                  </div>
+
+                  {/* Link Creation Form */}
+                  {showLinkForm && (
+                    <div className="mb-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg text-xs">
+                      <div className="flex items-center gap-2 mb-2 text-orange-200">
+                        <Link2 className="w-3 h-3" />
+                        <span className="font-medium">Create Link</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setShowLinkForm(false)}
+                          className="ml-auto h-5 w-5 p-0 text-slate-400 hover:text-slate-200"
+                          data-testid="button-close-link-form"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      
+                      {/* Source Entity */}
+                      <div className="mb-2">
+                        <label className="text-slate-400 text-[10px] block mb-1">Source Entity</label>
+                        <select
+                          value={linkSourceId}
+                          onChange={(e) => setLinkSourceId(e.target.value)}
+                          className="w-full px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded text-slate-200 focus:outline-none focus:border-orange-500"
+                          data-testid="select-link-source"
+                        >
+                          <option value="">Select entity...</option>
+                          {fileSpecificTags.filter(t => t.type === 'entity').map(entity => (
+                            <option key={entity.id} value={entity.id}>
+                              {entity.name} ({entity.id.slice(0, 8)})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Predicate */}
+                      <div className="mb-2">
+                        <label className="text-slate-400 text-[10px] block mb-1">Predicate</label>
+                        <input
+                          type="text"
+                          value={linkPredicate}
+                          onChange={(e) => setLinkPredicate(e.target.value)}
+                          placeholder="e.g., works_for, located_in"
+                          className="w-full px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-orange-500"
+                          data-testid="input-link-predicate"
+                        />
+                      </div>
+
+                      {/* Target Entity */}
+                      <div className="mb-2">
+                        <label className="text-slate-400 text-[10px] block mb-1">Target Entity</label>
+                        <select
+                          value={linkTargetId}
+                          onChange={(e) => setLinkTargetId(e.target.value)}
+                          className="w-full px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded text-slate-200 focus:outline-none focus:border-orange-500"
+                          data-testid="select-link-target"
+                        >
+                          <option value="">Select entity...</option>
+                          {fileSpecificTags.filter(t => t.type === 'entity').map(entity => (
+                            <option key={entity.id} value={entity.id}>
+                              {entity.name} ({entity.id.slice(0, 8)})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Link Type Toggle */}
+                      <div className="mb-2 flex items-center gap-4">
+                        <label className="flex items-center gap-1 text-slate-300 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="linkType"
+                            checked={linkIsRelationship}
+                            onChange={() => setLinkIsRelationship(true)}
+                            className="accent-orange-500"
+                            data-testid="radio-link-relationship"
+                          />
+                          <span className="text-orange-300">Relationship</span>
+                        </label>
+                        <label className="flex items-center gap-1 text-slate-300 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="linkType"
+                            checked={!linkIsRelationship}
+                            onChange={() => setLinkIsRelationship(false)}
+                            className="accent-purple-500"
+                            data-testid="radio-link-attribute"
+                          />
+                          <span className="text-purple-300">Attribute</span>
+                        </label>
+                      </div>
+
+                      {/* Direction Toggle */}
+                      <div className="mb-3">
+                        <label className="text-slate-400 text-[10px] block mb-1">Direction</label>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setLinkDirection(1)}
+                            className={`px-2 py-1 rounded text-[10px] flex items-center gap-1 ${linkDirection === 1 ? 'bg-orange-600 text-white' : 'bg-gray-700 text-slate-400'}`}
+                            data-testid="button-direction-forward"
+                          >
+                            <ArrowRight className="w-3 h-3" /> Forward
+                          </button>
+                          <button
+                            onClick={() => setLinkDirection(3)}
+                            className={`px-2 py-1 rounded text-[10px] flex items-center gap-1 ${linkDirection === 3 ? 'bg-orange-600 text-white' : 'bg-gray-700 text-slate-400'}`}
+                            data-testid="button-direction-bidirectional"
+                          >
+                            <ArrowLeftRight className="w-3 h-3" /> Both
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Create Button */}
+                      <Button
+                        size="sm"
+                        onClick={handleCreateLink}
+                        disabled={createLinkMutation.isPending || !linkSourceId || !linkTargetId || !linkPredicate.trim()}
+                        className="w-full h-7 bg-orange-600 hover:bg-orange-500 text-white text-xs"
+                        data-testid="button-create-link"
+                      >
+                        {createLinkMutation.isPending ? 'Creating...' : 'Create Link'}
+                      </Button>
+                    </div>
+                  )}
+
                   {showLinks && (
                     <div className="space-y-2 text-xs">
                       {links.length === 0 ? (
-                        <div className="text-slate-500 italic">No links yet. Connect entities to create links.</div>
+                        <div className="text-slate-500 italic">No links yet. Click + to create a link between entities.</div>
                       ) : (
                         links.map((link) => (
                           <div 
