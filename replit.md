@@ -98,8 +98,18 @@ Preferred communication style: Simple, everyday language.
   - Relationship/Attribute toggle (mutually exclusive)
   - Direction toggle (Forward or Bidirectional)
   - Creates link via API with sourceId, targetId, predicate, flags, direction
-- **Bullet Generation**: Auto-generates subject-predicate-object triples from LINK INDEX for quick summaries
-- **Entity Dossiers**: Aggregates all entity mentions, links, and snippets across all cards for comprehensive entity views
+- **Bullet Generation**: Auto-generates subject-predicate-object triples from LINK INDEX for quick summaries:
+  - Displayed in collapsible cyan-themed section in DocumentViewer metadata panel
+  - Format: Subject → [Predicate] → Object with REL/ATTR badges
+  - Auto-refreshes when links are created or deleted (cache invalidation)
+  - API: `GET /api/cards/:cardId/bullets`
+- **Entity Dossiers**: Comprehensive entity view aggregating all mentions across cards:
+  - Dedicated page at `/dossier/:entityId` route
+  - Entity header with type icon, name, type badge, and aliases
+  - Stats grid showing counts for Cards, Relationships, Attributes, Snippets
+  - Collapsible sections for Relationships (orange), Attributes (purple), All Bullets (cyan), Snippets (amber), Source Cards (blue)
+  - Navigation from Tagged Elements via BookOpen icon button on entity hover
+  - API: `GET /api/entities/:entityId/dossier`
 
 ## External Dependencies
 
