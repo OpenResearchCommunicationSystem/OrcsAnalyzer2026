@@ -2,10 +2,8 @@ import { useRef, useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Edit, Table, Save, FileText, RefreshCw, Plus, Send, Trash2, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react';
+import { Edit, Table, RefreshCw, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import type { Tag, TextSelection, File } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
@@ -22,48 +20,11 @@ interface DocumentViewerProps {
 
 export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFileNotFound, onEntityDragConnection, onSelectFileByCardUuid }: DocumentViewerProps) {
   const contentRef = useRef<HTMLDivElement>(null);
-  const userAddedRef = useRef<HTMLDivElement>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [metadataContent, setMetadataContent] = useState<string>('');
   const [showMetadataForm, setShowMetadataForm] = useState(false);
   const [draggedEntityId, setDraggedEntityId] = useState<string | null>(null);
-  const [showAddText, setShowAddText] = useState(false);
-  const [newUserText, setNewUserText] = useState('');
   const queryClient = useQueryClient();
-
-  // Mutation to append user text
-  const appendTextMutation = useMutation({
-    mutationFn: async ({ fileId, text }: { fileId: string; text: string }) => {
-      const response = await apiRequest('POST', `/api/files/${fileId}/append-text`, { text });
-      return response.json();
-    },
-    onSuccess: async (data: { success: boolean; cardUuid: string }) => {
-      // Refresh file list first
-      await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
-      // Use cardUuid to re-select the file after modification
-      if (data.cardUuid && onSelectFileByCardUuid) {
-        onSelectFileByCardUuid(data.cardUuid);
-      }
-      setNewUserText('');
-      setShowAddText(false);
-    },
-  });
-
-  // Mutation to clear user-added text
-  const clearUserAddedMutation = useMutation({
-    mutationFn: async (fileId: string) => {
-      const response = await apiRequest('DELETE', `/api/files/${fileId}/user-added`);
-      return response.json();
-    },
-    onSuccess: async (data: { success: boolean; cardUuid: string }) => {
-      // Refresh file list first
-      await queryClient.invalidateQueries({ queryKey: ['/api/files'] });
-      // Use cardUuid to re-select the file after modification
-      if (data.cardUuid && onSelectFileByCardUuid) {
-        onSelectFileByCardUuid(data.cardUuid);
-      }
-    },
-  });
 
   // Mutation to restore original content
   const restoreContentMutation = useMutation({
@@ -214,17 +175,6 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     return cardContent;
   };
 
-  // Extract user added content from card file
-  const extractUserAddedContent = (cardContent: string): string | null => {
-    // Look for content between "=== USER ADDED START ===" and "=== USER ADDED END ==="
-    const match = cardContent.match(/=== USER ADDED START ===\n([\s\S]*?)\n=== USER ADDED END ===/);
-    
-    if (match) {
-      return match[1].trim();
-    }
-    
-    return null;
-  };
 
   // Extract source file info from card metadata
   const getSourceFileInfo = (cardContent: string): { filename: string; type: 'txt' | 'csv' | null } => {
@@ -271,29 +221,23 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   const getDisplayContent = (): { 
     content: string; 
     rawContent: string; 
-    userAddedContent: string | null; 
-    rawUserAddedContent: string | null;
     sourceType: 'txt' | 'csv' | null 
   } => {
-    if (!fileContent?.content) return { content: '', rawContent: '', userAddedContent: null, rawUserAddedContent: null, sourceType: null };
+    if (!fileContent?.content) return { content: '', rawContent: '', sourceType: null };
     
     // If this is a card file (.card.txt), extract the original content section
     if (selectedFileData?.name.includes('.card.txt')) {
       const originalContent = extractOriginalContent(fileContent.content);
-      const userAdded = extractUserAddedContent(fileContent.content);
       const sourceInfo = getSourceFileInfo(fileContent.content);
       
       // For CSV content, DON'T process markdown tags here - do it per-cell after parsing
       // For TXT content, process markdown tags for highlighting
       const isCSV = sourceInfo.type === 'csv';
       const processedContent = isCSV ? originalContent : processMarkdownTags(originalContent);
-      const processedUserAdded = userAdded ? processMarkdownTags(userAdded) : null;
       
       return { 
         content: processedContent,
         rawContent: originalContent, // Keep raw content for CSV parsing and offset calculation
-        userAddedContent: processedUserAdded,
-        rawUserAddedContent: userAdded, // Keep raw user-added content for offset calculation
         sourceType: sourceInfo.type 
       };
     }
@@ -302,8 +246,6 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     return { 
       content: fileContent.content,
       rawContent: fileContent.content,
-      userAddedContent: null,
-      rawUserAddedContent: null,
       sourceType: selectedFileData?.type as 'txt' | 'csv' | null 
     };
   };
@@ -356,12 +298,21 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     };
 
     // Parse references and sort by start position (latest first to avoid offset issues)
+    // Supports both uuid@start-end and filename@start-end formats
     const tagSegments: TagSegment[] = fileTags
       .flatMap(tag => {
         return tag.references
-          .filter((ref: string) => ref.includes(selectedFileData.name))
+          .filter((ref: string) => {
+            // Match if reference contains card UUID or filename
+            return ref.includes(selectedFileData.name) || (cardUuid && ref.includes(cardUuid));
+          })
           .map((ref: string) => {
-            const match = ref.match(new RegExp(`${escapeRegExp(selectedFileData.name)}@(\\d+)-(\\d+)`));
+            // Try matching uuid@start-end format first
+            let match = cardUuid ? ref.match(new RegExp(`${escapeRegExp(cardUuid)}@(\\d+)-(\\d+)`)) : null;
+            // Fall back to filename@start-end format
+            if (!match) {
+              match = ref.match(new RegExp(`${escapeRegExp(selectedFileData.name)}@(\\d+)-(\\d+)`));
+            }
             if (match) {
               const start = parseInt(match[1]);
               const end = parseInt(match[2]);
@@ -458,8 +409,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         startOffset: 0,
         endOffset: cellValue.length,
         filename: selectedFileData.name,
-        reference: cardUuid ? `${cardUuid}#original[${row},${col}]` : `${selectedFileData.name}#original[${row},${col}]`,
-        sectionId: 'original'
+        reference: cardUuid ? `${cardUuid}[${row},${col}]` : `${selectedFileData.name}[${row},${col}]`
       };
       onTextSelection(textSelection);
       setSelectedCell({ row, col });
@@ -503,44 +453,20 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       const range = selection.getRangeAt(0);
       const displayData = getDisplayContent();
       
-      // Determine which section the selection is in using data attributes
-      // This is more robust than using refs which may not be assigned in all render paths
-      type SectionId = 'original' | 'user_added';
-      let sectionId: SectionId = 'original';
-      let targetElement: HTMLElement | null = null;
-      let sectionContent = '';
-      
-      // Find the section container by checking for data-section attribute
+      // Find the section container by checking for data-section attribute or use contentRef
       const container = range.commonAncestorContainer;
       const containerElement = container.nodeType === Node.TEXT_NODE 
         ? container.parentElement 
         : container as HTMLElement;
       
-      // Check for user-added section first (more specific)
-      const userAddedSection = containerElement?.closest('[data-section="user-added"]') as HTMLElement | null;
       const originalSection = containerElement?.closest('[data-section="original"]') as HTMLElement | null;
+      let targetElement: HTMLElement | null = originalSection;
+      let sectionContent = displayData.rawContent;
       
-      if (userAddedSection) {
-        sectionId = 'user_added';
-        targetElement = userAddedSection;
-        // Use raw content for offset calculation to avoid HTML transformation issues
-        sectionContent = displayData.rawUserAddedContent || '';
-      } else if (originalSection) {
-        sectionId = 'original';
-        targetElement = originalSection;
-        // Use raw content for offset calculation
-        sectionContent = displayData.rawContent;
-      }
       // Fallback to ref-based detection
-      else if (contentRef.current && contentRef.current.contains(range.commonAncestorContainer)) {
-        sectionId = 'original';
+      if (!targetElement && contentRef.current && contentRef.current.contains(range.commonAncestorContainer)) {
         targetElement = contentRef.current;
         sectionContent = displayData.rawContent;
-      }
-      else if (userAddedRef.current && userAddedRef.current.contains(range.commonAncestorContainer)) {
-        sectionId = 'user_added';
-        targetElement = userAddedRef.current;
-        sectionContent = displayData.rawUserAddedContent || '';
       }
       
       if (!targetElement || !sectionContent) {
@@ -580,17 +506,13 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         const cardUuid = extractCardUuid(selectedFileData.name);
         const referenceBase = cardUuid || selectedFileData.name;
         
-        // Include section in reference format: uuid#section@start-end
-        const sectionMarker = sectionId === 'user_added' ? '#user_added' : '#original';
-        
         if (contentAtOffsets === selectedText) {
           const textSelection: TextSelection = {
             text: selectedText,
             startOffset,
             endOffset,
             filename: selectedFileData.name,
-            reference: `${referenceBase}${sectionMarker}@${startOffset}-${endOffset}`,
-            sectionId
+            reference: `${referenceBase}@${startOffset}-${endOffset}`
           };
           onTextSelection(textSelection);
         } else {
@@ -603,8 +525,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               startOffset: actualStartIndex,
               endOffset: actualEndIndex,
               filename: selectedFileData.name,
-              reference: `${referenceBase}${sectionMarker}@${actualStartIndex}-${actualEndIndex}`,
-              sectionId
+              reference: `${referenceBase}@${actualStartIndex}-${actualEndIndex}`
             };
             onTextSelection(textSelection);
           }
@@ -912,8 +833,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                     startOffset: 0,
                     endOffset: content.length,
                     filename: selectedFileData.name,
-                    reference: `${selectedFileData.name}#original[${row},${col}]`,
-                    sectionId: 'original'
+                    reference: `${selectedFileData.name}[${row},${col}]`
                   };
                   onTextSelection(textSelection);
                   setSelectedCell({ row, col });
@@ -925,109 +845,6 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             ))}
           </div>
 
-          {/* USER ADDED Section */}
-          {selectedFileData?.name.includes('.card.txt') && (
-            <div className="mt-4">
-              {/* Separator */}
-              <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
-                <span className="text-xs font-medium text-cyan-400 uppercase tracking-wider px-2">User Added</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
-              </div>
-
-              {/* User Added Content */}
-              {displayData.userAddedContent && (
-                <div 
-                  ref={userAddedRef}
-                  data-section="user-added"
-                  className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
-                  style={{ 
-                    userSelect: 'text',
-                    wordBreak: 'break-word',
-                    whiteSpace: 'pre-wrap',
-                    fontSize: '14px',
-                    lineHeight: '1.7'
-                  }}
-                  data-testid="user-added-content"
-                >
-                  {renderHighlightedContent(displayData.userAddedContent)}
-                </div>
-              )}
-
-              {/* Add Text UI */}
-              {showAddText ? (
-                <div className="flex gap-2 items-start" data-testid="add-text-form">
-                  <Input
-                    value={newUserText}
-                    onChange={(e) => setNewUserText(e.target.value)}
-                    placeholder="Enter text to add..."
-                    className="flex-1 bg-gray-800 border-gray-600 text-slate-300"
-                    data-testid="input-add-text"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && newUserText.trim() && selectedFile) {
-                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
-                      }
-                    }}
-                  />
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      if (newUserText.trim() && selectedFile) {
-                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
-                      }
-                    }}
-                    disabled={!newUserText.trim() || appendTextMutation.isPending}
-                    className="bg-cyan-600 hover:bg-cyan-700"
-                    data-testid="button-submit-text"
-                  >
-                    <Send className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setShowAddText(false);
-                      setNewUserText('');
-                    }}
-                    className="text-slate-400 hover:text-slate-200"
-                    data-testid="button-cancel-add-text"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setShowAddText(true)}
-                    className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
-                    data-testid="button-add-text"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Text
-                  </Button>
-                  {displayData.userAddedContent && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        if (selectedFile && confirm('Are you sure you want to clear all user-added content?')) {
-                          clearUserAddedMutation.mutate(selectedFile);
-                        }
-                      }}
-                      disabled={clearUserAddedMutation.isPending}
-                      className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                      data-testid="button-clear-user-added"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Clear
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </>
       );
     }
@@ -1194,109 +1011,6 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             </div>
           </div>
 
-          {/* USER ADDED Section for CSV files */}
-          {selectedFileData?.name.includes('.card.txt') && (
-            <div className="mt-4">
-              {/* Separator */}
-              <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
-                <span className="text-xs font-medium text-cyan-400 uppercase tracking-wider px-2">User Added</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
-              </div>
-
-              {/* User Added Content */}
-              {displayData.userAddedContent && (
-                <div 
-                  ref={userAddedRef}
-                  data-section="user-added"
-                  className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
-                  style={{ 
-                    userSelect: 'text',
-                    wordBreak: 'break-word',
-                    whiteSpace: 'pre-wrap',
-                    fontSize: '14px',
-                    lineHeight: '1.7'
-                  }}
-                  data-testid="user-added-content"
-                >
-                  {renderHighlightedContent(displayData.userAddedContent)}
-                </div>
-              )}
-
-              {/* Add Text UI */}
-              {showAddText ? (
-                <div className="flex gap-2 items-start" data-testid="add-text-form">
-                  <Input
-                    value={newUserText}
-                    onChange={(e) => setNewUserText(e.target.value)}
-                    placeholder="Enter text to add..."
-                    className="flex-1 bg-gray-800 border-gray-600 text-slate-300"
-                    data-testid="input-add-text"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && newUserText.trim() && selectedFile) {
-                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
-                      }
-                    }}
-                  />
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      if (newUserText.trim() && selectedFile) {
-                        appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
-                      }
-                    }}
-                    disabled={!newUserText.trim() || appendTextMutation.isPending}
-                    className="bg-cyan-600 hover:bg-cyan-700"
-                    data-testid="button-submit-text"
-                  >
-                    <Send className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setShowAddText(false);
-                      setNewUserText('');
-                    }}
-                    className="text-slate-400 hover:text-slate-200"
-                    data-testid="button-cancel-add-text"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setShowAddText(true)}
-                    className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
-                    data-testid="button-add-text"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Add Text
-                  </Button>
-                  {displayData.userAddedContent && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        if (selectedFile && confirm('Are you sure you want to clear all user-added content?')) {
-                          clearUserAddedMutation.mutate(selectedFile);
-                        }
-                      }}
-                      disabled={clearUserAddedMutation.isPending}
-                      className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                      data-testid="button-clear-user-added"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Clear
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </>
       );
     }
@@ -1351,13 +1065,12 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
 
   // Resizable panel layout for all documents with content
   const fileSpecificTags = getFileSpecificTags();
-  const showUserAddedPanel = isCardFile; // Only card files have User Added section
 
   return (
     <div className="flex-1 bg-gray-900 flex flex-col min-h-0">
       <ResizablePanelGroup direction="vertical" className="flex-1 min-h-0">
         {/* Panel 1: Original Content */}
-        <ResizablePanel defaultSize={showUserAddedPanel ? 55 : 70} minSize={20}>
+        <ResizablePanel defaultSize={70} minSize={20}>
           <div className="h-full flex flex-col min-h-0">
             <div className="px-6 py-2 border-b border-gray-700 flex-shrink-0 bg-gray-800/50">
               <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Original Content</span>
@@ -1497,8 +1210,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                           startOffset: 0,
                           endOffset: content.length,
                           filename: selectedFileData.name,
-                          reference: `${selectedFileData.name}#original[${row},${col}]`,
-                          sectionId: 'original'
+                          reference: `${selectedFileData.name}[${row},${col}]`
                         };
                         onTextSelection(textSelection);
                         setSelectedCell({ row, col });
@@ -1514,116 +1226,10 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
           </div>
         </ResizablePanel>
 
-        {/* Panel 2: User Added Content - Only for card files */}
-        {showUserAddedPanel && (
-          <>
-            <ResizableHandle withHandle className="bg-gray-700 hover:bg-gray-600" />
-            <ResizablePanel defaultSize={25} minSize={10}>
-              <div className="h-full flex flex-col min-h-0">
-                <div className="px-6 py-2 border-b border-cyan-500/30 flex-shrink-0 bg-cyan-950/30">
-                  <span className="text-xs font-medium text-cyan-400 uppercase tracking-wider">User Added</span>
-                </div>
-                <div className="flex-1 overflow-y-auto p-6">
-                  {displayData.userAddedContent && (
-                    <div 
-                      ref={userAddedRef}
-                      data-section="user-added"
-                      className="text-sm leading-relaxed bg-gray-800/50 p-6 rounded-lg border border-cyan-500/20 select-text text-slate-300 mb-4"
-                      style={{ 
-                        userSelect: 'text',
-                        wordBreak: 'break-word',
-                        whiteSpace: 'pre-wrap',
-                        fontSize: '14px',
-                        lineHeight: '1.7'
-                      }}
-                      data-testid="user-added-content"
-                    >
-                      {renderHighlightedContent(displayData.userAddedContent)}
-                    </div>
-                  )}
-
-                  {/* Add Text UI */}
-                  {showAddText ? (
-                    <div className="flex gap-2 items-start" data-testid="add-text-form">
-                      <Input
-                        value={newUserText}
-                        onChange={(e) => setNewUserText(e.target.value)}
-                        placeholder="Enter text to add..."
-                        className="flex-1 bg-gray-800 border-gray-600 text-slate-300"
-                        data-testid="input-add-text"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && newUserText.trim() && selectedFile) {
-                            appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
-                          }
-                        }}
-                      />
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          if (newUserText.trim() && selectedFile) {
-                            appendTextMutation.mutate({ fileId: selectedFile, text: newUserText.trim() });
-                          }
-                        }}
-                        disabled={!newUserText.trim() || appendTextMutation.isPending}
-                        className="bg-cyan-600 hover:bg-cyan-700"
-                        data-testid="button-submit-text"
-                      >
-                        <Send className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setShowAddText(false);
-                          setNewUserText('');
-                        }}
-                        className="text-slate-400 hover:text-slate-200"
-                        data-testid="button-cancel-add-text"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setShowAddText(true)}
-                        className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
-                        data-testid="button-add-text"
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add Text
-                      </Button>
-                      {displayData.userAddedContent && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            if (selectedFile && confirm('Are you sure you want to clear all user-added content?')) {
-                              clearUserAddedMutation.mutate(selectedFile);
-                            }
-                          }}
-                          disabled={clearUserAddedMutation.isPending}
-                          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                          data-testid="button-clear-user-added"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          Clear
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </ResizablePanel>
-          </>
-        )}
-
         <ResizableHandle withHandle className="bg-gray-700 hover:bg-gray-600" />
 
-        {/* Panel 3: Metadata */}
-        <ResizablePanel defaultSize={showUserAddedPanel ? 20 : 30} minSize={10}>
+        {/* Panel 2: Metadata */}
+        <ResizablePanel defaultSize={30} minSize={10}>
           <div className="h-full flex flex-col min-h-0">
             <div className="px-6 py-2 border-b border-gray-700 flex-shrink-0 bg-gray-800/50 flex items-center justify-between">
               <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">ORCS Metadata</span>
