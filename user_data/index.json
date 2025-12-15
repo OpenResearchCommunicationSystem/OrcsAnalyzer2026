@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-15T20:35:43.960Z",
+  "lastUpdated": "2025-12-15T22:56:21.659Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -15,8 +15,8 @@
       "path": "/home/runner/workspace/user_data/raw/beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "name": "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "type": "orcs_card",
-      "hash": "6644292f1916e0513fa2ea60f1705ece18f01cab91a397dc9963a84f2192e655",
-      "timestamp": 1765567179536.8972,
+      "hash": "97df54b910a12c4cb1aa3235e4f4595d0b2e9eb640c294b0044a038d1106938f",
+      "timestamp": 1765831075475.917,
       "cardUuid": "53b483a4-a480-4d6e-8067-269be95bfb12",
       "sourceFile": "beneficial_owners_test.csv"
     },
