@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-11T09:46:39.656Z",
+  "lastUpdated": "2025-12-15T19:21:41.240Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -15,8 +15,8 @@
       "path": "/home/runner/workspace/user_data/raw/beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "name": "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "type": "orcs_card",
-      "hash": "44f46ff11f6e5b0bf3fd7fd3bcb5757ac8822310e73beef2fff1edbfd72ae9a7",
-      "timestamp": 1765409294941.6057,
+      "hash": "6644292f1916e0513fa2ea60f1705ece18f01cab91a397dc9963a84f2192e655",
+      "timestamp": 1765567179536.8972,
       "cardUuid": "53b483a4-a480-4d6e-8067-269be95bfb12",
       "sourceFile": "beneficial_owners_test.csv"
     },
@@ -95,6 +95,16 @@
       "aliases": []
     },
     {
+      "id": "6b31cc5e-3cea-444f-98d0-b958a74ce37d",
+      "name": "CyberNova",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/CyberNova_6b31cc5e-3cea-444f-98d0-b958a74ce37d.entity.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
+    },
+    {
       "id": "b7ee65a3-e2e3-4b1a-ab6a-3bcae3a34490",
       "name": "Global Clean Energy",
       "type": "entity",
@@ -161,6 +171,16 @@
       "aliases": []
     },
     {
+      "id": "4b4910a4-c7ca-41cc-b491-53531d50e239",
+      "name": "VisionEdge Analytics",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/VisionEdge Analytics_4b4910a4-c7ca-41cc-b491-53531d50e239.entity.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
+    },
+    {
       "id": "a5897d3b-7cb4-4b7e-9874-72026a65d9e3",
       "name": "CEO",
       "type": "relationship",
@@ -214,10 +234,10 @@
   "brokenConnections": [],
   "stats": {
     "totalFiles": 8,
-    "totalTags": 14,
+    "totalTags": 16,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 9,
+    "entityCount": 11,
     "relationshipCount": 5
   }
 }

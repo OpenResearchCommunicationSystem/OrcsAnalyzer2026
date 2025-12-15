@@ -1,0 +1,38 @@
+=== ORCS CARD === 
+version: "2025.003"
+uuid: "4aebb51e-875a-4351-aba3-99174f17c394"
+# ... (rest of the header remains the same) ...
+
+=== TAG INDEX START === 
+[entity:Maria Lopez](a848f90e-c298-488c-aa6a-c874c54e65f3)
+[entity:FutureFoods](1714ade0-0ac1-4792-ad86-a05effa07a28)
+[entity:sustainable food systems](95ffe5b9-168f-4429-a4a3-17c578020266)
+=== TAG INDEX END ===
+
+=== LINK INDEX START === 
+# Format is: [Source UUID] --[RELATIONSHIP_TYPE:Property=Value]--> [Target UUID]
+# Relationships defined here are inferred from the context of this specific card.
+
+# Maria Lopez is a CEO *of* FutureFoods (an inferred relationship from the text structure)
+(a848f90e-c298-488c-aa6a-c874c54e65f3) --[WORKS_FOR:Role=CEO]--> (1714ade0-0ac1-4792-ad86-a05effa07a28)
+
+# FutureFoods expressed commitment to sustainable food systems (an explicit statement)
+(1714ade0-0ac1-4792-ad86-a05effa07a28) --[COMMITTED_TO]--> (95ffe5b9-168f-4429-a4a3-17c578020266)
+
+# The document mentions Maria Lopez (the default link that binds everything to the source)
+(4aebb51e-875a-4351-aba3-99174f17c394) --[MENTIONS]--> (a848f90e-c298-488c-aa6a-c874c54e65f3)
+(4aebb51e-875a-4351-aba3-99174f17c394) --[MENTIONS]--> (1714ade0-0ac1-4792-ad86-a05effa07a28)
+# ... etc.
+
+=== LINK INDEX END ===
+
+=== ORIGINAL CONTENT START ===
+In a tweet posted Thursday, CEO [entity:Maria Lopez](a848f90e-c298-488c-aa6a-c874c54e65f3) of [entity:FutureFoods](1714ade0-0ac1-4792-ad86-a05effa07a28) stated, "We're committed to [entity:sustainable food systems](95ffe5b9-168f-4429-a4a3-17c578020266) — not just buzzwords, real impact."
+The post has since garnered over 12,000 likes and 3,500 shares.
+=== ORIGINAL CONTENT END ===
+
+### Rationale for this Layout
+
+1.  **Readability:** The `(UUID) --[RELATIONSHIP]--> (UUID)` syntax is widely used in graph visualization tools and intuitively shows directionality.
+2.  **Explicit Edges:** It moves the relationships that are *inferred* or *explicitly defined by the researcher* out of the raw text and into a structured index.
+3.  **Property Support:** The bracketed relationship label `[RELATIONSHIP_TYPE:Property=Value]` allows you to embed key-value pairs directly onto the edge definition, providing highly granular data for your graph database software.

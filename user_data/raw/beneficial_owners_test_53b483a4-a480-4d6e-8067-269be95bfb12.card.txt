@@ -15,14 +15,16 @@ analyst: ""
 
 === TAG INDEX START ===
 [entity:John Green](3b14002a-4d55-41d8-9963-061d3b6a51f3)
+[entity:CyberNova](6b31cc5e-3cea-444f-98d0-b958a74ce37d)
+[entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
 Company,Ultimate Beneficial Owner,Ownership %
-VisionEdge Analytics,Ava Cheng,45
+[entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239),Ava Cheng,45
 FutureFoods,Maria Lopez,60
-CyberNova,Jasmine O'Neil,35
-VisionEdge Analytics,[entity:John Green](3b14002a-4d55-41d8-9963-061d3b6a51f3),54
+[entity:CyberNova](6b31cc5e-3cea-444f-98d0-b958a74ce37d),Jasmine O'Neil,35
+[entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239),[entity:John Green](3b14002a-4d55-41d8-9963-061d3b6a51f3),54
 === ORIGINAL CONTENT END ===
 
 === USER ADDED START ===
