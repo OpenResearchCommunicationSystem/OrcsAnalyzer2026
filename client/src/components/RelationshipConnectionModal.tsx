@@ -17,6 +17,7 @@ interface RelationshipConnectionModalProps {
   sourceEntity: Tag | null;
   targetEntity: Tag | null;
   currentFileId?: string | null;
+  cardUuid?: string | null;
   onConnectionCreated?: () => void;
 }
 
@@ -26,6 +27,7 @@ export function RelationshipConnectionModal({
   sourceEntity,
   targetEntity,
   currentFileId,
+  cardUuid,
   onConnectionCreated
 }: RelationshipConnectionModalProps) {
   const queryClient = useQueryClient();
@@ -62,13 +64,34 @@ export function RelationshipConnectionModal({
       relationshipTagId?: string;
       direction: ConnectionDirection;
       customLabel?: string;
+      predicate?: string;
     }) => {
-      return await apiRequest('POST', '/api/connections', data);
+      // Create the connection (old system for graph visualization)
+      const connectionResult = await apiRequest('POST', '/api/connections', data);
+      
+      // Also create a Link in the card's LINK INDEX (new system for bullets)
+      if (cardUuid && data.predicate) {
+        await apiRequest('POST', `/api/cards/${cardUuid}/links`, {
+          sourceId: data.sourceTagId,
+          targetId: data.targetTagId,
+          predicate: data.predicate,
+          isRelationship: true,
+          isAttribute: false,
+          direction: data.direction
+        });
+      }
+      
+      return connectionResult;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
       queryClient.invalidateQueries({ queryKey: ['/api/graph'] });
+      // Invalidate links and bullets for the card
+      if (cardUuid) {
+        queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuid, 'links'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuid, 'bullets'] });
+      }
       onConnectionCreated?.();
       handleClose();
     }
@@ -86,11 +109,18 @@ export function RelationshipConnectionModal({
     if (!sourceEntity || !targetEntity) return;
 
     let relationshipTagId: string | undefined;
+    let predicate: string | undefined;
 
     if (relationshipMode === 'existing' && selectedRelationshipId) {
       relationshipTagId = selectedRelationshipId;
+      const relTag = tags.find(t => t.id === selectedRelationshipId);
+      predicate = relTag?.name;
     } else if (relationshipMode === 'document' && selectedRelationshipId) {
       relationshipTagId = selectedRelationshipId;
+      const relTag = tags.find(t => t.id === selectedRelationshipId);
+      predicate = relTag?.name;
+    } else if (relationshipMode === 'custom' && customLabel.trim()) {
+      predicate = customLabel.trim();
     }
 
     createConnectionMutation.mutate({
@@ -98,7 +128,8 @@ export function RelationshipConnectionModal({
       targetTagId: targetEntity.id,
       relationshipTagId,
       direction,
-      customLabel: relationshipMode === 'custom' ? customLabel : undefined
+      customLabel: relationshipMode === 'custom' ? customLabel : undefined,
+      predicate
     });
   };
 

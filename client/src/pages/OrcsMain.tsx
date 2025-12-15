@@ -442,6 +442,7 @@ export default function OrcsMain() {
         sourceEntity={selectedEntities[0] || null}
         targetEntity={selectedEntities[1] || null}
         currentFileId={selectedFile}
+        cardUuid={files.find(f => f.id === selectedFile)?.cardUuid}
         onConnectionCreated={() => {
           setShowConnectionModal(false);
           clearEntitySelection();
