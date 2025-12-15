@@ -208,6 +208,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuidForQueries, 'links'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuidForQueries, 'bullets'] });
     },
   });
 
@@ -219,6 +220,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuidForQueries, 'links'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuidForQueries, 'bullets'] });
       setShowLinkForm(false);
       setLinkSourceId('');
       setLinkTargetId('');
