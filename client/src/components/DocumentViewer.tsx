@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { Edit, Table, RefreshCw, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
-import type { Tag, TextSelection, File } from '@shared/schema';
+import { Edit, Table, RefreshCw, AlertTriangle, CheckCircle, RotateCcw, MessageSquare, Link2, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import type { Tag, TextSelection, File, Snippet, Link as LinkType } from '@shared/schema';
 import { MetadataForm } from './MetadataForm';
 import { renderContentWithTables } from '@/lib/markdownTableRenderer';
 
@@ -102,6 +102,88 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     },
     enabled: !!resolvedFileId && isCardFile,
     staleTime: 30000, // Cache for 30 seconds
+  });
+
+  // Extract card UUID from filename for snippet/link queries
+  const getCardUuidFromFilename = (filename: string | undefined): string | null => {
+    if (!filename || !filename.includes('.card.txt')) return null;
+    const match = filename.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.card\.txt$/);
+    return match ? match[1] : null;
+  };
+  
+  const cardUuidForQueries = getCardUuidFromFilename(selectedFileData?.name);
+
+  // Query snippets for current card
+  const { data: snippets = [], refetch: refetchSnippets } = useQuery<Snippet[]>({
+    queryKey: ['/api/cards', cardUuidForQueries, 'snippets'],
+    queryFn: async () => {
+      const response = await fetch(`/api/cards/${cardUuidForQueries}/snippets`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!cardUuidForQueries && isCardFile,
+  });
+
+  // Query links for current card
+  const { data: links = [], refetch: refetchLinks } = useQuery<LinkType[]>({
+    queryKey: ['/api/cards', cardUuidForQueries, 'links'],
+    queryFn: async () => {
+      const response = await fetch(`/api/cards/${cardUuidForQueries}/links`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!cardUuidForQueries && isCardFile,
+  });
+
+  // State for collapsible sections
+  const [showSnippets, setShowSnippets] = useState(true);
+  const [showLinks, setShowLinks] = useState(true);
+
+  // State for pending snippet creation
+  const [pendingSnippet, setPendingSnippet] = useState<{ text: string; start: number; end: number } | null>(null);
+  const [snippetComment, setSnippetComment] = useState('');
+
+  // Mutation to create a snippet
+  const createSnippetMutation = useMutation({
+    mutationFn: async (snippetData: { text: string; offsets: { start: number; end: number }; comment?: string }) => {
+      const response = await apiRequest('POST', `/api/cards/${cardUuidForQueries}/snippets`, snippetData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuidForQueries, 'snippets'] });
+      setPendingSnippet(null);
+      setSnippetComment('');
+    },
+  });
+
+  // Handler to create snippet from pending selection
+  const handleCreateSnippet = () => {
+    if (!pendingSnippet || !cardUuidForQueries) return;
+    createSnippetMutation.mutate({
+      text: pendingSnippet.text,
+      offsets: { start: pendingSnippet.start, end: pendingSnippet.end },
+      comment: snippetComment.trim() || undefined,
+    });
+  };
+
+  // Mutation to delete a snippet
+  const deleteSnippetMutation = useMutation({
+    mutationFn: async (snippetId: string) => {
+      await apiRequest('DELETE', `/api/cards/${cardUuidForQueries}/snippets/${snippetId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuidForQueries, 'snippets'] });
+    },
+  });
+
+  // Mutation to delete a link
+  const deleteLinkMutation = useMutation({
+    mutationFn: async (linkId: string) => {
+      await apiRequest('DELETE', `/api/cards/${cardUuidForQueries}/links/${linkId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuidForQueries, 'links'] });
+    },
   });
 
   // Detect when selected file becomes invalid and notify parent
@@ -515,6 +597,10 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             reference: `${referenceBase}@${startOffset}-${endOffset}`
           };
           onTextSelection(textSelection);
+          // Also set pending snippet for card files
+          if (isCardFile) {
+            setPendingSnippet({ text: selectedText, start: startOffset, end: endOffset });
+          }
         } else {
           // If offsets don't match, try to find the text in the section content
           const actualStartIndex = sectionContent.indexOf(selectedText);
@@ -528,6 +614,10 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               reference: `${referenceBase}@${actualStartIndex}-${actualEndIndex}`
             };
             onTextSelection(textSelection);
+            // Also set pending snippet for card files
+            if (isCardFile) {
+              setPendingSnippet({ text: selectedText, start: actualStartIndex, end: actualEndIndex });
+            }
           }
         }
       }
@@ -1072,8 +1162,32 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         {/* Panel 1: Original Content */}
         <ResizablePanel defaultSize={70} minSize={20}>
           <div className="h-full flex flex-col min-h-0">
-            <div className="px-6 py-2 border-b border-gray-700 flex-shrink-0 bg-gray-800/50">
+            <div className="px-6 py-2 border-b border-gray-700 flex-shrink-0 bg-gray-800/50 flex items-center justify-between">
               <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Original Content</span>
+              {isCardFile && pendingSnippet && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400">Selected: "{pendingSnippet.text.slice(0, 30)}{pendingSnippet.text.length > 30 ? '...' : ''}"</span>
+                  <Button
+                    size="sm"
+                    onClick={handleCreateSnippet}
+                    disabled={createSnippetMutation.isPending}
+                    className="h-6 px-2 bg-amber-600 hover:bg-amber-500 text-white text-xs"
+                    data-testid="button-create-snippet"
+                  >
+                    <MessageSquare className="w-3 h-3 mr-1" />
+                    Create Snippet
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setPendingSnippet(null)}
+                    className="h-6 px-2 text-slate-400 hover:text-slate-200 text-xs"
+                    data-testid="button-cancel-snippet"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="flex-1 overflow-y-auto p-6">
               {/* File Header */}
@@ -1262,6 +1376,124 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                   {metadataContent || 'No metadata available'}
                 </pre>
               </div>
+
+              {/* Snippets Section */}
+              {isCardFile && (
+                <div className="pt-4 border-t border-gray-700">
+                  <button 
+                    onClick={() => setShowSnippets(!showSnippets)}
+                    className="flex items-center gap-2 text-slate-400 font-sans text-xs uppercase tracking-wide mb-3 hover:text-slate-200 w-full"
+                    data-testid="toggle-snippets"
+                  >
+                    {showSnippets ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                    <MessageSquare className="w-3 h-3" />
+                    <span>Snippets ({snippets.length})</span>
+                  </button>
+                  {showSnippets && (
+                    <div className="space-y-2 text-xs">
+                      {snippets.length === 0 ? (
+                        <div className="text-slate-500 italic">No snippets yet. Highlight text and create a snippet.</div>
+                      ) : (
+                        snippets.map((snippet) => (
+                          <div 
+                            key={snippet.id} 
+                            className="bg-amber-500/10 border border-amber-500/30 rounded p-2 group"
+                            data-testid={`snippet-${snippet.id}`}
+                          >
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-amber-200 line-clamp-2 mb-1">"{snippet.text}"</div>
+                                {snippet.comment && (
+                                  <div className="text-slate-400 italic text-[10px]">{snippet.comment}</div>
+                                )}
+                                <div className="text-slate-500 text-[10px] mt-1">
+                                  [{snippet.offsets.start}-{snippet.offsets.end}]
+                                  {snippet.analyst && <span> · {snippet.analyst}</span>}
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                onClick={() => deleteSnippetMutation.mutate(snippet.id)}
+                                disabled={deleteSnippetMutation.isPending}
+                                data-testid={`delete-snippet-${snippet.id}`}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Links Section */}
+              {isCardFile && (
+                <div className="pt-4 border-t border-gray-700">
+                  <button 
+                    onClick={() => setShowLinks(!showLinks)}
+                    className="flex items-center gap-2 text-slate-400 font-sans text-xs uppercase tracking-wide mb-3 hover:text-slate-200 w-full"
+                    data-testid="toggle-links"
+                  >
+                    {showLinks ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                    <Link2 className="w-3 h-3" />
+                    <span>Links ({links.length})</span>
+                  </button>
+                  {showLinks && (
+                    <div className="space-y-2 text-xs">
+                      {links.length === 0 ? (
+                        <div className="text-slate-500 italic">No links yet. Connect entities to create links.</div>
+                      ) : (
+                        links.map((link) => (
+                          <div 
+                            key={link.id} 
+                            className={`rounded p-2 group ${
+                              link.isAttribute 
+                                ? 'bg-purple-500/10 border border-purple-500/30' 
+                                : 'bg-orange-500/10 border border-orange-500/30'
+                            }`}
+                            data-testid={`link-${link.id}`}
+                          >
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className={link.isAttribute ? 'text-purple-200' : 'text-orange-200'}>
+                                  <span className="font-mono text-[10px]">{link.sourceId.slice(0, 8)}</span>
+                                  <span className="mx-1">→</span>
+                                  <span className="font-medium">[{link.predicate}]</span>
+                                  <span className="mx-1">→</span>
+                                  <span className="font-mono text-[10px]">{link.targetId.slice(0, 8)}</span>
+                                </div>
+                                {Object.keys(link.properties || {}).length > 0 && (
+                                  <div className="text-slate-400 text-[10px] mt-1">
+                                    {Object.entries(link.properties).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                                  </div>
+                                )}
+                                <div className="text-slate-500 text-[10px] mt-1">
+                                  {link.isRelationship && <Badge variant="outline" className="text-[8px] px-1 py-0 mr-1 border-orange-500/50 text-orange-400">REL</Badge>}
+                                  {link.isAttribute && <Badge variant="outline" className="text-[8px] px-1 py-0 mr-1 border-purple-500/50 text-purple-400">ATTR</Badge>}
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                onClick={() => deleteLinkMutation.mutate(link.id)}
+                                disabled={deleteLinkMutation.isPending}
+                                data-testid={`delete-link-${link.id}`}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Tagged Elements */}
               {fileSpecificTags.length > 0 && (
