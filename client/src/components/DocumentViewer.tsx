@@ -113,26 +113,28 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   
   const cardUuidForQueries = getCardUuidFromFilename(selectedFileData?.name);
 
-  // Query snippets for current card
+  // Query snippets for current card - only when cardUuidForQueries is valid
   const { data: snippets = [], refetch: refetchSnippets } = useQuery<Snippet[]>({
     queryKey: ['/api/cards', cardUuidForQueries, 'snippets'],
     queryFn: async () => {
+      if (!cardUuidForQueries) return [];
       const response = await fetch(`/api/cards/${cardUuidForQueries}/snippets`);
       if (!response.ok) return [];
       return response.json();
     },
-    enabled: !!cardUuidForQueries && isCardFile,
+    enabled: !!cardUuidForQueries,
   });
 
-  // Query links for current card
+  // Query links for current card - only when cardUuidForQueries is valid
   const { data: links = [], refetch: refetchLinks } = useQuery<LinkType[]>({
     queryKey: ['/api/cards', cardUuidForQueries, 'links'],
     queryFn: async () => {
+      if (!cardUuidForQueries) return [];
       const response = await fetch(`/api/cards/${cardUuidForQueries}/links`);
       if (!response.ok) return [];
       return response.json();
     },
-    enabled: !!cardUuidForQueries && isCardFile,
+    enabled: !!cardUuidForQueries,
   });
 
   // State for collapsible sections
@@ -1162,30 +1164,51 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         {/* Panel 1: Original Content */}
         <ResizablePanel defaultSize={70} minSize={20}>
           <div className="h-full flex flex-col min-h-0">
-            <div className="px-6 py-2 border-b border-gray-700 flex-shrink-0 bg-gray-800/50 flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Original Content</span>
-              {isCardFile && pendingSnippet && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400">Selected: "{pendingSnippet.text.slice(0, 30)}{pendingSnippet.text.length > 30 ? '...' : ''}"</span>
-                  <Button
-                    size="sm"
-                    onClick={handleCreateSnippet}
-                    disabled={createSnippetMutation.isPending}
-                    className="h-6 px-2 bg-amber-600 hover:bg-amber-500 text-white text-xs"
-                    data-testid="button-create-snippet"
-                  >
-                    <MessageSquare className="w-3 h-3 mr-1" />
-                    Create Snippet
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setPendingSnippet(null)}
-                    className="h-6 px-2 text-slate-400 hover:text-slate-200 text-xs"
-                    data-testid="button-cancel-snippet"
-                  >
-                    Cancel
-                  </Button>
+            <div className="px-6 py-2 border-b border-gray-700 flex-shrink-0 bg-gray-800/50">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Original Content</span>
+              </div>
+              {cardUuidForQueries && pendingSnippet && (
+                <div className="mt-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <MessageSquare className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-amber-200 mb-2 line-clamp-2">
+                        "{pendingSnippet.text.slice(0, 100)}{pendingSnippet.text.length > 100 ? '...' : ''}"
+                      </div>
+                      <input
+                        type="text"
+                        value={snippetComment}
+                        onChange={(e) => setSnippetComment(e.target.value)}
+                        placeholder="Add a comment (optional)..."
+                        className="w-full px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
+                        data-testid="input-snippet-comment"
+                      />
+                      <div className="flex items-center gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={handleCreateSnippet}
+                          disabled={createSnippetMutation.isPending}
+                          className="h-6 px-2 bg-amber-600 hover:bg-amber-500 text-white text-xs"
+                          data-testid="button-create-snippet"
+                        >
+                          {createSnippetMutation.isPending ? 'Creating...' : 'Create Snippet'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => { setPendingSnippet(null); setSnippetComment(''); }}
+                          className="h-6 px-2 text-slate-400 hover:text-slate-200 text-xs"
+                          data-testid="button-cancel-snippet"
+                        >
+                          Cancel
+                        </Button>
+                        <span className="text-[10px] text-slate-500 ml-auto">
+                          [{pendingSnippet.start}-{pendingSnippet.end}]
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
