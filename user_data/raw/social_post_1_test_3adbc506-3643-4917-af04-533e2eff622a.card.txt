@@ -7,23 +7,24 @@ classification: "Unclassified"
 handling:
   - ""
 created: "2025-12-10T23:24:36.817Z"
-modified: "2025-12-10T23:24:54.051Z"
+modified: "2025-12-16T17:40:00.000Z"
 source_hash: "sha256:fb55a6e8a3b5293db0e9456bc4ffbeb9f0b01fbb65d9031e1a60604b3138bed6"
 file_type: "txt"
 file_size: 166
 analyst: ""
 
 === TAG INDEX START ===
-[relationship:CEO](a5897d3b-7cb4-4b7e-9874-72026a65d9e3)
+
 === TAG INDEX END ===
+
+=== LINK INDEX START ===
+# Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
+=== LINK INDEX END ===
 
 === ORIGINAL CONTENT START ===
 LinkedIn Update — Thomas Greene just joined the board of directors at VisionEdge Analytics. He previously held executive roles at CloudVest Holdings and CyberNova.
-
 === ORIGINAL CONTENT END ===
 
 === USER ADDED START ===
 
-attended the conference
-collaborated
 === USER ADDED END ===

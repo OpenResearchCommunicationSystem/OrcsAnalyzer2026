@@ -7,40 +7,27 @@ classification: "Confidential"
 handling:
   - "Test handling instruction"
 created: "2025-12-10T22:58:39.550Z"
-modified: "2025-12-10T23:21:47.402Z"
+modified: "2025-12-16T17:40:00.000Z"
 source_hash: "sha256:1c48b7ca1b276d5be8dea72f61d52937190fd0dae8071c2589921e8af453dcd1"
 file_type: "txt"
 file_size: 251
 analyst: "Test Analyst Name"
 
 === TAG INDEX START ===
-[entity:TechCorp](cfb00afe-aa19-40a2-851a-b28bbe5a9fe4)
-[entity:BioNex Systems](e860cdf2-c05b-40ab-b98a-d13ef05f9648)
-[relationship:acquisition](e59dd245-36ae-4c33-873e-b2533fe8f870)
-[entity:John Smith](c620641b-f2e1-475d-bc5f-e5bb9c4c64c0)
-[relationship:CEO](a5897d3b-7cb4-4b7e-9874-72026a65d9e3)
-[kv_pair:valued](92900232-2076-48b7-a856-d6aaf4b5bc79)
-[kv_pair:3.2 billion](3146b49a-0822-45a6-bfe4-edbae65267a8)
-[kv_pair:complete](6d6d3fb0-1cde-4554-be25-8f64c0656d49)
-[kv_pair:Q3 2025](3f8b6121-6a28-4212-b1ce-62643d6b1b90)
+
 === TAG INDEX END ===
 
 === LINK INDEX START ===
 # Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
-(cfb00afe-aa19-40a2-851a-b28bbe5a9fe4) --[acquisition]--> (e860cdf2-c05b-40ab-b98a-d13ef05f9648) {rel: true, attr: false} |id:26ceb8a0-4df5-4cb7-8ef8-17dabd59804e
-(c620641b-f2e1-475d-bc5f-e5bb9c4c64c0) --[CEO]--> (cfb00afe-aa19-40a2-851a-b28bbe5a9fe4) {rel: true, attr: false} |id:bae2894a-5410-43e5-a563-ee139cd9622c
 === LINK INDEX END ===
 
 === SNIPPET INDEX START ===
-# Format: [start-end] "text" | {metadata} |id:uuid
-[248-322] "The merger is expected to complete in Q3 2025, pending regulatory approval" | {comment: "This is unlikely"} |id:2bb67daf-f318-4c4d-9118-009c23bb299e
-[451-495] "This is a landmark moment for both companies" | {comment: "Analyst Comment: No it's not"} |id:ba1b666a-7f23-4a8b-af05-9df96cd4c3b7
+# Format: uuid|startOffset|endOffset|text|comment|classification|analyst|created
 === SNIPPET INDEX END ===
 
 === ORIGINAL CONTENT START ===
-BREAKING: [entity:TechCorp](cfb00afe-aa19-40a2-851a-b28bbe5a9fe4) has announced the [relationship:acquisition](e59dd245-36ae-4c33-873e-b2533fe8f870) of [entity:BioNex Systems](e860cdf2-c05b-40ab-b98a-d13ef05f9648) in a deal [kv_pair:valued](92900232-2076-48b7-a856-d6aaf4b5bc79) at $[kv_pair:3.2 billion](3146b49a-0822-45a6-bfe4-edbae65267a8). The merger is expected to [kv_pair:complete](6d6d3fb0-1cde-4554-be25-8f64c0656d49) in [kv_pair:Q3 2025](3f8b6121-6a28-4212-b1ce-62643d6b1b90), pending regulatory approval.
-[relationship:CEO](a5897d3b-7cb4-4b7e-9874-72026a65d9e3) [entity:John Smith](c620641b-f2e1-475d-bc5f-e5bb9c4c64c0) commented, "This is a landmark moment for both companies."
-
+BREAKING: TechCorp has announced the acquisition of BioNex Systems in a deal valued at $3.2 billion. The merger is expected to complete in Q3 2025, pending regulatory approval.
+CEO John Smith commented, "This is a landmark moment for both companies."
 === ORIGINAL CONTENT END ===
 
 === USER ADDED START ===

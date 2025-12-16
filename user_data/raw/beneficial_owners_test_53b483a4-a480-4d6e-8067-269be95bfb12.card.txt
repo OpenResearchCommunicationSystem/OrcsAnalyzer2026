@@ -7,29 +7,26 @@ classification: "Proprietary Information"
 handling:
   - ""
 created: "2025-12-10T23:26:39.278Z"
-modified: "2025-12-10T23:27:27.088Z"
+modified: "2025-12-16T17:40:00.000Z"
 source_hash: "sha256:4f3d3400bdd7a10631980c2c7576859c0bdaaa8ad5340e46584014d4f9bc6b15"
 file_type: "csv"
 file_size: 169
 analyst: ""
 
 === TAG INDEX START ===
-[kv_pair:Ownership %](4f57fae1-7c00-48a0-a4ff-701757df4389)
-[entity:Ava Cheng](048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe)
-[entity:VisionEdge Analytics](754486ba-0bca-43c7-862a-8b97c7e9bc01)
+
 === TAG INDEX END ===
 
 === LINK INDEX START ===
 # Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
-(048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe) --[Beneficial Owner]--> (4b4910a4-c7ca-41cc-b491-53531d50e239) {rel: true, attr: false} |id:1ec4dcc4-bd3c-4fc8-b85e-8b9df5616791
 === LINK INDEX END ===
 
 === ORIGINAL CONTENT START ===
 Company,Ultimate Beneficial Owner,Ownership %
-[entity:VisionEdge Analytics](754486ba-0bca-43c7-862a-8b97c7e9bc01),[entity:Ava Cheng](048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe),45
+VisionEdge Analytics,Ava Cheng,45
 FutureFoods,Maria Lopez,60
 CyberNova,Jasmine O'Neil,35
-[entity:VisionEdge Analytics](754486ba-0bca-43c7-862a-8b97c7e9bc01),John Green,54
+VisionEdge Analytics,John Green,54
 === ORIGINAL CONTENT END ===
 === USER ADDED START ===
 
