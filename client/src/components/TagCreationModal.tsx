@@ -6,8 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { User, Link, Tag, MessageCircle, Key, X, AlertTriangle } from "lucide-react";
-import { TextSelection, InsertTag } from "@shared/schema";
+import { User, Link, Tag, MessageCircle, Key, X, AlertTriangle, KeyRound, Type, Equal } from "lucide-react";
+import { TextSelection, InsertTag, PairSubtype } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { useQuery } from "@tanstack/react-query";
 import type { Tag as TagType } from "@shared/schema";
@@ -31,6 +31,8 @@ export function TagCreationModal({
   const [description, setDescription] = useState('');
   const [selectedType, setSelectedType] = useState(tagType);
   const [entityType, setEntityType] = useState('');
+  const [pairSubtype, setPairSubtype] = useState<PairSubtype>('key_value');
+  const [pairDelimiter, setPairDelimiter] = useState(':');
 
   const { createTag, updateTag, isCreating } = useTagOperations();
 
@@ -48,8 +50,20 @@ export function TagCreationModal({
       setIdentifier('');
       setDescription('');
       setEntityType('');
+      setPairSubtype('key_value');
+      setPairDelimiter(':');
     }
   }, [isOpen, selectedText?.text]);
+
+  // Parse key and value from identifier when pair subtype is key_value
+  const parsedKeyValue = () => {
+    if (pairSubtype !== 'key_value' || !pairDelimiter) return { key: '', value: '' };
+    const parts = identifier.split(pairDelimiter);
+    if (parts.length >= 2) {
+      return { key: parts[0].trim(), value: parts.slice(1).join(pairDelimiter).trim() };
+    }
+    return { key: identifier, value: '' };
+  };
 
   // Find similar tags based on the current identifier
   const findSimilarTags = () => {
@@ -107,6 +121,7 @@ export function TagCreationModal({
     // Generate card filename reference without offsets (handled inside card)
     const reference = selectedText.filename;
     
+    // Build tag data with pair-specific fields if applicable
     const tagData: InsertTag = {
       type: selectedType as any,
       entityType: entityType || undefined,
@@ -116,6 +131,21 @@ export function TagCreationModal({
       keyValuePairs: {},
       description: description.trim() || undefined,
     };
+
+    // Add pair-specific fields for kv_pair type
+    if (selectedType === 'kv_pair') {
+      tagData.pairSubtype = pairSubtype;
+      const { key, value } = parsedKeyValue();
+      
+      if (pairSubtype === 'key') {
+        tagData.pairKey = identifier.trim();
+      } else if (pairSubtype === 'value') {
+        tagData.pairValue = identifier.trim();
+      } else if (pairSubtype === 'key_value') {
+        tagData.pairKey = key;
+        tagData.pairValue = value;
+      }
+    }
 
     try {
       await createTag(tagData);
@@ -254,6 +284,97 @@ export function TagCreationModal({
                   )}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {/* Pair Subtype Selection - Only for kv_pair type */}
+          {selectedType === 'kv_pair' && (
+            <div>
+              <Label className="text-sm font-medium text-slate-300 mb-2 block">What are you marking?</Label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  className={`flex flex-col items-center justify-center p-3 rounded border-2 transition-all ${
+                    pairSubtype === 'key'
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                      : 'border-gray-600 text-slate-400 hover:bg-gray-700'
+                  }`}
+                  onClick={() => setPairSubtype('key')}
+                  data-testid="pair-subtype-key"
+                >
+                  <KeyRound className="w-5 h-5 mb-1" />
+                  <span className="text-xs font-medium">Key Only</span>
+                  <span className="text-[10px] text-slate-500 mt-1">Needs a value</span>
+                </button>
+                <button
+                  type="button"
+                  className={`flex flex-col items-center justify-center p-3 rounded border-2 transition-all ${
+                    pairSubtype === 'value'
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                      : 'border-gray-600 text-slate-400 hover:bg-gray-700'
+                  }`}
+                  onClick={() => setPairSubtype('value')}
+                  data-testid="pair-subtype-value"
+                >
+                  <Type className="w-5 h-5 mb-1" />
+                  <span className="text-xs font-medium">Value Only</span>
+                  <span className="text-[10px] text-slate-500 mt-1">Needs a key</span>
+                </button>
+                <button
+                  type="button"
+                  className={`flex flex-col items-center justify-center p-3 rounded border-2 transition-all ${
+                    pairSubtype === 'key_value'
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                      : 'border-gray-600 text-slate-400 hover:bg-gray-700'
+                  }`}
+                  onClick={() => setPairSubtype('key_value')}
+                  data-testid="pair-subtype-key-value"
+                >
+                  <Equal className="w-5 h-5 mb-1" />
+                  <span className="text-xs font-medium">Key:Value</span>
+                  <span className="text-[10px] text-slate-500 mt-1">Both in text</span>
+                </button>
+              </div>
+
+              {/* Delimiter input for key_value subtype */}
+              {pairSubtype === 'key_value' && (
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs text-slate-400">Delimiter:</Label>
+                    <Input
+                      value={pairDelimiter}
+                      onChange={(e) => setPairDelimiter(e.target.value)}
+                      placeholder=":"
+                      className="w-16 h-7 text-center bg-gray-900 border-gray-600"
+                      data-testid="pair-delimiter-input"
+                    />
+                  </div>
+                  {/* Preview of parsed key:value */}
+                  {identifier && (
+                    <div className="bg-gray-900/50 border border-gray-700 rounded p-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-amber-400">Key:</span>
+                        <span className="text-slate-300">{parsedKeyValue().key || '(empty)'}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-amber-400">Value:</span>
+                        <span className="text-slate-300">{parsedKeyValue().value || '(empty)'}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Orphan indicator for key-only or value-only */}
+              {(pairSubtype === 'key' || pairSubtype === 'value') && (
+                <div className="mt-2 bg-amber-900/20 border border-amber-600/30 rounded p-2 text-xs text-amber-300">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-3 h-3" />
+                    <span>This {pairSubtype} will be orphaned until you link it with a {pairSubtype === 'key' ? 'value' : 'key'}.</span>
+                  </div>
+                  <span className="text-amber-400/70 mt-1 block">Tip: Drag this onto another pair tag to connect them.</span>
+                </div>
+              )}
             </div>
           )}
 

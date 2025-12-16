@@ -338,6 +338,10 @@ export type PredicateKey = keyof typeof predicateCatalog;
 export const tagTypeSchema = z.enum(['entity', 'relationship', 'attribute', 'comment', 'kv_pair']);
 export type TagType = z.infer<typeof tagTypeSchema>;
 
+// Pair subtype for kv_pair tags
+export const pairSubtypeSchema = z.enum(['key', 'value', 'key_value']);
+export type PairSubtype = z.infer<typeof pairSubtypeSchema>;
+
 // @deprecated Use entitySchema instead
 export const tagSchema = z.object({
   id: z.string(),
@@ -350,6 +354,11 @@ export const tagSchema = z.object({
   description: z.string().optional(),
   created: z.string(),
   modified: z.string(),
+  // Pair-specific fields (for kv_pair type)
+  pairSubtype: pairSubtypeSchema.optional(), // 'key', 'value', or 'key_value'
+  pairKey: z.string().optional(), // The key text (for key or key_value subtypes)
+  pairValue: z.string().optional(), // The value text (for value or key_value subtypes)
+  linkedPairId: z.string().optional(), // Link to partner key or value tag
 });
 
 export const insertTagSchema = tagSchema.omit({ id: true, created: true, modified: true });
