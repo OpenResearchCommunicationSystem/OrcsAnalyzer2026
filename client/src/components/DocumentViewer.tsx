@@ -1406,11 +1406,16 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                         <table className="w-full border-collapse">
                           <thead>
                             <tr>
-                              {headers.map((header, colIndex) => (
-                                <th key={colIndex} className="border border-gray-600 bg-gray-700 px-3 py-2 text-left text-slate-200 font-medium">
-                                  {header}
-                                </th>
-                              ))}
+                              {headers.map((header, colIndex) => {
+                                const processedHeader = processMarkdownTags(header);
+                                return (
+                                  <th 
+                                    key={colIndex} 
+                                    className="border border-gray-600 bg-gray-700 px-3 py-2 text-left text-slate-200 font-medium"
+                                    dangerouslySetInnerHTML={{ __html: processedHeader }}
+                                  />
+                                );
+                              })}
                             </tr>
                           </thead>
                           <tbody>
