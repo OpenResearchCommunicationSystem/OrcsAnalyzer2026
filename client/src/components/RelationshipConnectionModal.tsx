@@ -157,7 +157,7 @@ export function RelationshipConnectionModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="w-5 h-5 text-orange-400" />
-            Create Relationship
+            Create Link
           </DialogTitle>
         </DialogHeader>
 
@@ -175,14 +175,14 @@ export function RelationshipConnectionModal({
           </div>
 
           <div className="space-y-3">
-            <Label className="text-sm text-slate-300">Relationship Label</Label>
+            <Label className="text-sm text-slate-300">Link Label</Label>
             
             <RadioGroup value={relationshipMode} onValueChange={(v) => setRelationshipMode(v as any)}>
               {existingRelationshipsBetweenEntities.length > 0 && (
                 <div className="flex items-center space-x-2 p-2 rounded border border-gray-700 hover:border-gray-600">
                   <RadioGroupItem value="existing" id="existing" />
                   <Label htmlFor="existing" className="flex-1 cursor-pointer text-sm">
-                    Existing relationship between these entities
+                    Existing link between these entities
                   </Label>
                 </div>
               )}
@@ -190,7 +190,7 @@ export function RelationshipConnectionModal({
               <div className="flex items-center space-x-2 p-2 rounded border border-gray-700 hover:border-gray-600">
                 <RadioGroupItem value="document" id="document" />
                 <Label htmlFor="document" className="flex-1 cursor-pointer text-sm">
-                  Select from document relationships
+                  Select from document links
                 </Label>
               </div>
               
@@ -205,10 +205,10 @@ export function RelationshipConnectionModal({
 
           {relationshipMode === 'existing' && existingRelationshipsBetweenEntities.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-sm text-slate-400">Select existing relationship</Label>
+              <Label className="text-sm text-slate-400">Select existing link</Label>
               <Select value={selectedRelationshipId} onValueChange={setSelectedRelationshipId}>
                 <SelectTrigger className="bg-gray-800 border-gray-700">
-                  <SelectValue placeholder="Choose relationship..." />
+                  <SelectValue placeholder="Choose link..." />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
                   {existingRelationshipsBetweenEntities.map(rel => (
@@ -223,10 +223,10 @@ export function RelationshipConnectionModal({
 
           {relationshipMode === 'document' && (
             <div className="space-y-2">
-              <Label className="text-sm text-slate-400">Select document relationship</Label>
+              <Label className="text-sm text-slate-400">Select document link</Label>
               <Select value={selectedRelationshipId} onValueChange={setSelectedRelationshipId}>
                 <SelectTrigger className="bg-gray-800 border-gray-700">
-                  <SelectValue placeholder="Choose relationship..." />
+                  <SelectValue placeholder="Choose link..." />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700">
                   {documentRelationships.length > 0 ? (
@@ -237,7 +237,7 @@ export function RelationshipConnectionModal({
                     ))
                   ) : (
                     <SelectItem value="" disabled>
-                      No relationships in document
+                      No links in document
                     </SelectItem>
                   )}
                 </SelectContent>
@@ -247,7 +247,7 @@ export function RelationshipConnectionModal({
 
           {relationshipMode === 'custom' && (
             <div className="space-y-2">
-              <Label className="text-sm text-slate-400">Custom relationship label</Label>
+              <Label className="text-sm text-slate-400">Custom link label</Label>
               <Input
                 value={customLabel}
                 onChange={(e) => setCustomLabel(e.target.value)}
@@ -255,7 +255,7 @@ export function RelationshipConnectionModal({
                 className="bg-gray-800 border-gray-700"
               />
               <p className="text-xs text-slate-500">
-                This will create a "manual link" relationship tag appended to the document
+                This will create a manual link appended to the document
               </p>
             </div>
           )}

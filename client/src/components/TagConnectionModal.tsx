@@ -30,6 +30,7 @@ export function TagConnectionModal({
     relationshipTagId: '',
     attributeTagIds: [],
     connectionType: 'entity_relationship',
+    direction: 1,
     strength: 1,
     notes: ''
   });
@@ -43,7 +44,6 @@ export function TagConnectionModal({
   // Filter tags by type for easier selection
   const entityTags = tags.filter(tag => tag.type === 'entity');
   const relationshipTags = tags.filter(tag => tag.type === 'relationship');
-  const attributeTags = tags.filter(tag => tag.type === 'attribute');
 
   // Create connection mutation
   const createConnectionMutation = useMutation({
@@ -61,6 +61,7 @@ export function TagConnectionModal({
         relationshipTagId: '',
         attributeTagIds: [],
         connectionType: 'entity_relationship',
+        direction: 1,
         strength: 1,
         notes: ''
       });
@@ -83,27 +84,12 @@ export function TagConnectionModal({
       relationshipTagId: connectionData.relationshipTagId || undefined,
       attributeTagIds: connectionData.attributeTagIds || [],
       connectionType: connectionData.connectionType!,
+      direction: (connectionData.direction || 1) as 0 | 1 | 2 | 3,
       strength: connectionData.strength || 1,
       notes: connectionData.notes || undefined
     };
 
     createConnectionMutation.mutate(connectionToCreate);
-  };
-
-  const addAttributeTag = (attributeId: string) => {
-    if (!connectionData.attributeTagIds?.includes(attributeId)) {
-      setConnectionData(prev => ({
-        ...prev,
-        attributeTagIds: [...(prev.attributeTagIds || []), attributeId]
-      }));
-    }
-  };
-
-  const removeAttributeTag = (attributeId: string) => {
-    setConnectionData(prev => ({
-      ...prev,
-      attributeTagIds: (prev.attributeTagIds || []).filter(id => id !== attributeId)
-    }));
   };
 
   if (!isOpen) return null;
@@ -153,9 +139,7 @@ export function TagConnectionModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-gray-700 border-gray-600">
-                <SelectItem value="entity_relationship">Entity → Relationship</SelectItem>
-                <SelectItem value="entity_attribute">Entity → Attribute</SelectItem>
-                <SelectItem value="relationship_attribute">Relationship → Attribute</SelectItem>
+                <SelectItem value="entity_relationship">Entity → Link</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -186,20 +170,20 @@ export function TagConnectionModal({
           {/* Relationship Tag (optional) */}
           {connectionData.connectionType === 'entity_relationship' && (
             <div>
-              <Label className="text-slate-300">Relationship (Optional)</Label>
+              <Label className="text-slate-300">Link (Optional)</Label>
               <Select 
                 value={connectionData.relationshipTagId || 'none'} 
                 onValueChange={(value) => setConnectionData(prev => ({ ...prev, relationshipTagId: value === 'none' ? undefined : value }))}
               >
                 <SelectTrigger className="bg-gray-700 border-gray-600 text-slate-200">
-                  <SelectValue placeholder="Select relationship" />
+                  <SelectValue placeholder="Select link" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-700 border-gray-600">
-                  <SelectItem value="none">No specific relationship</SelectItem>
+                  <SelectItem value="none">No specific link</SelectItem>
                   {relationshipTags.map((tag) => (
                     <SelectItem key={tag.id} value={tag.id}>
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="text-blue-400 border-blue-400">Relationship</Badge>
+                        <Badge variant="outline" className="text-blue-400 border-blue-400">Link</Badge>
                         <span>{tag.name}</span>
                       </div>
                     </SelectItem>
@@ -208,54 +192,6 @@ export function TagConnectionModal({
               </Select>
             </div>
           )}
-
-          {/* Attribute Tags */}
-          <div>
-            <Label className="text-slate-300">Attributes</Label>
-            <div className="space-y-2">
-              {/* Selected attributes */}
-              {(connectionData.attributeTagIds || []).length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {connectionData.attributeTagIds!.map((attributeId) => {
-                    const attribute = attributeTags.find(tag => tag.id === attributeId);
-                    return attribute ? (
-                      <div key={attributeId} className="flex items-center space-x-1 bg-gray-700 rounded px-2 py-1">
-                        <Badge variant="outline" className="text-orange-400 border-orange-400 text-xs">Attr</Badge>
-                        <span className="text-sm text-slate-200">{attribute.name}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeAttributeTag(attributeId)}
-                          className="h-4 w-4 p-0 text-red-400 hover:text-red-300"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ) : null;
-                  })}
-                </div>
-              )}
-              
-              {/* Add attribute selector */}
-              <Select onValueChange={addAttributeTag}>
-                <SelectTrigger className="bg-gray-700 border-gray-600 text-slate-200">
-                  <SelectValue placeholder="Add attribute..." />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-700 border-gray-600">
-                  {attributeTags
-                    .filter(tag => !connectionData.attributeTagIds?.includes(tag.id))
-                    .map((tag) => (
-                    <SelectItem key={tag.id} value={tag.id}>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="text-orange-400 border-orange-400">Attribute</Badge>
-                        <span>{tag.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
 
           {/* Connection Strength */}
           <div>

@@ -202,6 +202,49 @@ export class OrcsService {
     return tags;
   }
 
+  async previewTagDeletion(tagId: string): Promise<{
+    tag: Tag | null;
+    affectedCards: string[];
+    affectedLinks: number;
+    affectedConnections: number;
+    tagFilePath: string | null;
+  }> {
+    const tag = await this.getTag(tagId);
+    if (!tag) {
+      return { tag: null, affectedCards: [], affectedLinks: 0, affectedConnections: 0, tagFilePath: null };
+    }
+
+    // Find affected cards
+    const affectedCards = (tag.references || []).filter(ref => ref.includes('.card.txt'));
+    
+    // Count affected links in cards
+    let affectedLinks = 0;
+    for (const cardFilename of affectedCards) {
+      try {
+        const cardPath = path.join(process.cwd(), 'user_data', 'raw', cardFilename);
+        const cardContent = await fs.readFile(cardPath, 'utf-8');
+        // Count links that reference this tag
+        const linkMatches = cardContent.match(new RegExp(`sourceId:\\s*"?${tagId}"?|targetId:\\s*"?${tagId}"?`, 'g'));
+        affectedLinks += linkMatches ? linkMatches.length : 0;
+      } catch {
+        // Card might not exist
+      }
+    }
+
+    // Count affected connections
+    const connections = await storage.getTagConnections();
+    const affectedConnections = connections.filter(c => 
+      c.sourceTagId === tagId || 
+      c.targetTagId === tagId || 
+      c.relationshipTagId === tagId ||
+      c.attributeTagIds.includes(tagId)
+    ).length;
+
+    const tagFilePath = await this.findTagFile(tag);
+
+    return { tag, affectedCards, affectedLinks, affectedConnections, tagFilePath };
+  }
+
   async deleteTag(tagId: string): Promise<boolean> {
     const tag = await this.getTag(tagId);
     if (!tag) {
@@ -210,6 +253,12 @@ export class OrcsService {
 
     // Remove tag from all card content before deleting the tag file
     await this.removeTagFromCards(tag);
+
+    // Also remove any links that reference this tag from cards
+    await this.removeLinksReferencingTag(tagId);
+
+    // Delete connections that reference this tag
+    await this.deleteConnectionsReferencingTag(tagId);
 
     // Try to find and delete the tag file using Wikipedia approach - search everywhere
     const filepath = await this.findTagFile(tag);
@@ -224,6 +273,70 @@ export class OrcsService {
     } catch (error) {
       console.error(`Failed to delete tag file: ${filepath}`, error);
       return false;
+    }
+  }
+
+  private async removeLinksReferencingTag(tagId: string): Promise<void> {
+    // Find all cards and remove links that reference this tag
+    const rawDir = path.join(USER_DATA_DIR, 'raw');
+    try {
+      const files = await fs.readdir(rawDir);
+      for (const file of files) {
+        if (!file.endsWith('.card.txt')) continue;
+        
+        const cardPath = path.join(rawDir, file);
+        const content = await fs.readFile(cardPath, 'utf-8');
+        
+        // Check if card has LINK INDEX
+        if (!content.includes('=== LINK INDEX START ===')) continue;
+        
+        // Parse and filter links
+        const linkIndexMatch = content.match(/=== LINK INDEX START ===([\s\S]*?)=== LINK INDEX END ===/);
+        if (!linkIndexMatch) continue;
+        
+        const linkSection = linkIndexMatch[1];
+        const lines = linkSection.split('\n');
+        const filteredLines: string[] = [];
+        
+        for (const line of lines) {
+          // Skip links that reference the deleted tag
+          if (line.includes(`sourceId:"${tagId}"`) || line.includes(`sourceId: "${tagId}"`) ||
+              line.includes(`targetId:"${tagId}"`) || line.includes(`targetId: "${tagId}"`)) {
+            console.log(`Removing link referencing deleted tag ${tagId} from ${file}`);
+            continue;
+          }
+          filteredLines.push(line);
+        }
+        
+        // Only update if we removed something
+        if (filteredLines.length !== lines.length) {
+          const newLinkSection = filteredLines.join('\n');
+          const updatedContent = content.replace(
+            /=== LINK INDEX START ===([\s\S]*?)=== LINK INDEX END ===/,
+            `=== LINK INDEX START ===${newLinkSection}=== LINK INDEX END ===`
+          );
+          await fs.writeFile(cardPath, updatedContent, 'utf-8');
+        }
+      }
+    } catch (error) {
+      console.error('Error removing links referencing tag:', error);
+    }
+  }
+
+  private async deleteConnectionsReferencingTag(tagId: string): Promise<void> {
+    const connections = await storage.getTagConnections();
+    for (const connection of connections) {
+      if (connection.sourceTagId === tagId || 
+          connection.targetTagId === tagId || 
+          connection.relationshipTagId === tagId) {
+        await storage.deleteTagConnection(connection.id);
+        console.log(`Deleted connection ${connection.id} referencing deleted tag ${tagId}`);
+      } else if (connection.attributeTagIds.includes(tagId)) {
+        // Remove tag from attribute list
+        const updatedAttributeIds = connection.attributeTagIds.filter(id => id !== tagId);
+        await storage.updateTagConnection(connection.id, { attributeTagIds: updatedAttributeIds });
+        console.log(`Removed tag ${tagId} from connection ${connection.id} attributes`);
+      }
     }
   }
 
@@ -340,7 +453,8 @@ export class OrcsService {
             target: targetNode.id,
             label: relationLabel.toLowerCase(),
             type: 'relationship',
-            direction: 1
+            direction: 1,
+            properties: {}
           });
         }
       }
@@ -376,7 +490,8 @@ export class OrcsService {
             target: relationship.id,
             label: 'describes',
             type: 'attribute',
-            direction: 0
+            direction: 0,
+            properties: {}
           });
           connected = true;
         }
@@ -398,7 +513,8 @@ export class OrcsService {
             target: relatedEntities[0].id,
             label: 'describes',
             type: 'attribute',
-            direction: 0
+            direction: 0,
+            properties: {}
           });
         }
       }
@@ -436,7 +552,8 @@ export class OrcsService {
         target: connection.targetTagId,
         label: relationshipName,
         type: 'connection',
-        direction: connection.direction ?? 0
+        direction: connection.direction ?? 0,
+        properties: {}
       });
       
       // Add edges for attribute connections
@@ -447,7 +564,8 @@ export class OrcsService {
           target: attributeId,
           label: 'has attribute',
           type: 'attribute',
-          direction: 0
+          direction: 0,
+          properties: {}
         });
       }
     }
@@ -474,7 +592,8 @@ export class OrcsService {
             target: tag2.id,
             label: 'co-occurs',
             type: 'co-occurrence',
-            direction: 0
+            direction: 0,
+            properties: {}
           });
         }
       }
@@ -1754,7 +1873,9 @@ export class OrcsService {
         isAttribute: link.isAttribute,
         direction: link.direction,
         sourceCardId: link.sourceCardId,
-        classification: undefined, // TODO: Get from card metadata
+        sourceCardName: '', // TODO: Get from card filename
+        classification: 'unclassified', // TODO: Get from card metadata
+        linkId: link.id,
       };
       
       bullets.push(bullet);
@@ -1770,15 +1891,21 @@ export class OrcsService {
     
     if (!tag) return undefined;
     
+    // Map tag entityType to valid Entity type, default to 'object' if unknown
+    const validTypes = ['person', 'org', 'location', 'selector', 'date', 'event', 'object', 'concept'] as const;
+    const entityType = validTypes.includes(tag.entityType as any) 
+      ? (tag.entityType as typeof validTypes[number])
+      : 'object';
+    
     return {
       id: tag.id,
-      type: tag.entityType || 'entity',
+      type: entityType,
       canonicalName: tag.name,
       displayName: tag.name,
       aliases: tag.aliases || [],
       properties: tag.keyValuePairs || {},
-      created: tag.created,
-      modified: tag.modified,
+      created: tag.created || new Date().toISOString(),
+      modified: tag.modified || new Date().toISOString(),
     };
   }
 
@@ -1840,7 +1967,9 @@ export class OrcsService {
                 isAttribute: link.isAttribute,
                 direction: link.direction,
                 sourceCardId: link.sourceCardId,
-                classification: undefined,
+                sourceCardName: '',
+                classification: 'unclassified',
+                linkId: link.id,
               });
             }
           }

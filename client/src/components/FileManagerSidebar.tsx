@@ -200,10 +200,9 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
             {/* Tag directories */}
             {[
               { name: 'entities', type: 'entity', color: 'green', tags: tagsByType.entity },
-              { name: 'relationships', type: 'relationship', color: 'orange', tags: tagsByType.relationship },
-              { name: 'attributes', type: 'attribute', color: 'blue', tags: tagsByType.attribute },
+              { name: 'links', type: 'relationship', color: 'orange', tags: tagsByType.relationship },
+              { name: 'pairs', type: 'kv_pair', color: 'amber', tags: tagsByType.kv_pair },
               { name: 'comments', type: 'comment', color: 'purple', tags: tagsByType.comment },
-              { name: 'kv_pairs', type: 'kv_pair', color: 'red', tags: tagsByType.kv_pair },
             ].map((folder) => (
               <div key={folder.name} className="ml-4 space-y-1">
                 <div 

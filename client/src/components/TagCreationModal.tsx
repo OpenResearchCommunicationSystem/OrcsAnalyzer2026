@@ -154,10 +154,9 @@ export function TagCreationModal({
 
   const tagTypes = [
     { value: 'entity', label: 'Entity', icon: User, color: 'text-green-400 border-green-500' },
-    { value: 'relationship', label: 'Relationship', icon: Link, color: 'text-amber-400 border-amber-500' },
-    { value: 'attribute', label: 'Attribute', icon: Tag, color: 'text-purple-400 border-purple-500' },
+    { value: 'relationship', label: 'Link', icon: Link, color: 'text-amber-400 border-amber-500' },
+    { value: 'kv_pair', label: 'Pair', icon: Key, color: 'text-orange-400 border-orange-500' },
     { value: 'comment', label: 'Comment', icon: MessageCircle, color: 'text-cyan-400 border-cyan-500' },
-    { value: 'kv_pair', label: 'Key:Value Pair', icon: Key, color: 'text-orange-400 border-orange-500' },
   ];
 
   return (
@@ -199,10 +198,9 @@ export function TagCreationModal({
             <div>
               <Label className="text-sm font-medium text-slate-300 mb-2 block">
                 {selectedType === 'entity' ? 'Entity Type' : 
-                 selectedType === 'relationship' ? 'Relationship Type' :
-                 selectedType === 'attribute' ? 'Attribute Type' :
+                 selectedType === 'relationship' ? 'Link Type' :
                  selectedType === 'comment' ? 'Comment Type' :
-                 'Key-Value Type'}
+                 'Pair Type'}
               </Label>
               <Select
                 value={entityType}
@@ -233,16 +231,6 @@ export function TagCreationModal({
                       <SelectItem value="competition">Competition</SelectItem>
                       <SelectItem value="family">Family</SelectItem>
                       <SelectItem value="location">Location</SelectItem>
-                    </>
-                  )}
-                  {selectedType === 'attribute' && (
-                    <>
-                      <SelectItem value="physical">Physical</SelectItem>
-                      <SelectItem value="temporal">Temporal</SelectItem>
-                      <SelectItem value="financial">Financial</SelectItem>
-                      <SelectItem value="descriptive">Descriptive</SelectItem>
-                      <SelectItem value="quantitative">Quantitative</SelectItem>
-                      <SelectItem value="qualitative">Qualitative</SelectItem>
                     </>
                   )}
                   {selectedType === 'comment' && (

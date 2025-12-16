@@ -151,7 +151,7 @@ export default function EntityDossier() {
               </div>
               <div className="bg-gray-700/50 rounded-lg p-3" data-testid="stat-relationships">
                 <div className="text-2xl font-bold text-orange-400">{relationships.length}</div>
-                <div className="text-xs text-gray-400">Relationships</div>
+                <div className="text-xs text-gray-400">Links</div>
               </div>
               <div className="bg-gray-700/50 rounded-lg p-3" data-testid="stat-attributes">
                 <div className="text-2xl font-bold text-purple-400">{attributes.length}</div>
@@ -171,14 +171,14 @@ export default function EntityDossier() {
               <Button variant="ghost" className="w-full justify-start gap-2 hover:bg-gray-800" data-testid="toggle-relationships">
                 {showRelationships ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 <Link2 className="w-4 h-4 text-orange-400" />
-                <span>Relationships ({relationships.length})</span>
+                <span>Links ({relationships.length})</span>
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent>
               <Card className="bg-gray-800 border-gray-700 mt-2">
                 <CardContent className="p-4">
                   {relationships.length === 0 ? (
-                    <p className="text-gray-500 italic">No relationships found</p>
+                    <p className="text-gray-500 italic">No links found</p>
                   ) : (
                     <div className="space-y-2">
                       {relationships.map((bullet, idx) => (

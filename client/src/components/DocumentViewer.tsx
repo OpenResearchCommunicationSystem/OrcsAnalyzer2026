@@ -578,18 +578,23 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     };
 
     const handleMouseUp = () => {
-      // Don't process text selection if we clicked on a tag
-      if (isTagClick) {
+      const selection = window.getSelection();
+      const selectedText = selection?.toString().trim() || '';
+      
+      // Only block if it's a tag CLICK with no actual text selection
+      // Allow selections that include/start from tagged text
+      if (isTagClick && selectedText.length === 0) {
         setIsTagClick(false);
         return;
       }
+      
+      setIsTagClick(false);
 
-      const selection = window.getSelection();
-      if (!selection || selection.toString().trim().length === 0 || !selectedFileData) {
+      if (!selection || selectedText.length === 0 || !selectedFileData) {
         return;
       }
 
-      const selectedText = selection.toString();
+      const fullSelectedText = selection.toString();
       const range = selection.getRangeAt(0);
       const displayData = getDisplayContent();
       
@@ -637,7 +642,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       }
       
       if (startOffset !== -1) {
-        const endOffset = startOffset + selectedText.length;
+        const endOffset = startOffset + fullSelectedText.length;
         
         // Verify the selection matches the content at these offsets
         const contentAtOffsets = sectionContent.substring(startOffset, endOffset);
@@ -646,9 +651,9 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         const cardUuid = extractCardUuid(selectedFileData.name);
         const referenceBase = cardUuid || selectedFileData.name;
         
-        if (contentAtOffsets === selectedText) {
+        if (contentAtOffsets === fullSelectedText) {
           const textSelection: TextSelection = {
-            text: selectedText,
+            text: fullSelectedText,
             startOffset,
             endOffset,
             filename: selectedFileData.name,
@@ -657,15 +662,15 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
           onTextSelection(textSelection);
           // Also set pending snippet for card files
           if (isCardFile) {
-            setPendingSnippet({ text: selectedText, start: startOffset, end: endOffset });
+            setPendingSnippet({ text: fullSelectedText, start: startOffset, end: endOffset });
           }
         } else {
           // If offsets don't match, try to find the text in the section content
-          const actualStartIndex = sectionContent.indexOf(selectedText);
+          const actualStartIndex = sectionContent.indexOf(fullSelectedText);
           if (actualStartIndex !== -1) {
-            const actualEndIndex = actualStartIndex + selectedText.length;
+            const actualEndIndex = actualStartIndex + fullSelectedText.length;
             const textSelection: TextSelection = {
-              text: selectedText,
+              text: fullSelectedText,
               startOffset: actualStartIndex,
               endOffset: actualEndIndex,
               filename: selectedFileData.name,
@@ -674,7 +679,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             onTextSelection(textSelection);
             // Also set pending snippet for card files
             if (isCardFile) {
-              setPendingSnippet({ text: selectedText, start: actualStartIndex, end: actualEndIndex });
+              setPendingSnippet({ text: fullSelectedText, start: actualStartIndex, end: actualEndIndex });
             }
           }
         }
@@ -1625,7 +1630,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                             className="accent-orange-500"
                             data-testid="radio-link-relationship"
                           />
-                          <span className="text-orange-300">Relationship</span>
+                          <span className="text-orange-300">Link</span>
                         </label>
                         <label className="flex items-center gap-1 text-slate-300 cursor-pointer">
                           <input

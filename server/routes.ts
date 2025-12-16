@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import { z } from "zod";
-import { insertTagSchema, insertTagConnectionSchema, textSelectionSchema, insertLinkSchema, insertSnippetSchema, linkSchema, snippetSchema } from "@shared/schema";
+import fs from "fs/promises";
+import { insertTagSchema, insertTagConnectionSchema, textSelectionSchema, insertLinkSchema, insertSnippetSchema, linkSchema, snippetSchema, BrokenConnection } from "@shared/schema";
 import { fileService } from "./services/fileService";
 import { orcsService } from "./services/orcsService";
 import { indexService } from "./services/indexService";
@@ -319,6 +320,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/tags/:id", async (req, res) => {
     try {
+      const dryRun = req.query.dryRun === 'true';
+      
+      if (dryRun) {
+        // Preview mode - show what would be affected without deleting
+        const preview = await orcsService.previewTagDeletion(req.params.id);
+        if (!preview.tag) {
+          return res.status(404).json({ error: "Tag not found" });
+        }
+        return res.json({
+          dryRun: true,
+          tag: preview.tag,
+          affectedCards: preview.affectedCards,
+          affectedLinks: preview.affectedLinks,
+          affectedConnections: preview.affectedConnections,
+          tagFilePath: preview.tagFilePath,
+          message: `Deleting this tag will affect ${preview.affectedCards.length} card(s), ${preview.affectedLinks} link(s), and ${preview.affectedConnections} connection(s).`
+        });
+      }
+      
       const success = await orcsService.deleteTag(req.params.id);
       if (!success) {
         return res.status(404).json({ error: "Tag not found" });
@@ -580,7 +600,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/system/reindex', async (req, res) => {
     try {
+      const gc = req.query.gc === 'true'; // Garbage collection mode
+      const dryRun = req.query.dryRun === 'true';
+      
       const index = await indexService.buildFullIndex();
+      
+      // Garbage collection: clean up orphaned references
+      if (gc) {
+        const orphans = (index.brokenConnections || []).filter((b: BrokenConnection) => b.reason === 'orphaned_reference');
+        
+        if (dryRun) {
+          return res.json({
+            message: 'Garbage collection dry run',
+            dryRun: true,
+            orphansToClean: orphans.length,
+            orphanDetails: orphans.map((o: BrokenConnection) => o.details),
+            stats: index.stats
+          });
+        }
+        
+        // Actually clean orphaned tag references
+        let cleanedCount = 0;
+        for (const orphan of orphans) {
+          try {
+            // Parse the orphan to get tag info
+            const tagPath = orphan.filePath;
+            if (tagPath) {
+              const content = await fs.readFile(tagPath, 'utf-8');
+              // Extract the orphaned file reference from details
+              const refMatch = orphan.details?.match(/references file "([^"]+)"/);
+              if (refMatch) {
+                const orphanedRef = refMatch[1];
+                // Remove the orphaned reference from CARD_REFERENCES
+                const updatedContent = content.replace(
+                  new RegExp(`CARD_REFERENCES:.*${orphanedRef.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[,\\n]?`, 'g'),
+                  (match: string) => match.replace(orphanedRef, '').replace(/,,/g, ',').replace(/,$/, '').replace(/: ,/g, ':')
+                );
+                if (updatedContent !== content) {
+                  await fs.writeFile(tagPath, updatedContent, 'utf-8');
+                  cleanedCount++;
+                  console.log(`[GC] Cleaned orphaned reference from: ${tagPath}`);
+                }
+              }
+            }
+          } catch (err) {
+            console.error(`[GC] Failed to clean orphan:`, err);
+          }
+        }
+        
+        // Rebuild index after cleanup
+        const newIndex = await indexService.buildFullIndex();
+        
+        return res.json({
+          message: `Garbage collection completed. Cleaned ${cleanedCount} orphaned references.`,
+          cleaned: cleanedCount,
+          stats: newIndex.stats
+        });
+      }
+      
       res.json({ 
         message: 'System reindexed successfully',
         stats: index.stats 

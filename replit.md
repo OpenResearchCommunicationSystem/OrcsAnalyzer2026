@@ -13,12 +13,13 @@ Preferred communication style: Simple, everyday language.
 ### UI/UX Decisions
 - **Frontend**: React 18 with TypeScript, utilizing Shadcn/ui components and Radix UI primitives.
 - **Styling**: Tailwind CSS with a custom ORCS-themed color scheme.
-- **Tag Color Schema**:
-  - **Entity**: Green (`bg-green-500/20 text-green-300 border-green-500/30`)
-  - **Relationship**: Orange (`bg-orange-500/20 text-orange-300 border-orange-500/30`)
-  - **Attribute**: Purple (`bg-purple-500/20 text-purple-300 border-purple-500/30`)
-  - **Comment**: Blue (`bg-blue-500/20 text-blue-300 border-blue-500/30`)
-  - **Key-Value**: Amber (`bg-amber-500/20 text-amber-300 border-amber-500/30`)
+- **5 Core Primitives** (Phase 2 simplified taxonomy):
+  - **Entity** (node): Green (`bg-green-500/20 text-green-300 border-green-500/30`)
+  - **Link** (edge, was "relationship"): Orange (`bg-orange-500/20 text-orange-300 border-orange-500/30`)
+  - **Snip** (text highlight): Amber (`bg-amber-500/20 text-amber-300 border-amber-500/30`)
+  - **Pair** (key:value metadata, was "kv_pair"): Amber (`bg-amber-500/20 text-amber-300 border-amber-500/30`)
+  - **Comment** (analyst notes): Blue (`bg-blue-500/20 text-blue-300 border-blue-500/30`)
+- **Terminology**: UI displays "Link" instead of "Relationship" throughout; internal data type remains `relationship`
 - **UUID Display Policy**: Hide UUIDs from primary display unless specifically needed for technical operations; use clean, human-readable names primarily.
 
 ### Technical Implementations
@@ -55,6 +56,7 @@ Preferred communication style: Simple, everyday language.
   - **ORCS Tag Format Parsing**: Parses ORCS-style tag files (UUID:, NAME:, TAG_TYPE:, CARD_REFERENCES:, SEARCH_ALIASES:)
   - Startup indexing on server start, manual refresh via UI button
   - API endpoints: `GET /api/system/index`, `POST /api/system/reindex`, `GET /api/system/broken-connections`
+  - **Garbage Collection**: `POST /api/system/reindex?gc=true` cleans orphaned references; `?dryRun=true` for preview
 - **Search & Indexing**: Persistent index, automatic indexing, keyword extraction, content-based search.
 - **Graph Visualization**: Interactive, SVG-based relationship visualization.
 - **File System Resilience**: Three-tier lookup strategy (Default Location, Repository-Wide, Content Search) for UUIDs and file paths, with user recovery options for misplaced files.
@@ -68,7 +70,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Feature Specifications
 - **File Management**: Supports `.txt` and `.csv` upload, automatic ORCS card generation, metadata tracking, content parsing with highlighting, and complete file deletion.
-- **Tagging**: Text selection-based tagging, tag metadata (aliases, descriptions, KVP), visual indicators.
+- **Tagging**: Text selection-based tagging, tag metadata (aliases, descriptions, Pairs), visual indicators. Selection guard allows tagging text that already contains tags.
+- **Tag Deletion**: `DELETE /api/tags/:id` with cascade cleanup (removes tag file, cleans card markdown references, updates index); `?dryRun=true` for preview of affected items.
 - **Search and Indexing**: Persistent JSON index, automatic indexing, keyword extraction, content-based search, API endpoints for search and index rebuild.
 - **Analyst Attribution**: Critical analyst attribution system for comment tags with privacy-configurable user UUID management.
 - **CSV Tagging**: Full support for tagging CSV content with proper markdown insertion into card files and visual highlighting.

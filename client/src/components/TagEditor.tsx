@@ -391,10 +391,9 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-600">
                 <SelectItem value="entity">Entity</SelectItem>
-                <SelectItem value="relationship">Relationship</SelectItem>
-                <SelectItem value="attribute">Attribute</SelectItem>
+                <SelectItem value="relationship">Link</SelectItem>
+                <SelectItem value="kv_pair">Pair</SelectItem>
                 <SelectItem value="comment">Comment</SelectItem>
-                <SelectItem value="kv_pair">Key:Value Pair</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -403,10 +402,9 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
             <div>
               <Label className="text-sm font-medium text-slate-300 mb-2 block">
                 {formData.type === 'entity' ? 'Entity Type' : 
-                 formData.type === 'relationship' ? 'Relationship Type' :
-                 formData.type === 'attribute' ? 'Attribute Type' :
+                 formData.type === 'relationship' ? 'Link Type' :
                  formData.type === 'comment' ? 'Comment Type' :
-                 'Key-Value Type'}
+                 'Pair Type'}
               </Label>
               <Select
                 value={formData.entityType || ''}
@@ -437,16 +435,6 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
                       <SelectItem value="competition">Competition</SelectItem>
                       <SelectItem value="family">Family</SelectItem>
                       <SelectItem value="location">Location</SelectItem>
-                    </>
-                  )}
-                  {formData.type === 'attribute' && (
-                    <>
-                      <SelectItem value="physical">Physical</SelectItem>
-                      <SelectItem value="temporal">Temporal</SelectItem>
-                      <SelectItem value="financial">Financial</SelectItem>
-                      <SelectItem value="descriptive">Descriptive</SelectItem>
-                      <SelectItem value="quantitative">Quantitative</SelectItem>
-                      <SelectItem value="qualitative">Qualitative</SelectItem>
                     </>
                   )}
                   {formData.type === 'comment' && (

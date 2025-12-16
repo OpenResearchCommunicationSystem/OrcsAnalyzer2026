@@ -408,7 +408,7 @@ export function GraphVisualization({ onNodeClick }: GraphVisualizationProps) {
     <div className={`${isFullscreen ? 'fixed inset-0 z-50 bg-gray-900' : 'flex-1'} p-4`}>
       <div className="bg-gray-800 rounded-lg border border-gray-700 h-full p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium text-slate-200">Entity Relationships</h3>
+          <h3 className="font-medium text-slate-200">Entity Links</h3>
           <div className="flex items-center space-x-2">
             <Select value={layout} onValueChange={(value: LayoutType) => setLayout(value)}>
               <SelectTrigger className="w-32 bg-gray-700 border-gray-600 text-slate-200">
@@ -502,7 +502,7 @@ export function GraphVisualization({ onNodeClick }: GraphVisualizationProps) {
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-              <span className="text-slate-400">Relationships</span>
+              <span className="text-slate-400">Links</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 rounded-full bg-purple-500"></div>
