@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-16T18:03:11.362Z",
+  "lastUpdated": "2025-12-16T18:33:24.194Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -95,13 +95,33 @@
         "social_post_2_test_d9dd9033-3c28-41b0-acfe-ce645ef4a1cd.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "5ec98c80-5aef-4dc0-8789-f8c1a8bc56c9",
+      "name": "VisionEdge Analytics",
+      "type": "label",
+      "filePath": "/home/runner/workspace/user_data/labels/VisionEdge Analytics_5ec98c80-5aef-4dc0-8789-f8c1a8bc56c9.label.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "c69c79e1-90ed-476e-a91c-b9c450ed1836",
+      "name": "12345",
+      "type": "data",
+      "filePath": "/home/runner/workspace/user_data/data/12345_c69c79e1-90ed-476e-a91c-b9c450ed1836.data.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 8,
-    "totalTags": 2,
+    "totalTags": 4,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
     "entityCount": 2,

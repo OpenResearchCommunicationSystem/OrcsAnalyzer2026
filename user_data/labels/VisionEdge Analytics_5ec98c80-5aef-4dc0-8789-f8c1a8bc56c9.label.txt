@@ -1,0 +1,14 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: 5ec98c80-5aef-4dc0-8789-f8c1a8bc56c9
+TAG_TYPE: label
+NAME: VisionEdge Analytics
+CREATED: 2025-12-16T18:32:20.087Z
+MODIFIED: 2025-12-16T18:32:20.087Z
+
+SEARCH_ALIASES:
+
+CARD_REFERENCES:
+  - beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt
+
+=== END ORCS ENTITY ===
