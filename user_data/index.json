@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-16T14:36:38.882Z",
+  "lastUpdated": "2025-12-16T14:53:22.479Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -33,8 +33,8 @@
       "path": "/home/runner/workspace/user_data/raw/news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt",
       "name": "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt",
       "type": "orcs_card",
-      "hash": "7fab546fe378999cba35db8969e542f7163a78c387b136b1b5fc5e849cc73c62",
-      "timestamp": 1765841740365.5198,
+      "hash": "fc26f3ca9bc494cb77996a18b92771adb8dc63ed02b22bc68a787d2b3b77719d",
+      "timestamp": 1765895810466.8374,
       "cardUuid": "152e1e9e-2e2e-4c0d-8b58-cb6564c987e8",
       "sourceFile": "news_clip_11_test.txt"
     },
@@ -289,6 +289,16 @@
       ]
     },
     {
+      "id": "3146b49a-0822-45a6-bfe4-edbae65267a8",
+      "name": "3.2 billion",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/3.2 billion_3146b49a-0822-45a6-bfe4-edbae65267a8.kv.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
       "id": "0ca522a6-3bfe-4735-8b36-9e7577119736",
       "name": "45",
       "type": "kv_pair",
@@ -350,16 +360,6 @@
       "name": "valued",
       "type": "kv_pair",
       "filePath": "/home/runner/workspace/user_data/kv_pairs/valued_92900232-2076-48b7-a856-d6aaf4b5bc79.kv.txt",
-      "references": [
-        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "3146b49a-0822-45a6-bfe4-edbae65267a8",
-      "name": "3.2 billion",
-      "type": "kv_pair",
-      "filePath": "/home/runner/workspace/user_data/kv_pairs/3.2 billion_3146b49a-0822-45a6-bfe4-edbae65267a8.kv.txt",
       "references": [
         "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
       ],

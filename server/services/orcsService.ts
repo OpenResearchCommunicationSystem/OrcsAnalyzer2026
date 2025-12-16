@@ -1198,7 +1198,8 @@ export class OrcsService {
 
   // Helper: Strip markdown-style tags from content to get plain text
   private stripTagsFromContent(content: string): string {
-    const tagPattern = /\[(entity|relationship|attribute|comment|kv):([^\]]+)\]\([a-f0-9-]+\)/gi;
+    // Match all tag formats: entity, relationship, attribute, comment, kv, kv_pair
+    const tagPattern = /\[(entity|relationship|attribute|comment|kv_pair|kv):([^\]]+)\]\([a-f0-9-]+\)/gi;
     return content.replace(tagPattern, '$2');
   }
 
