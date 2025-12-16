@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-15T22:56:21.659Z",
+  "lastUpdated": "2025-12-16T12:59:26.613Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -15,8 +15,8 @@
       "path": "/home/runner/workspace/user_data/raw/beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "name": "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "type": "orcs_card",
-      "hash": "97df54b910a12c4cb1aa3235e4f4595d0b2e9eb640c294b0044a038d1106938f",
-      "timestamp": 1765831075475.917,
+      "hash": "5c4ce2933e2c45735f3b035af2fc8819062e5852f355ef2be6746c38acdb66be",
+      "timestamp": 1765842049689.276,
       "cardUuid": "53b483a4-a480-4d6e-8067-269be95bfb12",
       "sourceFile": "beneficial_owners_test.csv"
     },
@@ -33,8 +33,8 @@
       "path": "/home/runner/workspace/user_data/raw/news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt",
       "name": "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt",
       "type": "orcs_card",
-      "hash": "e090fc53293e17308f74004f652ea8efa7f87f9a895ba69bb76a293eb3c17954",
-      "timestamp": 1765412294212.962,
+      "hash": "7fab546fe378999cba35db8969e542f7163a78c387b136b1b5fc5e849cc73c62",
+      "timestamp": 1765841740365.5198,
       "cardUuid": "152e1e9e-2e2e-4c0d-8b58-cb6564c987e8",
       "sourceFile": "news_clip_11_test.txt"
     },
@@ -76,6 +76,16 @@
     }
   ],
   "tags": [
+    {
+      "id": "048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe",
+      "name": "Ava Cheng",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Ava Cheng_048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe.entity.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
+    },
     {
       "id": "ae14079c-7eb1-4520-8f64-4cebc3dd55a0",
       "name": "BioNex Systems",
@@ -181,6 +191,14 @@
       "aliases": []
     },
     {
+      "id": "c9e465d0-8cf6-427a-be1a-674cd969a04b",
+      "name": "AQUIRED",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/AQUIRED_c9e465d0-8cf6-427a-be1a-674cd969a04b.relate.txt",
+      "references": [],
+      "aliases": []
+    },
+    {
       "id": "a5897d3b-7cb4-4b7e-9874-72026a65d9e3",
       "name": "CEO",
       "type": "relationship",
@@ -228,16 +246,26 @@
         "social_post_2_test_d9dd9033-3c28-41b0-acfe-ce645ef4a1cd.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "6ac46b8d-c1d4-4016-92ae-6c5b5f270f0e",
+      "name": "Ultimate Beneficial Owner",
+      "type": "attribute",
+      "filePath": "/home/runner/workspace/user_data/attributes/Ultimate Beneficial Owner_6ac46b8d-c1d4-4016-92ae-6c5b5f270f0e.attrib.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 8,
-    "totalTags": 16,
+    "totalTags": 19,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 11,
-    "relationshipCount": 5
+    "entityCount": 12,
+    "relationshipCount": 6
   }
 }

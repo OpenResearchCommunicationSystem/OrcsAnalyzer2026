@@ -1,0 +1,58 @@
+1. Tag Deletion
+We need a coordinated cascade delete: remove the tag file → clean up all card references (TAG INDEX, LINK INDEX) → update the master index → refresh caches. I'd add a "dry-run" preview so analysts can see what will be affected before confirming.
+
+2. Retroactive Cleanup
+A "card reconciliation" job that scans for orphaned references when tags/links change. We maintain a dependency map so we only scan affected cards, not everything.
+
+3. Deep Re-indexing
+Expand the current reindex into a full garbage collection: rebuild from disk, drop entries for missing files, surface conflicts, and offer a status/progress view.
+
+4. Tag Menu Simplification
+Entity → Keep as-is (working great!)
+Relationship → Rename to Link (matches the unified model)
+Attribute/Key-Value → Fold into Link properties (links can have isAttribute=true)
+Comment → Treat as Snippets with analyst notes (already in SNIPPET INDEX)
+This simplifies the menu to essentially: Entity, Link, Snippet
+
+5. Comment Insertion Without Highlighting
+Allow "zero-width" snippets (start offset = end offset) that insert at a position. These render as inline callouts or an "Analyst Notes" panel. Could also add a separate notes section in cards.
+
+6. Selecting Already-Tagged Text
+Adjust the selection guard to allow overlapping spans. You should absolutely be able to create a snippet of a sentence that contains entities - the parser can handle nested ranges.
+
+7. Middle Layer (Operational Database)
+This is a great architectural question. The recommendation is:
+
+Add a lightweight SQLite/PostgreSQL layer as a write-through cache
+Enables transactional edits, undo/redo, diff tracking (like IDE track changes)
+Cards remain the export/storage format - we periodically materialize DB changes back to disk
+This gives you the best of both: card portability + robust operational layer
+IDEs use similar patterns: an in-memory model for fast edits, with periodic saves to disk and a change log for undo/redo.
+
+
+So the simplified tag menu becomes:
+
+Entity (node)
+Link (edge)
+Snip (highlight)
+Pair (structured data - attaches anywhere)
+Comment (user text inside the source text that can be tagged up like anything else.)
+
+
+Attach To	Example
+Card (document-level metadata)	CrimeType: Murder, Priority: High
+Snip (enriches the highlight)	Time: 4pm, Location: Berlin
+Bullet (annotates the relationship)	Value: $3.2B, Date: Q3 2025
+Entity (as a property)	SSN: 123-456-789, DOB: 1985-03-15
+Link (as a property)	Confidence: High, Source: HUMINT
+Comment: treated just like original text for tagging purposes
+
+Node position in a Link	Instead of Entity → Entity, could be Entity → Pair
+Categories (for templates/validation)
+Property - color:blue, status:active
+Meta - devname:target1, caseid:2024-001
+Geotemporal - Grid:3PG123085, Time:1430Z, Date:2024-12-15
+Functional - URL:https://..., Phone:(555)123-4567, URN:...
+Pre-load ISO/USG standards for geotemporal and functional. Let users create property and meta on the fly.
+
+I think we need to make another markdown with todays date and develop a priority of work based on what we need to change first.

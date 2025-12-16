@@ -17,6 +17,8 @@ analyst: ""
 [entity:John Green](3b14002a-4d55-41d8-9963-061d3b6a51f3)
 [entity:CyberNova](6b31cc5e-3cea-444f-98d0-b958a74ce37d)
 [entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239)
+[entity:Ava Cheng](048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe)
+[attribute:Ultimate Beneficial Owner](6ac46b8d-c1d4-4016-92ae-6c5b5f270f0e)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
@@ -30,8 +32,8 @@ analyst: ""
 === SNIPPET INDEX END ===
 
 === ORIGINAL CONTENT START ===
-Company,Ultimate Beneficial Owner,Ownership %
-[entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239),Ava Cheng,45
+Company,[attribute:Ultimate Beneficial Owner](6ac46b8d-c1d4-4016-92ae-6c5b5f270f0e),Ownership %
+[entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239),[entity:Ava Cheng](048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe),45
 FutureFoods,Maria Lopez,60
 [entity:CyberNova](6b31cc5e-3cea-444f-98d0-b958a74ce37d),Jasmine O'Neil,35
 [entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239),[entity:John Green](3b14002a-4d55-41d8-9963-061d3b6a51f3),54
