@@ -30,27 +30,17 @@ export function TagToolbar({ selectedText, onCreateTag, onClearSelection }: TagT
               size="sm"
               onClick={() => onCreateTag('relationship')}
               disabled={!selectedText}
-              className="bg-amber-500 bg-opacity-20 text-amber-400 hover:bg-opacity-30 border border-amber-500 border-opacity-30"
+              className="bg-orange-500 bg-opacity-20 text-orange-400 hover:bg-opacity-30 border border-orange-500 border-opacity-30"
             >
               <Link className="w-4 h-4 mr-1" />
-              Relationship
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onCreateTag('attribute')}
-              disabled={!selectedText}
-              className="bg-purple-500 bg-opacity-20 text-purple-400 hover:bg-opacity-30 border border-purple-500 border-opacity-30"
-            >
-              <Tag className="w-4 h-4 mr-1" />
-              Attribute
+              Link
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onCreateTag('comment')}
               disabled={!selectedText}
-              className="bg-cyan-500 bg-opacity-20 text-cyan-400 hover:bg-opacity-30 border border-cyan-500 border-opacity-30"
+              className="bg-blue-500 bg-opacity-20 text-blue-400 hover:bg-opacity-30 border border-blue-500 border-opacity-30"
             >
               <MessageCircle className="w-4 h-4 mr-1" />
               Comment
@@ -60,10 +50,10 @@ export function TagToolbar({ selectedText, onCreateTag, onClearSelection }: TagT
               size="sm"
               onClick={() => onCreateTag('kv_pair')}
               disabled={!selectedText}
-              className="bg-orange-500 bg-opacity-20 text-orange-400 hover:bg-opacity-30 border border-orange-500 border-opacity-30"
+              className="bg-amber-500 bg-opacity-20 text-amber-400 hover:bg-opacity-30 border border-amber-500 border-opacity-30"
             >
               <Key className="w-4 h-4 mr-1" />
-              Key:Value
+              Pair
             </Button>
           </div>
         </div>
