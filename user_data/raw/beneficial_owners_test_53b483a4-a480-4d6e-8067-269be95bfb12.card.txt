@@ -26,7 +26,7 @@ analyst: ""
 
 === ORIGINAL CONTENT START ===
 Company,Ultimate Beneficial Owner,Ownership %
-[entity:VisionEdge Analytics](754486ba-0bca-43c7-862a-8b97c7e9bc01),Ava Cheng,45
+[entity:VisionEdge Analytics](754486ba-0bca-43c7-862a-8b97c7e9bc01),[entity:Ava Cheng](048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe),45
 FutureFoods,Maria Lopez,60
 CyberNova,Jasmine O'Neil,35
 [entity:VisionEdge Analytics](754486ba-0bca-43c7-862a-8b97c7e9bc01),John Green,54

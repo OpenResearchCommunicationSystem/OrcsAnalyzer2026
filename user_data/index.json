@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-16T14:53:22.479Z",
+  "lastUpdated": "2025-12-16T15:02:07.429Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -76,16 +76,6 @@
     }
   ],
   "tags": [
-    {
-      "id": "048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe",
-      "name": "Ava Cheng",
-      "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/Ava Cheng_048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe.entity.txt",
-      "references": [
-        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
-      ],
-      "aliases": []
-    },
     {
       "id": "ae14079c-7eb1-4520-8f64-4cebc3dd55a0",
       "name": "BioNex Systems",
@@ -364,13 +354,43 @@
         "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe",
+      "name": "Ava Cheng",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Ava Cheng_048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe.entity.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "6d6d3fb0-1cde-4554-be25-8f64c0656d49",
+      "name": "complete",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/complete_6d6d3fb0-1cde-4554-be25-8f64c0656d49.kv.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "3f8b6121-6a28-4212-b1ce-62643d6b1b90",
+      "name": "Q3 2025",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/Q3 2025_3f8b6121-6a28-4212-b1ce-62643d6b1b90.kv.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 8,
-    "totalTags": 29,
+    "totalTags": 31,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
     "entityCount": 13,

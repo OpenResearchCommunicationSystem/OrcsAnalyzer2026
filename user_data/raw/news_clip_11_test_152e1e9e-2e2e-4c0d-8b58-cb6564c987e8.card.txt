@@ -21,6 +21,8 @@ analyst: "Test Analyst Name"
 [relationship:CEO](a5897d3b-7cb4-4b7e-9874-72026a65d9e3)
 [kv_pair:valued](92900232-2076-48b7-a856-d6aaf4b5bc79)
 [kv_pair:3.2 billion](3146b49a-0822-45a6-bfe4-edbae65267a8)
+[kv_pair:complete](6d6d3fb0-1cde-4554-be25-8f64c0656d49)
+[kv_pair:Q3 2025](3f8b6121-6a28-4212-b1ce-62643d6b1b90)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
@@ -36,7 +38,7 @@ analyst: "Test Analyst Name"
 === SNIPPET INDEX END ===
 
 === ORIGINAL CONTENT START ===
-BREAKING: [entity:TechCorp](cfb00afe-aa19-40a2-851a-b28bbe5a9fe4) has announced the [relationship:acquisition](e59dd245-36ae-4c33-873e-b2533fe8f870) of [entity:BioNex Systems](e860cdf2-c05b-40ab-b98a-d13ef05f9648) in a deal [kv_pair:valued](92900232-2076-48b7-a856-d6aaf4b5bc79) at $[kv_pair:3.2 billion](3146b49a-0822-45a6-bfe4-edbae65267a8). The merger is expected to complete in Q3 2025, pending regulatory approval.
+BREAKING: [entity:TechCorp](cfb00afe-aa19-40a2-851a-b28bbe5a9fe4) has announced the [relationship:acquisition](e59dd245-36ae-4c33-873e-b2533fe8f870) of [entity:BioNex Systems](e860cdf2-c05b-40ab-b98a-d13ef05f9648) in a deal [kv_pair:valued](92900232-2076-48b7-a856-d6aaf4b5bc79) at $[kv_pair:3.2 billion](3146b49a-0822-45a6-bfe4-edbae65267a8). The merger is expected to [kv_pair:complete](6d6d3fb0-1cde-4554-be25-8f64c0656d49) in [kv_pair:Q3 2025](3f8b6121-6a28-4212-b1ce-62643d6b1b90), pending regulatory approval.
 [relationship:CEO](a5897d3b-7cb4-4b7e-9874-72026a65d9e3) [entity:John Smith](c620641b-f2e1-475d-bc5f-e5bb9c4c64c0) commented, "This is a landmark moment for both companies."
 
 === ORIGINAL CONTENT END ===
