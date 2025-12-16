@@ -13,11 +13,12 @@ Preferred communication style: Simple, everyday language.
 ### UI/UX Decisions
 - **Frontend**: React 18 with TypeScript, utilizing Shadcn/ui components and Radix UI primitives.
 - **Styling**: Tailwind CSS with a custom ORCS-themed color scheme.
-- **5 Core Primitives** (Phase 2 simplified taxonomy):
-  - **Entity** (node): Green (`bg-green-500/20 text-green-300 border-green-500/30`)
-  - **Link** (edge, was "relationship"): Orange (`bg-orange-500/20 text-orange-300 border-orange-500/30`)
+- **6 Core Primitives** (Phase 3 Label/Data taxonomy - December 2025):
+  - **Entity** (node): Green (`bg-green-500/20 text-green-300 border-green-500/30`) - blank type = Generic
+  - **Link** (edge): Orange (`bg-orange-500/20 text-orange-300 border-orange-500/30`) - blank predicate = Generic
   - **Snip** (text highlight): Amber (`bg-amber-500/20 text-amber-300 border-amber-500/30`)
-  - **Pair** (key:value metadata, was "kv_pair"): Amber (`bg-amber-500/20 text-amber-300 border-amber-500/30`)
+  - **Label** (reusable vocabulary): Cyan (`bg-cyan-500/20 text-cyan-300 border-cyan-500/30`) - card-local index
+  - **Data** (structured values): Purple (`bg-purple-500/20 text-purple-300 border-purple-500/30`) - type/key/value
   - **Comment** (analyst notes): Blue (`bg-blue-500/20 text-blue-300 border-blue-500/30`)
 - **Terminology**: UI displays "Link" instead of "Relationship" throughout; internal data type remains `relationship`
 - **UUID Display Policy**: Hide UUIDs from primary display unless specifically needed for technical operations; use clean, human-readable names primarily.
@@ -72,16 +73,23 @@ Preferred communication style: Simple, everyday language.
 - **File Management**: Supports `.txt` and `.csv` upload, automatic ORCS card generation, metadata tracking, content parsing with highlighting, and complete file deletion.
 - **Tagging**: Text selection-based tagging, tag metadata (aliases, descriptions, Pairs), visual indicators. Selection guard allows tagging text that already contains tags.
 - **Tag Deletion**: `DELETE /api/tags/:id` with cascade cleanup (removes tag file, cleans card markdown references, updates index); `?dryRun=true` for preview of affected items.
-- **Enhanced Pair System**: Flexible key-value annotation for document metadata:
-  - **Simplified Two-Button UI**: TagToolbar shows "Pair:Key" and "Pair:Value" buttons instead of a single "Pair" button
-  - **Pair Subtypes**: Key-only (orphan key), Value-only (orphan value), Key:Value (complete pair)
-  - **Preset Modal Behavior**: Clicking Pair:Key/Pair:Value opens modal with subtype already selected; hides redundant type/subtype selectors
-  - **Drag-to-Connect**: Drag an orphan key onto an orphan value to link them (or vice versa)
-  - **Visual Indicators**: Orphan pairs show dashed amber border; connected pairs show solid amber border
-  - **Delimiter Detection**: For Key:Value subtype, specify delimiter (default `:`) to parse key and value
-  - Schema fields: `pairSubtype`, `pairKey`, `pairValue`, `linkedPairId`
-  - API: `POST /api/tags/:id/link-pair` to connect two pair tags
-  - **Implementation**: TagToolbar emits `kv_pair_key`/`kv_pair_value` types; TagCreationModal normalizes to `kv_pair` with preset subtype
+- **Label System** (Phase 3 - December 2025): Card-local reusable vocabulary for faster tagging:
+  - **Purpose**: "Define once, use many" - Labels become dropdown options in Entity/Link creation
+  - **Fields**: Highlighted text, optional normalization (wiki-link syntax), optional comment
+  - **Color**: Cyan (`bg-cyan-500/20 text-cyan-300 border-cyan-500/30`)
+  - **Scope**: Card-local (repository-wide planned for future)
+  - Labels populate type/predicate dropdowns in Entity and Link modals
+- **Data System** (Phase 3 - December 2025): Structured data capture with canon types:
+  - **Canon Types**: Generic, Geotemporal, Identifier, Quantity, Quality, Metadata
+  - **Fields**: Type (from canon list or Labels), Key, Value, optional normalization, optional comment
+  - **Defaults**: blank type = "Generic", blank key = "Tag"
+  - **Color**: Purple (`bg-purple-500/20 text-purple-300 border-purple-500/30`)
+  - Type and Key dropdowns pull from card-local Labels
+- **Modal Structure** (applies to Entity, Link, Data creation):
+  - Layer 1: Canon dropdown (predefined types)
+  - Layer 2: Label dropdown (card-local vocabulary)
+  - Layer 3: User input (free text)
+  - **Search Mode**: Dropdowns with >10 items switch to searchable input
 - **Search and Indexing**: Persistent JSON index, automatic indexing, keyword extraction, content-based search, API endpoints for search and index rebuild.
 - **Analyst Attribution**: Critical analyst attribution system for comment tags with privacy-configurable user UUID management.
 - **CSV Tagging**: Full support for tagging CSV content with proper markdown insertion into card files and visual highlighting.
