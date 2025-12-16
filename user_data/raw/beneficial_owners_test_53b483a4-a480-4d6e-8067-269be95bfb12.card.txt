@@ -14,31 +14,23 @@ file_size: 169
 analyst: ""
 
 === TAG INDEX START ===
-[entity:John Green](3b14002a-4d55-41d8-9963-061d3b6a51f3)
-[entity:CyberNova](6b31cc5e-3cea-444f-98d0-b958a74ce37d)
-[entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239)
+[kv_pair:Ownership %](4f57fae1-7c00-48a0-a4ff-701757df4389)
 [entity:Ava Cheng](048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe)
-[attribute:Ultimate Beneficial Owner](6ac46b8d-c1d4-4016-92ae-6c5b5f270f0e)
+[entity:VisionEdge Analytics](754486ba-0bca-43c7-862a-8b97c7e9bc01)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
 # Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
-(3b14002a-4d55-41d8-9963-061d3b6a51f3) --[works for]--> (6b31cc5e-3cea-444f-98d0-b958a74ce37d) {rel: true, attr: false} |id:49b549c1-1e94-4cad-99e8-c88c7905bd99
+(048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe) --[Beneficial Owner]--> (4b4910a4-c7ca-41cc-b491-53531d50e239) {rel: true, attr: false} |id:1ec4dcc4-bd3c-4fc8-b85e-8b9df5616791
 === LINK INDEX END ===
 
-=== SNIPPET INDEX START ===
-# Format: [start-end] "text" | {metadata} |id:uuid
-[114-122] "Ava Chen" | {comment: "Test comment"} |id:e9e50a48-012c-41fd-922e-62040fbd05bd
-=== SNIPPET INDEX END ===
-
 === ORIGINAL CONTENT START ===
-Company,[attribute:Ultimate Beneficial Owner](6ac46b8d-c1d4-4016-92ae-6c5b5f270f0e),Ownership %
-[entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239),[entity:Ava Cheng](048f0f5a-ce0b-4755-b89a-aa5fb6c1b5fe),45
+Company,Ultimate Beneficial Owner,Ownership %
+[entity:VisionEdge Analytics](754486ba-0bca-43c7-862a-8b97c7e9bc01),Ava Cheng,45
 FutureFoods,Maria Lopez,60
-[entity:CyberNova](6b31cc5e-3cea-444f-98d0-b958a74ce37d),Jasmine O'Neil,35
-[entity:VisionEdge Analytics](4b4910a4-c7ca-41cc-b491-53531d50e239),[entity:John Green](3b14002a-4d55-41d8-9963-061d3b6a51f3),54
+CyberNova,Jasmine O'Neil,35
+[entity:VisionEdge Analytics](754486ba-0bca-43c7-862a-8b97c7e9bc01),John Green,54
 === ORIGINAL CONTENT END ===
-
 === USER ADDED START ===
 
 === USER ADDED END ===

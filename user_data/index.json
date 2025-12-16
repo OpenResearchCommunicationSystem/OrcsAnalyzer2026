@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-16T12:59:26.613Z",
+  "lastUpdated": "2025-12-16T14:34:59.359Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -15,8 +15,8 @@
       "path": "/home/runner/workspace/user_data/raw/beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "name": "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "type": "orcs_card",
-      "hash": "5c4ce2933e2c45735f3b035af2fc8819062e5852f355ef2be6746c38acdb66be",
-      "timestamp": 1765842049689.276,
+      "hash": "5dc2feab80f35d4d1228f3217f45d1f195a9727410af3a336cd9509cc622caf4",
+      "timestamp": 1765895646281.8423,
       "cardUuid": "53b483a4-a480-4d6e-8067-269be95bfb12",
       "sourceFile": "beneficial_owners_test.csv"
     },
@@ -191,10 +191,28 @@
       "aliases": []
     },
     {
+      "id": "754486ba-0bca-43c7-862a-8b97c7e9bc01",
+      "name": "VisionEdge Analytics",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/VisionEdge Analytics_754486ba-0bca-43c7-862a-8b97c7e9bc01.entity.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
+    },
+    {
       "id": "c9e465d0-8cf6-427a-be1a-674cd969a04b",
       "name": "AQUIRED",
       "type": "relationship",
       "filePath": "/home/runner/workspace/user_data/relationships/AQUIRED_c9e465d0-8cf6-427a-be1a-674cd969a04b.relate.txt",
+      "references": [],
+      "aliases": []
+    },
+    {
+      "id": "6d7f295f-54fd-4149-9499-c1262b351b14",
+      "name": "Beneficial Owner",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/Beneficial Owner_6d7f295f-54fd-4149-9499-c1262b351b14.relate.txt",
       "references": [],
       "aliases": []
     },
@@ -256,16 +274,86 @@
         "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "sample-value-001",
+      "name": "$4.2M",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/$4.2M_sample-value-001.kv.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": [
+        "4.2 million",
+        "four million"
+      ]
+    },
+    {
+      "id": "0ca522a6-3bfe-4735-8b36-9e7577119736",
+      "name": "45",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/45_0ca522a6-3bfe-4735-8b36-9e7577119736.kv.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "sample-key-002",
+      "name": "Headquarters",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/Headquarters_sample-key-002.kv.txt",
+      "references": [],
+      "aliases": [
+        "HQ",
+        "location"
+      ]
+    },
+    {
+      "id": "4f57fae1-7c00-48a0-a4ff-701757df4389",
+      "name": "Ownership %",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/Ownership %_4f57fae1-7c00-48a0-a4ff-701757df4389.kv.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "sample-pair-001",
+      "name": "Ownership 45%",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/Ownership 45%_sample-pair-001.kv.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": [
+        "ownership percentage",
+        "stake"
+      ]
+    },
+    {
+      "id": "sample-key-001",
+      "name": "Revenue",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/Revenue_sample-key-001.kv.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": [
+        "annual revenue",
+        "total revenue"
+      ]
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 8,
-    "totalTags": 19,
+    "totalTags": 27,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 12,
-    "relationshipCount": 6
+    "entityCount": 13,
+    "relationshipCount": 7
   }
 }

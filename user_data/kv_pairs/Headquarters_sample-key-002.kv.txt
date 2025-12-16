@@ -1,0 +1,18 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: sample-key-002
+TAG_TYPE: kv_pair
+NAME: Headquarters
+CREATED: 2025-12-16T15:00:00.000Z
+MODIFIED: 2025-12-16T15:00:00.000Z
+
+PAIR_SUBTYPE: key
+PAIR_KEY: Headquarters
+
+SEARCH_ALIASES:
+  - HQ
+  - location
+
+CARD_REFERENCES:
+
+=== END ORCS ENTITY ===

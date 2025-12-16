@@ -1,0 +1,20 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: sample-value-001
+TAG_TYPE: kv_pair
+NAME: $4.2M
+CREATED: 2025-12-16T15:00:00.000Z
+MODIFIED: 2025-12-16T15:00:00.000Z
+
+PAIR_SUBTYPE: value
+PAIR_VALUE: $4.2M
+LINKED_PAIR_ID: sample-key-001
+
+SEARCH_ALIASES:
+  - 4.2 million
+  - four million
+
+CARD_REFERENCES:
+  - news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt
+
+=== END ORCS ENTITY ===
