@@ -7,7 +7,7 @@ export const fileSchema = z.object({
   path: z.string(),
   type: z.enum([
     // Current types
-    'txt', 'csv', 'orcs_card', 'metadata', 'entity', 'link',
+    'txt', 'csv', 'orcs_card', 'metadata', 'entity', 'link', 'label', 'data',
     // Legacy types (for backwards compatibility)
     'relationship', 'attribute', 'comment', 'kv_pair'
   ]),
@@ -334,15 +334,19 @@ export type PredicateKey = keyof typeof predicateCatalog;
 // These will be removed after migration is complete
 // ============================================================================
 
-// @deprecated Use entityTypeSchema instead
-export const tagTypeSchema = z.enum(['entity', 'relationship', 'attribute', 'comment', 'kv_pair']);
+// Tag types - updated for Phase 3 Label/Data taxonomy
+export const tagTypeSchema = z.enum(['entity', 'relationship', 'attribute', 'comment', 'label', 'data']);
 export type TagType = z.infer<typeof tagTypeSchema>;
 
-// Pair subtype for kv_pair tags
+// Canon data types for Data tags
+export const canonDataTypeSchema = z.enum(['Generic', 'Geotemporal', 'Identifier', 'Quantity', 'Quality', 'Metadata']);
+export type CanonDataType = z.infer<typeof canonDataTypeSchema>;
+
+// @deprecated - kept for backwards compatibility during migration
 export const pairSubtypeSchema = z.enum(['key', 'value', 'key_value']);
 export type PairSubtype = z.infer<typeof pairSubtypeSchema>;
 
-// @deprecated Use entitySchema instead
+// Tag schema - updated for Phase 3 Label/Data taxonomy
 export const tagSchema = z.object({
   id: z.string(),
   type: tagTypeSchema,
@@ -354,11 +358,18 @@ export const tagSchema = z.object({
   description: z.string().optional(),
   created: z.string(),
   modified: z.string(),
-  // Pair-specific fields (for kv_pair type)
-  pairSubtype: pairSubtypeSchema.optional(), // 'key', 'value', or 'key_value'
-  pairKey: z.string().optional(), // The key text (for key or key_value subtypes)
-  pairValue: z.string().optional(), // The value text (for value or key_value subtypes)
-  linkedPairId: z.string().optional(), // Link to partner key or value tag
+  // Label-specific fields (for label type)
+  normalization: z.string().optional(), // Wiki-link style normalization [[type:canonical|display]]
+  comment: z.string().optional(), // Analyst comment
+  // Data-specific fields (for data type)
+  dataType: canonDataTypeSchema.optional(), // Canon type: Generic, Geotemporal, etc.
+  dataKey: z.string().optional(), // Key field (default: "Tag" if blank)
+  dataValue: z.string().optional(), // Value field
+  // @deprecated - kept for backwards compatibility
+  pairSubtype: pairSubtypeSchema.optional(),
+  pairKey: z.string().optional(),
+  pairValue: z.string().optional(),
+  linkedPairId: z.string().optional(),
 });
 
 export const insertTagSchema = tagSchema.omit({ id: true, created: true, modified: true });

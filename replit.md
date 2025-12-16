@@ -73,6 +73,7 @@ Preferred communication style: Simple, everyday language.
 - **File Management**: Supports `.txt` and `.csv` upload, automatic ORCS card generation, metadata tracking, content parsing with highlighting, and complete file deletion.
 - **Tagging**: Text selection-based tagging, tag metadata (aliases, descriptions, Pairs), visual indicators. Selection guard allows tagging text that already contains tags.
 - **Tag Deletion**: `DELETE /api/tags/:id` with cascade cleanup (removes tag file, cleans card markdown references, updates index); `?dryRun=true` for preview of affected items.
+- **DEPRECATED**: The previous Pair/kv_pair system has been removed and replaced with the Label/Data system below (December 2025).
 - **Label System** (Phase 3 - December 2025): Card-local reusable vocabulary for faster tagging:
   - **Purpose**: "Define once, use many" - Labels become dropdown options in Entity/Link creation
   - **Fields**: Highlighted text, optional normalization (wiki-link syntax), optional comment
@@ -131,6 +132,16 @@ Preferred communication style: Simple, everyday language.
   - Collapsible sections for Relationships (orange), Attributes (purple), All Bullets (cyan), Snippets (amber), Source Cards (blue)
   - Navigation from Tagged Elements via BookOpen icon button on entity hover
   - API: `GET /api/entities/:entityId/dossier`
+
+## Recent Changes (December 2025)
+
+- **Label/Data System Redesign**: Replaced the previous Pair/kv_pair tagging system with a more powerful Label and Data structure
+- **New Modals**: LabelCreationModal (cyan) and DataCreationModal (purple) replace PairCreationModal
+- **SearchableSelect Component**: New component for dropdowns with >10 items that switches to searchable input
+- **Canon Data Types**: 6 predefined types for Data tags: Generic, Geotemporal, Identifier, Quantity, Quality, Metadata
+- **Card-local Labels**: Labels defined on a card can be reused as type options in Entity, Link, and Data creation
+- **Cleanup**: Removed kv_pairs directory and related backend endpoints (`/api/tags/:id/link-pair`)
+- **TagCreationModal Simplification**: Now handles only Entity, Link, and Comment types
 
 ## External Dependencies
 

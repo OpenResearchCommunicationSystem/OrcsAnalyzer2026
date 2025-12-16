@@ -334,8 +334,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     // Look for markdown-style tags: [entity:TechCorp](uuid) format
     return content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, (match, type, text, uuid) => {
       const colorClass = getTagColorClass(type);
-      // Make entity and kv_pair tags draggable for connection workflow
-      const isDraggable = type === 'entity' || type === 'kv_pair';
+      // Make entity tags draggable for connection workflow
+      const isDraggable = type === 'entity';
       const draggableAttrs = isDraggable 
         ? `draggable="true" data-tag-draggable="true"` 
         : '';
@@ -346,14 +346,16 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     });
   };
 
-  // Get CSS class for tag type colors - Official ORCS Color Schema
+  // Get CSS class for tag type colors - Official ORCS Color Schema (Phase 3)
   const getTagColorClass = (tagType: string): string => {
     switch (tagType) {
       case 'entity': return 'bg-green-500/20 text-green-300 border border-green-500/30 rounded px-1';
       case 'relationship': return 'bg-orange-500/20 text-orange-300 border border-orange-500/30 rounded px-1';
       case 'attribute': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded px-1';
       case 'comment': return 'bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded px-1';
-      case 'kv_pair': return 'bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded px-1';
+      case 'label': return 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded px-1';
+      case 'data': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded px-1';
+      case 'kv_pair': return 'bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded px-1'; // Legacy
       default: return 'bg-gray-500/20 text-gray-300 border border-gray-500/30 rounded px-1';
     }
   };
@@ -480,23 +482,18 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       const taggedText = highlightedContent.substring(segment.start, segment.end);
       const afterText = highlightedContent.substring(segment.end);
 
-      // Get highlight class with pair status awareness
+      // Get highlight class
       const highlightClass = getTagHighlightClass(tagType, segment.tag);
       
-      // Add draggable attributes for entity and kv_pair tags to support drag-and-drop connections
-      const isDraggable = tagType === 'entity' || tagType === 'kv_pair';
+      // Add draggable attributes for entity tags to support drag-and-drop connections
+      const isDraggable = tagType === 'entity';
       const draggableAttrs = isDraggable 
         ? `draggable="true" data-tag-draggable="true"` 
         : '';
       const dragCursor = isDraggable ? 'cursor: grab;' : 'cursor: pointer;';
       
-      // Build tooltip with pair status info
-      let tooltip = `${tagName} (${tagType})`;
-      if (tagType === 'kv_pair') {
-        const subtype = segment.tag.pairSubtype || 'key_value';
-        const isLinked = !!segment.tag.linkedPairId;
-        tooltip = `${tagName} (Pair: ${subtype}${isLinked ? ' - linked' : ' - orphan'})`;
-      }
+      // Build tooltip
+      const tooltip = `${tagName} (${tagType})`;
       
       const highlightedSpan = `<span class="${highlightClass}" data-tag-id="${segment.tag.id}" data-tag-type="${tagType}" data-tag-name="${tagName}" title="${tooltip}" ${draggableAttrs} style="${dragCursor}">${taggedText}</span>`;
 
@@ -519,20 +516,10 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         return `${baseClasses} bg-purple-900/30 border-purple-600 text-purple-300`;
       case 'comment':
         return `${baseClasses} bg-blue-900/30 border-blue-600 text-blue-300`;
-      case 'kv_pair':
-        // Different styles for orphan vs connected pairs
-        if (tag && tag.pairSubtype && tag.pairSubtype !== 'key_value') {
-          // Key-only or value-only subtype
-          if (tag.linkedPairId) {
-            // Connected pair - solid amber
-            return `${baseClasses} bg-amber-900/40 border-amber-500 text-amber-300 border-2`;
-          } else {
-            // Orphan pair - dashed amber border
-            return `${baseClasses} bg-amber-900/20 border-amber-500/50 text-amber-400 border-dashed`;
-          }
-        }
-        // Complete key:value pair
-        return `${baseClasses} bg-amber-900/30 border-amber-600 text-amber-300`;
+      case 'label':
+        return `${baseClasses} bg-cyan-900/30 border-cyan-600 text-cyan-300`;
+      case 'data':
+        return `${baseClasses} bg-purple-900/30 border-purple-600 text-purple-300`;
       default:
         return `${baseClasses} bg-gray-900/30 border-gray-600 text-gray-300`;
     }
@@ -727,7 +714,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       const element = target as HTMLElement;
       const el = element.nodeType === Node.TEXT_NODE ? element.parentElement : element;
       if (!el) return null;
-      // Find closest element with draggable tag data (entity or kv_pair)
+      // Find closest element with draggable tag data (entity)
       return el.closest('[data-tag-draggable="true"]') as HTMLElement | null;
     };
 
@@ -782,9 +769,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         if (targetTagId && targetTagId !== draggedEntityId) {
           event.preventDefault();
           event.dataTransfer!.dropEffect = 'link';
-          // Use different colors for entity vs pair
-          const outlineColor = sourceTag.type === 'kv_pair' ? '#f59e0b' : '#f97316';
-          targetEl.style.outline = `2px solid ${outlineColor}`;
+          // Orange outline for entity connections
+          targetEl.style.outline = '2px solid #f97316';
           targetEl.style.outlineOffset = '2px';
         }
       }
@@ -823,26 +809,6 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             if (sourceTag.type === 'entity' && onEntityDragConnection) {
               // Entity connection workflow
               onEntityDragConnection(sourceTag, targetTag);
-            } else if (sourceTag.type === 'kv_pair') {
-              // Pair connection workflow - call API to link pairs
-              try {
-                const response = await fetch(`/api/tags/${sourceTag.id}/link-pair`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ targetTagId: targetTag.id })
-                });
-                
-                if (response.ok) {
-                  // Invalidate tags query to refresh
-                  queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
-                } else {
-                  const error = await response.json();
-                  console.error('Failed to link pairs:', error.error);
-                  alert(error.error || 'Failed to link pairs');
-                }
-              } catch (error) {
-                console.error('Error linking pairs:', error);
-              }
             }
           }
         }

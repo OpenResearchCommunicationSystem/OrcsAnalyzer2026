@@ -5,6 +5,8 @@ import { TagToolbar } from "@/components/TagToolbar";
 import { GraphVisualization } from "@/components/GraphVisualization";
 import { TagEditor } from "@/components/TagEditor";
 import { TagCreationModal } from "@/components/TagCreationModal";
+import { LabelCreationModal } from "@/components/LabelCreationModal";
+import { DataCreationModal } from "@/components/DataCreationModal";
 import { RelationshipConnectionModal } from "@/components/RelationshipConnectionModal";
 import { MetadataForm } from "@/components/MetadataForm";
 import { Button } from "@/components/ui/button";
@@ -449,13 +451,40 @@ export default function OrcsMain() {
         }}
       />
 
-      {/* Tag Creation Modal */}
-      {showTagModal && (
+      {/* Tag Creation Modal - for entity, relationship, comment */}
+      {showTagModal && tagModalType !== 'label' && tagModalType !== 'data' && (
         <TagCreationModal
           isOpen={showTagModal}
           onClose={() => setShowTagModal(false)}
           selectedText={selectedText}
           tagType={tagModalType}
+          onTagCreated={() => {
+            setShowTagModal(false);
+            setSelectedText(null);
+          }}
+        />
+      )}
+
+      {/* Label Creation Modal */}
+      {showTagModal && tagModalType === 'label' && (
+        <LabelCreationModal
+          isOpen={showTagModal}
+          onClose={() => setShowTagModal(false)}
+          selectedText={selectedText}
+          onTagCreated={() => {
+            setShowTagModal(false);
+            setSelectedText(null);
+          }}
+        />
+      )}
+
+      {/* Data Creation Modal */}
+      {showTagModal && tagModalType === 'data' && (
+        <DataCreationModal
+          isOpen={showTagModal}
+          onClose={() => setShowTagModal(false)}
+          selectedText={selectedText}
+          cardId={files.find(f => f.id === selectedFile)?.cardUuid}
           onTagCreated={() => {
             setShowTagModal(false);
             setSelectedText(null);
