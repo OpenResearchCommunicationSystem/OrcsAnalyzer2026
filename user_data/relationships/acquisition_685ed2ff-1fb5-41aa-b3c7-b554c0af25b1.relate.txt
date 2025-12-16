@@ -1,0 +1,15 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: 685ed2ff-1fb5-41aa-b3c7-b554c0af25b1
+TAG_TYPE: relationship
+NAME: acquisition
+ENTITY_TYPE: acquisition
+CREATED: 2025-12-16T18:42:16.009Z
+MODIFIED: 2025-12-16T18:42:16.009Z
+
+SEARCH_ALIASES:
+
+CARD_REFERENCES:
+  - news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt
+
+=== END ORCS ENTITY ===

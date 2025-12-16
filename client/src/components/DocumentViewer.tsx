@@ -1158,14 +1158,16 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                     <th className="px-3 py-2 text-left text-xs font-medium text-slate-400 uppercase tracking-wider w-12">
                       #
                     </th>
-                    {headers.map((header, colIndex) => (
-                      <th
-                        key={colIndex}
-                        className="px-3 py-2 text-left text-xs font-medium text-slate-400 uppercase tracking-wider min-w-32"
-                      >
-                        {header || `Col ${colIndex + 1}`}
-                      </th>
-                    ))}
+                    {headers.map((header, colIndex) => {
+                      const processedHeader = header ? processMarkdownTags(header) : `Col ${colIndex + 1}`;
+                      return (
+                        <th
+                          key={colIndex}
+                          className="px-3 py-2 text-left text-xs font-medium text-slate-400 uppercase tracking-wider min-w-32"
+                          dangerouslySetInnerHTML={{ __html: processedHeader }}
+                        />
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700">

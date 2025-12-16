@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-16T18:33:24.194Z",
+  "lastUpdated": "2025-12-16T18:49:40.433Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -115,16 +115,96 @@
         "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "28cd6710-002f-40af-9ea8-1e0dcf8acb53",
+      "name": "Ava Cheng",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Ava Cheng_28cd6710-002f-40af-9ea8-1e0dcf8acb53.entity.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "c99e12bd-6baa-4327-950c-841759cc495c",
+      "name": "TechCorp",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/TechCorp_c99e12bd-6baa-4327-950c-841759cc495c.entity.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "303e09df-d6a1-4d1a-8c90-4f865e12324e",
+      "name": "BioNex Systems",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/BioNex Systems_303e09df-d6a1-4d1a-8c90-4f865e12324e.entity.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "cee90be4-6ae7-4abd-8676-7df32df87c32",
+      "name": "3.2 billion",
+      "type": "data",
+      "filePath": "/home/runner/workspace/user_data/data/3.2 billion_cee90be4-6ae7-4abd-8676-7df32df87c32.data.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "685ed2ff-1fb5-41aa-b3c7-b554c0af25b1",
+      "name": "acquisition",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/acquisition_685ed2ff-1fb5-41aa-b3c7-b554c0af25b1.relate.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "4f0e878b-c232-4a27-99fa-406f78d8a43d",
+      "name": "CEO",
+      "type": "label",
+      "filePath": "/home/runner/workspace/user_data/labels/CEO_4f0e878b-c232-4a27-99fa-406f78d8a43d.label.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "7586f6f3-5fea-4d98-9095-3f3cc4726926",
+      "name": "John Smith",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/John Smith_7586f6f3-5fea-4d98-9095-3f3cc4726926.entity.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "18617d0d-358c-40f7-b921-e81d34f79879",
+      "name": "Ultimate Beneficial Owner",
+      "type": "label",
+      "filePath": "/home/runner/workspace/user_data/labels/Ultimate Beneficial Owner_18617d0d-358c-40f7-b921-e81d34f79879.label.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 8,
-    "totalTags": 4,
+    "totalTags": 12,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 2,
-    "relationshipCount": 0
+    "entityCount": 6,
+    "relationshipCount": 1
   }
 }
