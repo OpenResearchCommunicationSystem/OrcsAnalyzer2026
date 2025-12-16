@@ -40,12 +40,11 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
   // Separate files by type
   const cardFiles = filteredFiles.filter(file => file.name.includes('.card.txt'));
   const originalFiles = filteredFiles.filter(file => (file.type === 'txt' || file.type === 'csv') && !file.name.includes('.card.txt'));
-  const tagFiles = filteredFiles.filter(file => ['entity', 'relationship', 'attribute', 'comment', 'kv_pair'].includes(file.type));
+  const tagFiles = filteredFiles.filter(file => ['entity', 'relationship', 'attribute', 'comment', 'label', 'data'].includes(file.type));
   
   // Show cards by default, originals only when toggled, hide tag files from main display
   const displayFiles = showOriginals ? [...cardFiles, ...originalFiles] : cardFiles;
 
-  const tagCounts = stats?.tagCounts || {};
 
   // Group tags by type
   const tagsByType = {
@@ -53,7 +52,8 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
     relationship: (tags as any[]).filter((tag: any) => tag.type === 'relationship'),
     attribute: (tags as any[]).filter((tag: any) => tag.type === 'attribute'),
     comment: (tags as any[]).filter((tag: any) => tag.type === 'comment'),
-    kv_pair: (tags as any[]).filter((tag: any) => tag.type === 'kv_pair'),
+    label: (tags as any[]).filter((tag: any) => tag.type === 'label'),
+    data: (tags as any[]).filter((tag: any) => tag.type === 'data'),
   };
 
   const toggleFolder = (folderName: string) => {
@@ -201,8 +201,9 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
             {[
               { name: 'entities', type: 'entity', color: 'green', tags: tagsByType.entity },
               { name: 'links', type: 'relationship', color: 'orange', tags: tagsByType.relationship },
-              { name: 'pairs', type: 'kv_pair', color: 'amber', tags: tagsByType.kv_pair },
-              { name: 'comments', type: 'comment', color: 'purple', tags: tagsByType.comment },
+              { name: 'labels', type: 'label', color: 'cyan', tags: tagsByType.label },
+              { name: 'data', type: 'data', color: 'purple', tags: tagsByType.data },
+              { name: 'comments', type: 'comment', color: 'blue', tags: tagsByType.comment },
             ].map((folder) => (
               <div key={folder.name} className="ml-4 space-y-1">
                 <div 

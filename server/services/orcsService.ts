@@ -6,12 +6,13 @@ import { storage } from '../storage';
 
 const USER_DATA_DIR = path.join(process.cwd(), 'user_data');
 
-const TAG_DIRECTORIES = {
+const TAG_DIRECTORIES: Record<string, string> = {
   entity: path.join(USER_DATA_DIR, 'entities'),
   relationship: path.join(USER_DATA_DIR, 'relationships'),
   attribute: path.join(USER_DATA_DIR, 'attributes'),
   comment: path.join(USER_DATA_DIR, 'comments'),
-  kv_pair: path.join(USER_DATA_DIR, 'kv_pairs'),
+  label: path.join(USER_DATA_DIR, 'labels'),
+  data: path.join(USER_DATA_DIR, 'data'),
 };
 
 export class OrcsService {
@@ -119,7 +120,7 @@ export class OrcsService {
   private isAnyTagFile(filename: string): boolean {
     // Check if file matches any tag type extension
     const allExtensions = [
-      'entity.txt', 'relate.txt', 'attrib.txt', 'comment.txt', 'kv.txt', 'orcs'
+      'entity.txt', 'relate.txt', 'attrib.txt', 'comment.txt', 'label.txt', 'data.txt', 'orcs'
     ];
     
     return allExtensions.some(ext => filename.endsWith('.' + ext));
@@ -617,12 +618,13 @@ export class OrcsService {
   }
 
   private getFileExtension(tagType: TagType): string {
-    const extensions = {
+    const extensions: Record<string, string> = {
       entity: 'entity.txt',
       relationship: 'relate.txt',
       attribute: 'attrib.txt',
       comment: 'comment.txt',
-      kv_pair: 'kv.txt',
+      label: 'label.txt',
+      data: 'data.txt',
     };
     return extensions[tagType] || 'orcs.txt';
   }
@@ -1198,8 +1200,8 @@ export class OrcsService {
 
   // Helper: Strip markdown-style tags from content to get plain text
   private stripTagsFromContent(content: string): string {
-    // Match all tag formats: entity, relationship, attribute, comment, kv, kv_pair
-    const tagPattern = /\[(entity|relationship|attribute|comment|kv_pair|kv):([^\]]+)\]\([a-f0-9-]+\)/gi;
+    // Match all tag formats: entity, relationship, attribute, comment, label, data
+    const tagPattern = /\[(entity|relationship|attribute|comment|label|data):([^\]]+)\]\([a-f0-9-]+\)/gi;
     return content.replace(tagPattern, '$2');
   }
 

@@ -34,7 +34,8 @@ export function CleanContentDisplay({
       case 'relationship': return 'bg-orange-500/20 text-orange-300 border border-orange-500/30 rounded px-1';
       case 'attribute': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded px-1';
       case 'comment': return 'bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded px-1';
-      case 'kv_pair': return 'bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded px-1';
+      case 'label': return 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded px-1';
+      case 'data': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded px-1';
       default: return 'bg-gray-500/20 text-gray-300 border border-gray-500/30 rounded px-1';
     }
   };

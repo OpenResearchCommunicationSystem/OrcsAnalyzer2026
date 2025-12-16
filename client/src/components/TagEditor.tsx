@@ -392,7 +392,8 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               <SelectContent className="bg-gray-800 border-gray-600">
                 <SelectItem value="entity">Entity</SelectItem>
                 <SelectItem value="relationship">Link</SelectItem>
-                <SelectItem value="kv_pair">Pair</SelectItem>
+                <SelectItem value="label">Label</SelectItem>
+                <SelectItem value="data">Data</SelectItem>
                 <SelectItem value="comment">Comment</SelectItem>
               </SelectContent>
             </Select>
@@ -447,13 +448,21 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
                       <SelectItem value="summary">Summary</SelectItem>
                     </>
                   )}
-                  {formData.type === 'kv_pair' && (
+                  {formData.type === 'label' && (
                     <>
-                      <SelectItem value="metadata">Metadata</SelectItem>
-                      <SelectItem value="classification">Classification</SelectItem>
-                      <SelectItem value="reference">Reference</SelectItem>
-                      <SelectItem value="identifier">Identifier</SelectItem>
-                      <SelectItem value="property">Property</SelectItem>
+                      <SelectItem value="vocabulary">Vocabulary</SelectItem>
+                      <SelectItem value="category">Category</SelectItem>
+                      <SelectItem value="topic">Topic</SelectItem>
+                    </>
+                  )}
+                  {formData.type === 'data' && (
+                    <>
+                      <SelectItem value="Generic">Generic</SelectItem>
+                      <SelectItem value="Geotemporal">Geotemporal</SelectItem>
+                      <SelectItem value="Identifier">Identifier</SelectItem>
+                      <SelectItem value="Quantity">Quantity</SelectItem>
+                      <SelectItem value="Quality">Quality</SelectItem>
+                      <SelectItem value="Metadata">Metadata</SelectItem>
                     </>
                   )}
                 </SelectContent>

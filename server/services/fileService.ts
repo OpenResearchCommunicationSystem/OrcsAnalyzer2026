@@ -27,7 +27,8 @@ export class FileService {
       path.join(USER_DATA_DIR, 'relationships'),
       path.join(USER_DATA_DIR, 'attributes'),
       path.join(USER_DATA_DIR, 'comments'),
-      path.join(USER_DATA_DIR, 'kv_pairs'),
+      path.join(USER_DATA_DIR, 'labels'),
+      path.join(USER_DATA_DIR, 'data'),
     ];
 
     for (const dir of dirs) {
@@ -605,12 +606,13 @@ export class FileService {
   }
 
   // Determine tag type from filename
-  private getFileTagType(filename: string): 'entity' | 'relationship' | 'attribute' | 'comment' | 'kv_pair' | null {
+  private getFileTagType(filename: string): 'entity' | 'relationship' | 'attribute' | 'comment' | 'label' | 'data' | null {
     if (filename.endsWith('.entity.txt')) return 'entity';
     if (filename.endsWith('.relate.txt')) return 'relationship';
     if (filename.endsWith('.attrib.txt')) return 'attribute';
     if (filename.endsWith('.comment.txt')) return 'comment';
-    if (filename.endsWith('.kv.txt')) return 'kv_pair';
+    if (filename.endsWith('.label.txt')) return 'label';
+    if (filename.endsWith('.data.txt')) return 'data';
     return null;
   }
 }

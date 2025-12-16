@@ -15,12 +15,13 @@ const USER_DATA_DIR = path.join(process.cwd(), 'user_data');
 const INDEX_FILE = path.join(USER_DATA_DIR, 'index.json');
 const INDEX_VERSION = '2025.003'; // Bumped to force reindex with stable file IDs
 
-const TAG_DIRECTORIES = {
+const TAG_DIRECTORIES: Record<string, string> = {
   entity: path.join(USER_DATA_DIR, 'entities'),
   relationship: path.join(USER_DATA_DIR, 'relationships'),
   attribute: path.join(USER_DATA_DIR, 'attributes'),
   comment: path.join(USER_DATA_DIR, 'comments'),
-  kv_pair: path.join(USER_DATA_DIR, 'kv_pairs'),
+  label: path.join(USER_DATA_DIR, 'labels'),
+  data: path.join(USER_DATA_DIR, 'data'),
 };
 
 const RAW_DIR = path.join(USER_DATA_DIR, 'raw');
@@ -182,7 +183,8 @@ export class IndexService {
     if (filename.endsWith('.relate.txt')) return 'relationship';
     if (filename.endsWith('.attrib.txt')) return 'attribute';
     if (filename.endsWith('.comment.txt')) return 'comment';
-    if (filename.endsWith('.kv.txt')) return 'kv_pair';
+    if (filename.endsWith('.label.txt')) return 'label';
+    if (filename.endsWith('.data.txt')) return 'data';
     if (filename.endsWith('.csv')) return 'csv';
     return 'txt';
   }
@@ -680,7 +682,8 @@ export class IndexService {
     if (filepath.includes('/relationships/')) return 'relationship';
     if (filepath.includes('/attributes/')) return 'attribute';
     if (filepath.includes('/comments/')) return 'comment';
-    if (filepath.includes('/kv_pairs/')) return 'kv_pair';
+    if (filepath.includes('/labels/')) return 'label';
+    if (filepath.includes('/data/')) return 'data';
     return 'entity';
   }
 

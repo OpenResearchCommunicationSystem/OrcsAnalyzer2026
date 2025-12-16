@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-16T17:40:31.586Z",
+  "lastUpdated": "2025-12-16T18:03:11.362Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -15,8 +15,8 @@
       "path": "/home/runner/workspace/user_data/raw/beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "name": "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "type": "orcs_card",
-      "hash": "df1c2880179d5208b22025effda60c18ed8cf6da7bedcd91546a01f85ecee491",
-      "timestamp": 1765906822553.5632,
+      "hash": "de806030d30c55507e1b73b0456f813ad48e9c67dd6146ade5ef1e52f3827156",
+      "timestamp": 1765906904646.561,
       "cardUuid": "53b483a4-a480-4d6e-8067-269be95bfb12",
       "sourceFile": "beneficial_owners_test.csv"
     },
@@ -33,8 +33,8 @@
       "path": "/home/runner/workspace/user_data/raw/news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt",
       "name": "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt",
       "type": "orcs_card",
-      "hash": "303715c0545d93a830e4f1331777a72f15c94c57f391c06c0034b7b1719e44ff",
-      "timestamp": 1765906822563.5632,
+      "hash": "1a76dd6002d77d7ed686b6298ba5a42f11332b6cf7589873e3d07804f373a37d",
+      "timestamp": 1765906939382.56,
       "cardUuid": "152e1e9e-2e2e-4c0d-8b58-cb6564c987e8",
       "sourceFile": "news_clip_11_test.txt"
     },
@@ -51,8 +51,8 @@
       "path": "/home/runner/workspace/user_data/raw/social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt",
       "name": "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt",
       "type": "orcs_card",
-      "hash": "eabb2582f171dff1cc44e5b092a18e1ca73cb0c09ce143c163ca9c2e90b08716",
-      "timestamp": 1765906822572.5632,
+      "hash": "7359694f284127ff812ca0b6dd99675a03ba6d52765215506dab0df1fc043ce6",
+      "timestamp": 1765906953411.5598,
       "cardUuid": "3adbc506-3643-4917-af04-533e2eff622a",
       "sourceFile": "social_post_1_test.txt"
     },
@@ -69,21 +69,42 @@
       "path": "/home/runner/workspace/user_data/raw/social_post_2_test_d9dd9033-3c28-41b0-acfe-ce645ef4a1cd.card.txt",
       "name": "social_post_2_test_d9dd9033-3c28-41b0-acfe-ce645ef4a1cd.card.txt",
       "type": "orcs_card",
-      "hash": "756d6f9ad6421b25c2ef4a653a96c1a9c9aa9004e6a47906b8bbb9ea295ac74c",
-      "timestamp": 1765906822582.5632,
+      "hash": "c18a26c7706b884af4f828948a6892ad7b561b6100c7f8b6469b51beafc663e8",
+      "timestamp": 1765907589097.5422,
       "cardUuid": "d9dd9033-3c28-41b0-acfe-ce645ef4a1cd",
       "sourceFile": "social_post_2_test.txt"
     }
   ],
-  "tags": [],
+  "tags": [
+    {
+      "id": "871a500d-9544-417e-9438-3093aa9642aa",
+      "name": "Global Clean Energy Forum",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Global Clean Energy Forum_871a500d-9544-417e-9438-3093aa9642aa.entity.txt",
+      "references": [
+        "social_post_2_test_d9dd9033-3c28-41b0-acfe-ce645ef4a1cd.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "b4cf07e9-6f74-4f37-8927-71773098be10",
+      "name": "Jasmine O'Neil",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Jasmine O'Neil_b4cf07e9-6f74-4f37-8927-71773098be10.entity.txt",
+      "references": [
+        "social_post_2_test_d9dd9033-3c28-41b0-acfe-ce645ef4a1cd.card.txt"
+      ],
+      "aliases": []
+    }
+  ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 8,
-    "totalTags": 0,
+    "totalTags": 2,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 0,
+    "entityCount": 2,
     "relationshipCount": 0
   }
 }
