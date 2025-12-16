@@ -318,6 +318,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Link two pair tags together (key + value)
+  app.post("/api/tags/:id/link-pair", async (req, res) => {
+    try {
+      const sourceTagId = req.params.id;
+      const { targetTagId } = req.body;
+
+      if (!targetTagId) {
+        return res.status(400).json({ error: "targetTagId is required" });
+      }
+
+      const sourceTag = await orcsService.getTag(sourceTagId);
+      const targetTag = await orcsService.getTag(targetTagId);
+
+      if (!sourceTag || !targetTag) {
+        return res.status(404).json({ error: "One or both tags not found" });
+      }
+
+      if (sourceTag.type !== 'kv_pair' || targetTag.type !== 'kv_pair') {
+        return res.status(400).json({ error: "Both tags must be kv_pair type" });
+      }
+
+      // Validate that we're linking a key with a value
+      const sourceSubtype = sourceTag.pairSubtype || 'key_value';
+      const targetSubtype = targetTag.pairSubtype || 'key_value';
+
+      if (sourceSubtype === targetSubtype && sourceSubtype !== 'key_value') {
+        return res.status(400).json({ 
+          error: `Cannot link two ${sourceSubtype}s together. Link a key with a value.` 
+        });
+      }
+
+      // Update both tags with linked pair IDs
+      await orcsService.updateTag(sourceTagId, { linkedPairId: targetTagId });
+      await orcsService.updateTag(targetTagId, { linkedPairId: sourceTagId });
+
+      // Fetch updated tags
+      const updatedSourceTag = await orcsService.getTag(sourceTagId);
+      const updatedTargetTag = await orcsService.getTag(targetTagId);
+
+      res.json({ 
+        success: true, 
+        message: "Pair tags linked successfully",
+        sourceTag: updatedSourceTag,
+        targetTag: updatedTargetTag
+      });
+    } catch (error) {
+      console.error("Pair linking error:", error);
+      res.status(500).json({ error: "Failed to link pair tags" });
+    }
+  });
+
   app.delete("/api/tags/:id", async (req, res) => {
     try {
       const dryRun = req.query.dryRun === 'true';

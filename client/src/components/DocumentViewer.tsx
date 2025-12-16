@@ -334,11 +334,12 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     // Look for markdown-style tags: [entity:TechCorp](uuid) format
     return content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, (match, type, text, uuid) => {
       const colorClass = getTagColorClass(type);
-      // Make entity tags draggable for connection workflow
-      const draggableAttrs = type === 'entity' 
-        ? `draggable="true" data-entity-draggable="true"` 
+      // Make entity and kv_pair tags draggable for connection workflow
+      const isDraggable = type === 'entity' || type === 'kv_pair';
+      const draggableAttrs = isDraggable 
+        ? `draggable="true" data-tag-draggable="true"` 
         : '';
-      const dragStyles = type === 'entity'
+      const dragStyles = isDraggable
         ? 'cursor: grab;'
         : 'cursor: pointer;';
       return `<button class="${colorClass} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50" data-tag-id="${uuid}" data-tag-type="${type}" ${draggableAttrs} type="button" style="${dragStyles} border: none; font: inherit; padding: 2px 4px; position: relative; z-index: 10;">${text}</button>`;
@@ -479,13 +480,25 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       const taggedText = highlightedContent.substring(segment.start, segment.end);
       const afterText = highlightedContent.substring(segment.end);
 
-      const highlightClass = getTagHighlightClass(tagType);
-      // Add draggable attributes for entity tags to support drag-and-drop connections
-      const draggableAttrs = tagType === 'entity' 
-        ? `draggable="true" data-entity-draggable="true"` 
+      // Get highlight class with pair status awareness
+      const highlightClass = getTagHighlightClass(tagType, segment.tag);
+      
+      // Add draggable attributes for entity and kv_pair tags to support drag-and-drop connections
+      const isDraggable = tagType === 'entity' || tagType === 'kv_pair';
+      const draggableAttrs = isDraggable 
+        ? `draggable="true" data-tag-draggable="true"` 
         : '';
-      const dragCursor = tagType === 'entity' ? 'cursor: grab;' : 'cursor: pointer;';
-      const highlightedSpan = `<span class="${highlightClass}" data-tag-id="${segment.tag.id}" data-tag-type="${tagType}" data-tag-name="${tagName}" title="${tagName} (${tagType})" ${draggableAttrs} style="${dragCursor}">${taggedText}</span>`;
+      const dragCursor = isDraggable ? 'cursor: grab;' : 'cursor: pointer;';
+      
+      // Build tooltip with pair status info
+      let tooltip = `${tagName} (${tagType})`;
+      if (tagType === 'kv_pair') {
+        const subtype = segment.tag.pairSubtype || 'key_value';
+        const isLinked = !!segment.tag.linkedPairId;
+        tooltip = `${tagName} (Pair: ${subtype}${isLinked ? ' - linked' : ' - orphan'})`;
+      }
+      
+      const highlightedSpan = `<span class="${highlightClass}" data-tag-id="${segment.tag.id}" data-tag-type="${tagType}" data-tag-name="${tagName}" title="${tooltip}" ${draggableAttrs} style="${dragCursor}">${taggedText}</span>`;
 
       highlightedContent = beforeText + highlightedSpan + afterText;
     });
@@ -494,20 +507,32 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   };
 
   // Get CSS classes for tag highlighting
-  const getTagHighlightClass = (tagType: string) => {
+  const getTagHighlightClass = (tagType: string, tag?: Tag) => {
     const baseClasses = "px-1 py-0.5 rounded-sm border transition-colors hover:opacity-80";
     
     switch (tagType) {
       case 'entity':
         return `${baseClasses} bg-green-900/30 border-green-600 text-green-300`;
       case 'relationship':
-        return `${baseClasses} bg-red-900/30 border-red-600 text-red-300`;
+        return `${baseClasses} bg-orange-900/30 border-orange-600 text-orange-300`;
       case 'attribute':
         return `${baseClasses} bg-purple-900/30 border-purple-600 text-purple-300`;
       case 'comment':
-        return `${baseClasses} bg-orange-900/30 border-orange-600 text-orange-300`;
+        return `${baseClasses} bg-blue-900/30 border-blue-600 text-blue-300`;
       case 'kv_pair':
-        return `${baseClasses} bg-cyan-900/30 border-cyan-600 text-cyan-300`;
+        // Different styles for orphan vs connected pairs
+        if (tag && tag.pairSubtype && tag.pairSubtype !== 'key_value') {
+          // Key-only or value-only subtype
+          if (tag.linkedPairId) {
+            // Connected pair - solid amber
+            return `${baseClasses} bg-amber-900/40 border-amber-500 text-amber-300 border-2`;
+          } else {
+            // Orphan pair - dashed amber border
+            return `${baseClasses} bg-amber-900/20 border-amber-500/50 text-amber-400 border-dashed`;
+          }
+        }
+        // Complete key:value pair
+        return `${baseClasses} bg-amber-900/30 border-amber-600 text-amber-300`;
       default:
         return `${baseClasses} bg-gray-900/30 border-gray-600 text-gray-300`;
     }
@@ -694,39 +719,51 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     };
   }, [selectedFileData, onTextSelection, fileContent?.content, isTagClick, isCardFile]);
 
-  // Handle entity drag-and-drop for connection workflow
+  // Handle entity and pair drag-and-drop for connection workflow
   useEffect(() => {
-    // Helper to find the closest entity element from any target (handles text nodes)
-    const findEntityElement = (target: EventTarget | null): HTMLElement | null => {
+    // Helper to find the closest draggable tag element from any target
+    const findDraggableElement = (target: EventTarget | null): HTMLElement | null => {
       if (!target) return null;
       const element = target as HTMLElement;
-      // Handle text nodes by getting parent
       const el = element.nodeType === Node.TEXT_NODE ? element.parentElement : element;
       if (!el) return null;
-      // Find closest element with entity data
-      return el.closest('[data-tag-type="entity"]') as HTMLElement | null;
+      // Find closest element with draggable tag data (entity or kv_pair)
+      return el.closest('[data-tag-draggable="true"]') as HTMLElement | null;
+    };
+
+    // Helper to find drop target based on source type
+    const findDropTarget = (target: EventTarget | null, sourceType: string): HTMLElement | null => {
+      if (!target) return null;
+      const element = target as HTMLElement;
+      const el = element.nodeType === Node.TEXT_NODE ? element.parentElement : element;
+      if (!el) return null;
+      // For entities, only drop on other entities
+      // For pairs, only drop on other pairs
+      return el.closest(`[data-tag-type="${sourceType}"]`) as HTMLElement | null;
     };
 
     const handleDragStart = (event: DragEvent) => {
-      const entityEl = findEntityElement(event.target);
-      if (entityEl && entityEl.hasAttribute('data-entity-draggable')) {
-        const tagId = entityEl.getAttribute('data-tag-id');
-        if (tagId) {
+      const tagEl = findDraggableElement(event.target);
+      if (tagEl) {
+        const tagId = tagEl.getAttribute('data-tag-id');
+        const tagType = tagEl.getAttribute('data-tag-type');
+        if (tagId && tagType) {
           setDraggedEntityId(tagId);
           event.dataTransfer?.setData('text/plain', tagId);
+          event.dataTransfer?.setData('tag-type', tagType);
           event.dataTransfer!.effectAllowed = 'link';
-          entityEl.style.opacity = '0.5';
+          tagEl.style.opacity = '0.5';
         }
       }
     };
 
     const handleDragEnd = (event: DragEvent) => {
-      const entityEl = findEntityElement(event.target);
-      if (entityEl) {
-        entityEl.style.opacity = '1';
+      const tagEl = findDraggableElement(event.target);
+      if (tagEl) {
+        tagEl.style.opacity = '1';
       }
-      // Reset all entity outlines
-      document.querySelectorAll('[data-tag-type="entity"]').forEach(el => {
+      // Reset all draggable tag outlines
+      document.querySelectorAll('[data-tag-draggable="true"]').forEach(el => {
         (el as HTMLElement).style.outline = '';
         (el as HTMLElement).style.outlineOffset = '';
       });
@@ -734,43 +771,79 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     };
 
     const handleDragOver = (event: DragEvent) => {
-      const entityEl = findEntityElement(event.target);
-      if (draggedEntityId && entityEl) {
-        const targetTagId = entityEl.getAttribute('data-tag-id');
+      if (!draggedEntityId) return;
+      
+      const sourceTag = tags.find(t => t.id === draggedEntityId);
+      if (!sourceTag) return;
+      
+      const targetEl = findDropTarget(event.target, sourceTag.type);
+      if (targetEl) {
+        const targetTagId = targetEl.getAttribute('data-tag-id');
         if (targetTagId && targetTagId !== draggedEntityId) {
           event.preventDefault();
           event.dataTransfer!.dropEffect = 'link';
-          entityEl.style.outline = '2px solid #f97316';
-          entityEl.style.outlineOffset = '2px';
+          // Use different colors for entity vs pair
+          const outlineColor = sourceTag.type === 'kv_pair' ? '#f59e0b' : '#f97316';
+          targetEl.style.outline = `2px solid ${outlineColor}`;
+          targetEl.style.outlineOffset = '2px';
         }
       }
     };
 
     const handleDragLeave = (event: DragEvent) => {
-      const entityEl = findEntityElement(event.target);
-      if (entityEl) {
-        entityEl.style.outline = '';
-        entityEl.style.outlineOffset = '';
+      if (!draggedEntityId) return;
+      const sourceTag = tags.find(t => t.id === draggedEntityId);
+      if (!sourceTag) return;
+      
+      const targetEl = findDropTarget(event.target, sourceTag.type);
+      if (targetEl) {
+        targetEl.style.outline = '';
+        targetEl.style.outlineOffset = '';
       }
     };
 
-    const handleDrop = (event: DragEvent) => {
+    const handleDrop = async (event: DragEvent) => {
       event.preventDefault();
-      const entityEl = findEntityElement(event.target);
       
-      // Reset outline on drop target
-      if (entityEl) {
-        entityEl.style.outline = '';
-        entityEl.style.outlineOffset = '';
-      }
-
-      if (entityEl && draggedEntityId) {
-        const targetTagId = entityEl.getAttribute('data-tag-id');
-        if (targetTagId && targetTagId !== draggedEntityId && onEntityDragConnection) {
-          const sourceEntity = tags.find(t => t.id === draggedEntityId);
-          const targetEntity = tags.find(t => t.id === targetTagId);
-          if (sourceEntity && targetEntity) {
-            onEntityDragConnection(sourceEntity, targetEntity);
+      if (!draggedEntityId) return;
+      const sourceTag = tags.find(t => t.id === draggedEntityId);
+      if (!sourceTag) return;
+      
+      const targetEl = findDropTarget(event.target, sourceTag.type);
+      
+      if (targetEl) {
+        targetEl.style.outline = '';
+        targetEl.style.outlineOffset = '';
+        
+        const targetTagId = targetEl.getAttribute('data-tag-id');
+        if (targetTagId && targetTagId !== draggedEntityId) {
+          const targetTag = tags.find(t => t.id === targetTagId);
+          
+          if (sourceTag && targetTag) {
+            if (sourceTag.type === 'entity' && onEntityDragConnection) {
+              // Entity connection workflow
+              onEntityDragConnection(sourceTag, targetTag);
+            } else if (sourceTag.type === 'kv_pair') {
+              // Pair connection workflow - call API to link pairs
+              try {
+                const response = await fetch(`/api/tags/${sourceTag.id}/link-pair`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ targetTagId: targetTag.id })
+                });
+                
+                if (response.ok) {
+                  // Invalidate tags query to refresh
+                  queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
+                } else {
+                  const error = await response.json();
+                  console.error('Failed to link pairs:', error.error);
+                  alert(error.error || 'Failed to link pairs');
+                }
+              } catch (error) {
+                console.error('Error linking pairs:', error);
+              }
+            }
           }
         }
       }
@@ -790,7 +863,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       document.removeEventListener('dragleave', handleDragLeave, true);
       document.removeEventListener('drop', handleDrop, true);
     };
-  }, [draggedEntityId, tags, onEntityDragConnection]);
+  }, [draggedEntityId, tags, onEntityDragConnection, queryClient]);
 
   // Handle clicks on highlighted tags with improved event delegation
   useEffect(() => {

@@ -72,6 +72,13 @@ Preferred communication style: Simple, everyday language.
 - **File Management**: Supports `.txt` and `.csv` upload, automatic ORCS card generation, metadata tracking, content parsing with highlighting, and complete file deletion.
 - **Tagging**: Text selection-based tagging, tag metadata (aliases, descriptions, Pairs), visual indicators. Selection guard allows tagging text that already contains tags.
 - **Tag Deletion**: `DELETE /api/tags/:id` with cascade cleanup (removes tag file, cleans card markdown references, updates index); `?dryRun=true` for preview of affected items.
+- **Enhanced Pair System**: Flexible key-value annotation for document metadata:
+  - **Pair Subtypes**: Key-only (orphan key), Value-only (orphan value), Key:Value (complete pair)
+  - **Drag-to-Connect**: Drag an orphan key onto an orphan value to link them (or vice versa)
+  - **Visual Indicators**: Orphan pairs show dashed amber border; connected pairs show solid amber border
+  - **Delimiter Detection**: For Key:Value subtype, specify delimiter (default `:`) to parse key and value
+  - Schema fields: `pairSubtype`, `pairKey`, `pairValue`, `linkedPairId`
+  - API: `POST /api/tags/:id/link-pair` to connect two pair tags
 - **Search and Indexing**: Persistent JSON index, automatic indexing, keyword extraction, content-based search, API endpoints for search and index rebuild.
 - **Analyst Attribution**: Critical analyst attribution system for comment tags with privacy-configurable user UUID management.
 - **CSV Tagging**: Full support for tagging CSV content with proper markdown insertion into card files and visual highlighting.
