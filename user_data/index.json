@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-16T14:34:59.359Z",
+  "lastUpdated": "2025-12-16T14:36:38.882Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -344,13 +344,33 @@
         "annual revenue",
         "total revenue"
       ]
+    },
+    {
+      "id": "92900232-2076-48b7-a856-d6aaf4b5bc79",
+      "name": "valued",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/valued_92900232-2076-48b7-a856-d6aaf4b5bc79.kv.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "3146b49a-0822-45a6-bfe4-edbae65267a8",
+      "name": "3.2 billion",
+      "type": "kv_pair",
+      "filePath": "/home/runner/workspace/user_data/kv_pairs/3.2 billion_3146b49a-0822-45a6-bfe4-edbae65267a8.kv.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 8,
-    "totalTags": 27,
+    "totalTags": 29,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
     "entityCount": 13,

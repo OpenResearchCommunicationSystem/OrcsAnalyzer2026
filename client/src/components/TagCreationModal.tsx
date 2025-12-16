@@ -29,10 +29,20 @@ export function TagCreationModal({
 }: TagCreationModalProps) {
   const [identifier, setIdentifier] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedType, setSelectedType] = useState(tagType);
   const [entityType, setEntityType] = useState('');
-  const [pairSubtype, setPairSubtype] = useState<PairSubtype>('key_value');
   const [pairDelimiter, setPairDelimiter] = useState(':');
+
+  // Normalize tagType: kv_pair_key/kv_pair_value -> kv_pair with preset subtype
+  const normalizedType = tagType === 'kv_pair_key' || tagType === 'kv_pair_value' ? 'kv_pair' : tagType;
+  const presetPairSubtype: PairSubtype | null = 
+    tagType === 'kv_pair_key' ? 'key' : 
+    tagType === 'kv_pair_value' ? 'value' : null;
+  
+  const [selectedType, setSelectedType] = useState(normalizedType);
+  const [pairSubtype, setPairSubtype] = useState<PairSubtype>(presetPairSubtype || 'key_value');
+  
+  // Track if subtype was preset (to hide selection UI)
+  const isPairSubtypePreset = presetPairSubtype !== null;
 
   const { createTag, updateTag, isCreating } = useTagOperations();
 
@@ -45,6 +55,9 @@ export function TagCreationModal({
   useEffect(() => {
     if (isOpen && selectedText?.text) {
       setIdentifier(selectedText.text);
+      // Set normalized type and preset subtype when opening
+      setSelectedType(normalizedType);
+      setPairSubtype(presetPairSubtype || 'key_value');
     } else if (!isOpen) {
       // Reset form when modal closes
       setIdentifier('');
@@ -53,7 +66,7 @@ export function TagCreationModal({
       setPairSubtype('key_value');
       setPairDelimiter(':');
     }
-  }, [isOpen, selectedText?.text]);
+  }, [isOpen, selectedText?.text, normalizedType, presetPairSubtype]);
 
   // Parse key and value from identifier when pair subtype is key_value
   const parsedKeyValue = () => {
@@ -193,7 +206,11 @@ export function TagCreationModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-gray-800 border-gray-700 text-slate-200 max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create New Tag</DialogTitle>
+          <DialogTitle>
+            {isPairSubtypePreset 
+              ? `Create Pair ${pairSubtype === 'key' ? 'Key' : 'Value'}` 
+              : 'Create New Tag'}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -204,27 +221,31 @@ export function TagCreationModal({
             </div>
           </div>
 
-          <div>
-            <Label className="text-sm font-medium text-slate-300 mb-2">Tag Type</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {tagTypes.map(({ value, label, icon: Icon, color }) => (
-                <button
-                  key={value}
-                  className={`flex items-center justify-center space-x-2 p-3 rounded border-2 transition-all ${
-                    selectedType === value
-                      ? `${color} bg-opacity-10`
-                      : 'border-gray-600 text-slate-400 hover:bg-gray-700'
-                  }`}
-                  onClick={() => setSelectedType(value)}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm">{label}</span>
-                </button>
-              ))}
+          {/* Hide tag type selection when pair subtype is preset from button */}
+          {!isPairSubtypePreset && (
+            <div>
+              <Label className="text-sm font-medium text-slate-300 mb-2">Tag Type</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {tagTypes.map(({ value, label, icon: Icon, color }) => (
+                  <button
+                    key={value}
+                    className={`flex items-center justify-center space-x-2 p-3 rounded border-2 transition-all ${
+                      selectedType === value
+                        ? `${color} bg-opacity-10`
+                        : 'border-gray-600 text-slate-400 hover:bg-gray-700'
+                    }`}
+                    onClick={() => setSelectedType(value)}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm">{label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {selectedType && (
+          {/* Hide entity type selection when pair subtype is preset - keep it simple */}
+          {selectedType && !isPairSubtypePreset && (
             <div>
               <Label className="text-sm font-medium text-slate-300 mb-2 block">
                 {selectedType === 'entity' ? 'Entity Type' : 
@@ -287,8 +308,8 @@ export function TagCreationModal({
             </div>
           )}
 
-          {/* Pair Subtype Selection - Only for kv_pair type */}
-          {selectedType === 'kv_pair' && (
+          {/* Pair Subtype Selection - Only for kv_pair type when NOT preset */}
+          {selectedType === 'kv_pair' && !isPairSubtypePreset && (
             <div>
               <Label className="text-sm font-medium text-slate-300 mb-2 block">What are you marking?</Label>
               <div className="grid grid-cols-3 gap-2">
@@ -364,17 +385,22 @@ export function TagCreationModal({
                   )}
                 </div>
               )}
+            </div>
+          )}
 
-              {/* Orphan indicator for key-only or value-only */}
-              {(pairSubtype === 'key' || pairSubtype === 'value') && (
-                <div className="mt-2 bg-amber-900/20 border border-amber-600/30 rounded p-2 text-xs text-amber-300">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-3 h-3" />
-                    <span>This {pairSubtype} will be orphaned until you link it with a {pairSubtype === 'key' ? 'value' : 'key'}.</span>
-                  </div>
-                  <span className="text-amber-400/70 mt-1 block">Tip: Drag this onto another pair tag to connect them.</span>
-                </div>
-              )}
+          {/* Orphan indicator for pair keys/values (both preset and selected) */}
+          {selectedType === 'kv_pair' && (pairSubtype === 'key' || pairSubtype === 'value') && (
+            <div className="bg-amber-900/20 border border-amber-600/30 rounded p-3 text-sm text-amber-300">
+              <div className="flex items-center gap-2 mb-1">
+                <AlertTriangle className="w-4 h-4" />
+                <span className="font-medium">
+                  Creating orphan {pairSubtype}
+                </span>
+              </div>
+              <p className="text-xs text-amber-400/70">
+                This {pairSubtype} will need to be linked with a {pairSubtype === 'key' ? 'value' : 'key'}.
+                After creation, drag it onto another pair tag to connect them.
+              </p>
             </div>
           )}
 

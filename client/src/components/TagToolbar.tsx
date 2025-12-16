@@ -48,12 +48,24 @@ export function TagToolbar({ selectedText, onCreateTag, onClearSelection }: TagT
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onCreateTag('kv_pair')}
+              onClick={() => onCreateTag('kv_pair_key')}
               disabled={!selectedText}
               className="bg-amber-500 bg-opacity-20 text-amber-400 hover:bg-opacity-30 border border-amber-500 border-opacity-30"
+              data-testid="button-tag-pair-key"
             >
               <Key className="w-4 h-4 mr-1" />
-              Pair
+              Pair:Key
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onCreateTag('kv_pair_value')}
+              disabled={!selectedText}
+              className="bg-amber-500 bg-opacity-20 text-amber-400 hover:bg-opacity-30 border border-amber-500 border-opacity-30"
+              data-testid="button-tag-pair-value"
+            >
+              <Tag className="w-4 h-4 mr-1" />
+              Pair:Value
             </Button>
           </div>
         </div>
