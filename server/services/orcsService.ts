@@ -341,6 +341,150 @@ export class OrcsService {
     }
   }
 
+  async resetAllTags(): Promise<{ cardsReset: number, tagsDeleted: number, linksCleared: number }> {
+    let cardsReset = 0;
+    let tagsDeleted = 0;
+    let linksCleared = 0;
+    
+    // 1. Reset all card files - clear TAG INDEX, LINK INDEX, and remove tag markup from content
+    const rawDir = path.join(USER_DATA_DIR, 'raw');
+    try {
+      const files = await fs.readdir(rawDir);
+      for (const file of files) {
+        if (!file.endsWith('.card.txt')) continue;
+        
+        const cardPath = path.join(rawDir, file);
+        const content = await fs.readFile(cardPath, 'utf-8');
+        
+        const resetContent = this.resetCardContent(content);
+        if (resetContent !== content) {
+          await fs.writeFile(cardPath, resetContent, 'utf-8');
+          cardsReset++;
+        }
+      }
+    } catch (error) {
+      console.error('Error resetting card files:', error);
+    }
+    
+    // 2. Delete all tag files from all tag directories
+    for (const dir of Object.values(TAG_DIRECTORIES)) {
+      try {
+        const files = await fs.readdir(dir);
+        for (const file of files) {
+          // Delete tag files but not other files
+          if (file.endsWith('.entity.txt') || file.endsWith('.relate.txt') || 
+              file.endsWith('.attribute.txt') || file.endsWith('.comment.txt') ||
+              file.endsWith('.label.txt') || file.endsWith('.data.txt') ||
+              file.endsWith('.orcs')) {
+            await fs.unlink(path.join(dir, file));
+            tagsDeleted++;
+          }
+        }
+      } catch (error) {
+        // Directory might not exist
+      }
+    }
+    
+    // 3. Clear all connections
+    const connections = await storage.getTagConnections();
+    for (const connection of connections) {
+      await storage.deleteTagConnection(connection.id);
+      linksCleared++;
+    }
+    
+    console.log(`Reset complete: ${cardsReset} cards reset, ${tagsDeleted} tags deleted, ${linksCleared} connections cleared`);
+    return { cardsReset, tagsDeleted, linksCleared };
+  }
+
+  private resetCardContent(content: string): string {
+    const lines = content.split('\n');
+    const newLines: string[] = [];
+    
+    let inTagIndex = false;
+    let inLinkIndex = false;
+    let inSnippetIndex = false;
+    let inOriginalContent = false;
+    let inUserAdded = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmedLine = line.trim();
+      
+      if (trimmedLine === '=== TAG INDEX START ===') {
+        inTagIndex = true;
+        newLines.push(line);
+        continue;
+      }
+      if (trimmedLine === '=== TAG INDEX END ===') {
+        inTagIndex = false;
+        newLines.push(line);
+        continue;
+      }
+      if (trimmedLine === '=== LINK INDEX START ===') {
+        inLinkIndex = true;
+        newLines.push(line);
+        continue;
+      }
+      if (trimmedLine === '=== LINK INDEX END ===') {
+        inLinkIndex = false;
+        newLines.push(line);
+        continue;
+      }
+      if (trimmedLine === '=== SNIPPET INDEX START ===') {
+        inSnippetIndex = true;
+        newLines.push(line);
+        continue;
+      }
+      if (trimmedLine === '=== SNIPPET INDEX END ===') {
+        inSnippetIndex = false;
+        newLines.push(line);
+        continue;
+      }
+      if (trimmedLine === '=== ORIGINAL CONTENT START ===') {
+        inOriginalContent = true;
+        newLines.push(line);
+        continue;
+      }
+      if (trimmedLine === '=== ORIGINAL CONTENT END ===') {
+        inOriginalContent = false;
+        newLines.push(line);
+        continue;
+      }
+      if (trimmedLine === '=== USER ADDED START ===') {
+        inUserAdded = true;
+        newLines.push(line);
+        continue;
+      }
+      if (trimmedLine === '=== USER ADDED END ===') {
+        inUserAdded = false;
+        newLines.push(line);
+        continue;
+      }
+      
+      // Skip content in TAG INDEX, LINK INDEX, and SNIPPET INDEX sections (clearing them)
+      if (inTagIndex || inLinkIndex || inSnippetIndex) {
+        // Keep comment lines (like "# Format: ...")
+        if (trimmedLine.startsWith('#')) {
+          newLines.push(line);
+        }
+        continue;
+      }
+      
+      // Remove tag markup from content sections
+      if (inOriginalContent || inUserAdded) {
+        // Replace [type:text](uuid) with just text
+        const cleanedLine = line.replace(/\[([^\]:]+):([^\]]+)\]\([^)]+\)/g, '$2');
+        newLines.push(cleanedLine);
+        continue;
+      }
+      
+      // Keep all other lines (metadata, etc.)
+      newLines.push(line);
+    }
+    
+    return newLines.join('\n');
+  }
+
   private async adjustOffsetsAfterDeletion(deletedTag: Tag): Promise<void> {
     // No longer needed since offsets are handled inside cards
     // This method is kept for compatibility but does nothing

@@ -852,6 +852,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =====================================================================
+  // SYSTEM RESET API
+  // =====================================================================
+
+  app.post('/api/system/reset-tags', async (req, res) => {
+    try {
+      const result = await orcsService.resetAllTags();
+      // Rebuild the index after reset
+      await indexService.rebuildIndex(true);
+      res.json(result);
+    } catch (error) {
+      console.error('Failed to reset tags:', error);
+      res.status(500).json({ error: 'Failed to reset tags' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
