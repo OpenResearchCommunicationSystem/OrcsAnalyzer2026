@@ -517,6 +517,7 @@ export default function OrcsMain() {
         isOpen={showCommentModal}
         onClose={() => setShowCommentModal(false)}
         selectedText={selectedText}
+        fileId={selectedFile}
         onCommentCreated={() => {
           setShowCommentModal(false);
           setSelectedText(null);

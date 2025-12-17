@@ -14,13 +14,15 @@ interface CommentCreationModalProps {
   onClose: () => void;
   selectedText: TextSelection | null;
   onCommentCreated: () => void;
+  fileId?: string | null;
 }
 
 export function CommentCreationModal({ 
   isOpen, 
   onClose, 
   selectedText, 
-  onCommentCreated 
+  onCommentCreated,
+  fileId 
 }: CommentCreationModalProps) {
   const [commentText, setCommentText] = useState('');
   const [analyst, setAnalyst] = useState('');
@@ -55,6 +57,11 @@ export function CommentCreationModal({
       queryClient.invalidateQueries({ queryKey: ['/api/file'] });
       if (cardId) {
         queryClient.invalidateQueries({ queryKey: ['/api/cards', cardId, 'comments'] });
+      }
+      // Invalidate file content to show the inserted comment marker
+      if (fileId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/files/${fileId}/content`] });
+        queryClient.invalidateQueries({ queryKey: ['/api/files', fileId, 'verify-content'] });
       }
       toast({
         title: 'Comment inserted',
