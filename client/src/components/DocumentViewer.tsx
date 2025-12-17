@@ -1210,8 +1210,9 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
     return tags.filter(tag => {
       if (!currentFileName || !tag.references || tag.references.length === 0) return false;
       return tag.references.some(ref => 
-        ref.startsWith(currentFileName + '@') || 
-        ref.startsWith(currentFileName + '[')
+        ref === currentFileName ||  // Exact match (bare filename)
+        ref.startsWith(currentFileName + '@') ||  // Text file with offset
+        ref.startsWith(currentFileName + '[')  // CSV file with row/col
       );
     });
   };
