@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T13:59:41.770Z",
+  "lastUpdated": "2025-12-17T14:43:30.540Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -239,16 +239,78 @@
         "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "b863a77b-ccf3-4060-aef7-cdfb76991bd9",
+      "name": "VisionEdge Analytics",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/VisionEdge Analytics_b863a77b-ccf3-4060-aef7-cdfb76991bd9.entity.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "fd6598d7-1158-46d8-a9f9-6c0416657542",
+      "name": "Ava Cheng",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Ava Cheng_fd6598d7-1158-46d8-a9f9-6c0416657542.entity.txt",
+      "references": [
+        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
+        "board_members_test_3e7127c2-f5d9-4cd5-96d6-14df521fa278.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "7efe41cb-df60-47d7-a4bf-7d3357c75ea8",
+      "name": "John Smith",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/John Smith_7efe41cb-df60-47d7-a4bf-7d3357c75ea8.entity.txt",
+      "references": [
+        "board_members_test_3e7127c2-f5d9-4cd5-96d6-14df521fa278.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "8565cab9-7ef7-44f3-8873-432e77e32c67",
+      "name": "CEO",
+      "type": "label",
+      "filePath": "/home/runner/workspace/user_data/labels/CEO_8565cab9-7ef7-44f3-8873-432e77e32c67.label.txt",
+      "references": [
+        "board_members_test_3e7127c2-f5d9-4cd5-96d6-14df521fa278.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "40fc584b-4762-4b5c-8826-4abda59c8d7c",
+      "name": "TechCorp",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/TechCorp_40fc584b-4762-4b5c-8826-4abda59c8d7c.entity.txt",
+      "references": [
+        "board_members_test_3e7127c2-f5d9-4cd5-96d6-14df521fa278.card.txt",
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "9456ced4-37f4-4514-b86e-2659a2cc2c8a",
+      "name": "BioNex Systems",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/BioNex Systems_9456ced4-37f4-4514-b86e-2659a2cc2c8a.entity.txt",
+      "references": [
+        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 12,
-    "totalTags": 13,
+    "totalTags": 19,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 6,
+    "entityCount": 11,
     "relationshipCount": 2
   }
 }

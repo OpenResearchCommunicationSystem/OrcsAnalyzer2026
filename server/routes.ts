@@ -860,7 +860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const result = await orcsService.resetAllTags();
       // Rebuild the index after reset
-      await indexService.rebuildIndex(true);
+      await indexService.buildFullIndex();
       res.json(result);
     } catch (error) {
       console.error('Failed to reset tags:', error);
