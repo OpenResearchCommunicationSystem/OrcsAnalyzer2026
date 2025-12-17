@@ -31,6 +31,11 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
   const [showEditNameModal, setShowEditNameModal] = useState(false);
   const [editingName, setEditingName] = useState('');
   
+  // Data-specific fields
+  const [dataKey, setDataKey] = useState('');
+  const [dataValue, setDataValue] = useState('');
+  const [dataNormalized, setDataNormalized] = useState('');
+  
   const { updateTag, deleteTagAsync, isUpdating, isDeleting } = useTagOperations();
 
   // Fetch all tags for similarity detection
@@ -41,6 +46,16 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
   useEffect(() => {
     if (selectedTag) {
       setFormData(selectedTag);
+      // Populate data-specific fields from keyValuePairs if this is a data tag
+      if (selectedTag.type === 'data' && selectedTag.keyValuePairs) {
+        setDataKey(selectedTag.keyValuePairs.key || '');
+        setDataValue(selectedTag.keyValuePairs.value || '');
+        setDataNormalized(selectedTag.keyValuePairs.normalized || '');
+      } else {
+        setDataKey('');
+        setDataValue('');
+        setDataNormalized('');
+      }
     }
   }, [selectedTag]);
 
@@ -215,11 +230,22 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
 
   const handleSave = () => {
     if (selectedTag && formData.name && formData.type) {
-      updateTag(selectedTag.id, formData);
+      // For data tags, include the data-specific fields in keyValuePairs
+      let finalFormData = { ...formData };
+      if (formData.type === 'data') {
+        finalFormData.keyValuePairs = {
+          ...formData.keyValuePairs,
+          key: dataKey,
+          value: dataValue,
+          normalized: dataNormalized,
+        };
+      }
+      
+      updateTag(selectedTag.id, finalFormData);
       // Create updated tag object for callback
       const updatedTag: Tag = {
         ...selectedTag,
-        ...formData,
+        ...finalFormData,
         modified: new Date().toISOString()
       } as Tag;
       onTagUpdate(updatedTag);
@@ -384,7 +410,32 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
             <Label className="text-sm font-medium text-slate-300 mb-2 block">Tag Type</Label>
             <Select
               value={formData.type}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, type: value as any }))}
+              onValueChange={(value) => {
+                const oldType = formData.type;
+                const newType = value as any;
+                
+                // Clear type-specific state when switching tag types
+                if (newType !== 'data') {
+                  setDataKey('');
+                  setDataValue('');
+                  setDataNormalized('');
+                }
+                
+                // Clear entityType when switching to/from data or label
+                const shouldClearEntityType = 
+                  (oldType === 'data' || oldType === 'label') || 
+                  (newType === 'data' || newType === 'label');
+                
+                // Clear keyValuePairs when switching away from data type
+                const shouldClearKVP = oldType === 'data' && newType !== 'data';
+                
+                setFormData(prev => ({ 
+                  ...prev, 
+                  type: newType,
+                  entityType: shouldClearEntityType ? '' : prev.entityType,
+                  keyValuePairs: shouldClearKVP ? {} : prev.keyValuePairs
+                }));
+              }}
             >
               <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-slate-200">
                 <SelectValue placeholder="Select tag type" />
@@ -398,14 +449,11 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
             </Select>
           </div>
 
-          {formData.type && (
+          {/* Entity/Link sub-type selector - not shown for Label */}
+          {(formData.type === 'entity' || formData.type === 'relationship') && (
             <div>
               <Label className="text-sm font-medium text-slate-300 mb-2 block">
-                {formData.type === 'entity' ? 'Entity Type' : 
-                 formData.type === 'relationship' ? 'Link Type' :
-                 formData.type === 'label' ? 'Label Type' :
-                 formData.type === 'data' ? 'Data Type' :
-                 'Type'}
+                {formData.type === 'entity' ? 'Entity Type' : 'Link Type'}
               </Label>
               <Select
                 value={formData.entityType || ''}
@@ -438,26 +486,61 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
                       <SelectItem value="location">Location</SelectItem>
                     </>
                   )}
-                  {formData.type === 'label' && (
-                    <>
-                      <SelectItem value="vocabulary">Vocabulary</SelectItem>
-                      <SelectItem value="category">Category</SelectItem>
-                      <SelectItem value="topic">Topic</SelectItem>
-                    </>
-                  )}
-                  {formData.type === 'data' && (
-                    <>
-                      <SelectItem value="Generic">Generic</SelectItem>
-                      <SelectItem value="Geotemporal">Geotemporal</SelectItem>
-                      <SelectItem value="Identifier">Identifier</SelectItem>
-                      <SelectItem value="Quantity">Quantity</SelectItem>
-                      <SelectItem value="Quality">Quality</SelectItem>
-                      <SelectItem value="Metadata">Metadata</SelectItem>
-                    </>
-                  )}
                 </SelectContent>
               </Select>
             </div>
+          )}
+
+          {/* Data-specific fields */}
+          {formData.type === 'data' && (
+            <>
+              <div>
+                <Label className="text-sm font-medium text-slate-300 mb-2 block">Canon Type</Label>
+                <Select
+                  value={formData.entityType || ''}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, entityType: value }))}
+                >
+                  <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-slate-200">
+                    <SelectValue placeholder="Select canon type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectItem value="Generic">Generic</SelectItem>
+                    <SelectItem value="Geotemporal">Geotemporal</SelectItem>
+                    <SelectItem value="Identifier">Identifier</SelectItem>
+                    <SelectItem value="Quantity">Quantity</SelectItem>
+                    <SelectItem value="Quality">Quality</SelectItem>
+                    <SelectItem value="Metadata">Metadata</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-300 mb-2 block">Key</Label>
+                <Input
+                  value={dataKey}
+                  onChange={(e) => setDataKey(e.target.value)}
+                  className="bg-gray-800 border-gray-600 focus:border-purple-500"
+                  placeholder="e.g., phone, email, dob"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-300 mb-2 block">Value</Label>
+                <Input
+                  value={dataValue}
+                  onChange={(e) => setDataValue(e.target.value)}
+                  className="bg-gray-800 border-gray-600 focus:border-purple-500"
+                  placeholder="The captured value"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-300 mb-2 block">Normalized</Label>
+                <Input
+                  value={dataNormalized}
+                  onChange={(e) => setDataNormalized(e.target.value)}
+                  className="bg-gray-800 border-gray-600 focus:border-purple-500"
+                  placeholder="Standardized format (optional)"
+                />
+              </div>
+            </>
           )}
 
 
