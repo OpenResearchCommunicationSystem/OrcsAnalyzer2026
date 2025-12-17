@@ -182,7 +182,6 @@ export class IndexService {
     if (filename.endsWith('.entity.txt')) return 'entity';
     if (filename.endsWith('.relate.txt')) return 'relationship';
     if (filename.endsWith('.attrib.txt')) return 'attribute';
-    if (filename.endsWith('.comment.txt')) return 'comment';
     if (filename.endsWith('.label.txt')) return 'label';
     if (filename.endsWith('.data.txt')) return 'data';
     if (filename.endsWith('.csv')) return 'csv';
@@ -681,7 +680,6 @@ export class IndexService {
     if (filepath.includes('/entities/')) return 'entity';
     if (filepath.includes('/relationships/')) return 'relationship';
     if (filepath.includes('/attributes/')) return 'attribute';
-    if (filepath.includes('/comments/')) return 'comment';
     if (filepath.includes('/labels/')) return 'label';
     if (filepath.includes('/data/')) return 'data';
     return 'entity';

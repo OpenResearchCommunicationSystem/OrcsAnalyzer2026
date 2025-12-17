@@ -605,12 +605,11 @@ export class FileService {
     }
   }
 
-  // Determine tag type from filename
-  private getFileTagType(filename: string): 'entity' | 'relationship' | 'attribute' | 'comment' | 'label' | 'data' | null {
+  // Determine tag type from filename (comments are inline annotations, not tracked tag files)
+  private getFileTagType(filename: string): 'entity' | 'relationship' | 'attribute' | 'label' | 'data' | null {
     if (filename.endsWith('.entity.txt')) return 'entity';
     if (filename.endsWith('.relate.txt')) return 'relationship';
     if (filename.endsWith('.attrib.txt')) return 'attribute';
-    if (filename.endsWith('.comment.txt')) return 'comment';
     if (filename.endsWith('.label.txt')) return 'label';
     if (filename.endsWith('.data.txt')) return 'data';
     return null;

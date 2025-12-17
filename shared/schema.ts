@@ -369,8 +369,8 @@ export type PredicateKey = keyof typeof predicateCatalog;
 // These will be removed after migration is complete
 // ============================================================================
 
-// Tag types - updated for Phase 3 Label/Data taxonomy
-export const tagTypeSchema = z.enum(['entity', 'relationship', 'attribute', 'comment', 'label', 'data']);
+// Tag types - 4 tracked tag types (comments are inline annotations, not tracked tags)
+export const tagTypeSchema = z.enum(['entity', 'relationship', 'attribute', 'label', 'data']);
 export type TagType = z.infer<typeof tagTypeSchema>;
 
 // Canon data types for Data tags

@@ -13,7 +13,8 @@ Preferred communication style: Simple, everyday language.
 ### UI/UX Decisions
 - **Frontend**: React 18 with TypeScript, utilizing Shadcn/ui and Radix UI primitives.
 - **Styling**: Tailwind CSS with a custom ORCS-themed color scheme.
-- **6 Core Primitives**: Entity (green), Link (orange), Snip (amber), Label (cyan), Data (purple), Comment (blue).
+- **4 Tracked Tag Types**: Entity (green), Link (orange), Label (cyan), Data (purple) - stored as separate files and tracked in TAG INDEX.
+- **2 Annotation Types**: Snippet (amber) and Comment (blue) - stored as inline markers and in their respective INDEX sections within card files, NOT tracked as separate tag files.
 - **Terminology**: "Link" is displayed instead of "Relationship".
 - **UUID Display Policy**: UUIDs are hidden from primary display, favoring human-readable names.
 
@@ -49,7 +50,7 @@ Preferred communication style: Simple, everyday language.
 - **Link Creation UI**: Form for connecting entities within a card's LINK INDEX.
 - **Bullet Generation**: Auto-generates subject-predicate-object triples from LINK INDEX for summaries.
 - **Entity Dossiers**: Comprehensive entity views aggregating all mentions across cards, with dedicated pages and statistical overviews.
-- **Inline Comment System**: Track-changes style comments inserted directly into document text with analyst attribution, stored in a COMMENT INDEX, and API support.
+- **Inline Comment System**: Track-changes style comments using `[comment:text](id)` markers inserted directly into document text, with analyst attribution, stored in COMMENT INDEX (not as separate tag files). Markers are stripped during content integrity verification.
 - **Text Selection Across Tags**: Allows users to select text spanning tagged elements for snippet creation, with UI feedback.
 
 ## External Dependencies

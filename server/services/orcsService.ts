@@ -10,7 +10,6 @@ const TAG_DIRECTORIES: Record<string, string> = {
   entity: path.join(USER_DATA_DIR, 'entities'),
   relationship: path.join(USER_DATA_DIR, 'relationships'),
   attribute: path.join(USER_DATA_DIR, 'attributes'),
-  comment: path.join(USER_DATA_DIR, 'comments'),
   label: path.join(USER_DATA_DIR, 'labels'),
   data: path.join(USER_DATA_DIR, 'data'),
 };
@@ -118,9 +117,9 @@ export class OrcsService {
   }
 
   private isAnyTagFile(filename: string): boolean {
-    // Check if file matches any tag type extension
+    // Check if file matches any tag type extension (comments are not tracked tags)
     const allExtensions = [
-      'entity.txt', 'relate.txt', 'attrib.txt', 'comment.txt', 'label.txt', 'data.txt', 'orcs'
+      'entity.txt', 'relate.txt', 'attrib.txt', 'label.txt', 'data.txt', 'orcs'
     ];
     
     return allExtensions.some(ext => filename.endsWith('.' + ext));
@@ -371,9 +370,9 @@ export class OrcsService {
       try {
         const files = await fs.readdir(dir);
         for (const file of files) {
-          // Delete tag files but not other files
+          // Delete tag files but not other files (comments are not tracked tags)
           if (file.endsWith('.entity.txt') || file.endsWith('.relate.txt') || 
-              file.endsWith('.attribute.txt') || file.endsWith('.comment.txt') ||
+              file.endsWith('.attribute.txt') ||
               file.endsWith('.label.txt') || file.endsWith('.data.txt') ||
               file.endsWith('.orcs')) {
             await fs.unlink(path.join(dir, file));
@@ -766,7 +765,6 @@ export class OrcsService {
       entity: 'entity.txt',
       relationship: 'relate.txt',
       attribute: 'attrib.txt',
-      comment: 'comment.txt',
       label: 'label.txt',
       data: 'data.txt',
     };
