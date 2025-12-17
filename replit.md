@@ -39,6 +39,7 @@ Preferred communication style: Simple, everyday language.
 - **Tagging**: Text selection-based tagging with metadata (aliases, descriptions), and visual indicators.
 - **Label System**: Card-local reusable vocabulary for faster tagging, used as dropdown options in Entity/Link creation.
 - **Data System**: Structured data capture with canon types (Generic, Geotemporal, Identifier, Quantity, Quality, Metadata), key-value pairs, and optional normalization.
+- **Unified Tag Creation Modal**: Single modal for all 4 tag types (Entity, Link, Label, Data) with structure: Selected Text → Tag Type buttons → Draggable Labels → Tag-specific fields. Labels are draggable to any input field. State is isolated per tag type to prevent value leakage when switching.
 - **Modal Structure**: Layered dropdowns for canon types, card-local labels, and user input, with searchable inputs for large lists.
 - **Analyst Attribution**: Critical system for comment tags with privacy-configurable user UUIDs.
 - **CSV Tagging**: Full support for tagging CSV content with markdown insertion and visual highlighting.
