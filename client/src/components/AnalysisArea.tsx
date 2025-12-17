@@ -8,6 +8,8 @@ import type { Snippet, Bullet, Tag, Link as LinkType } from '@shared/schema';
 
 interface AnalysisAreaProps {
   cardUuid: string | null;
+  cardFileName: string;
+  cardClassification: string;
   entities: Tag[];
   links: LinkType[];
   snippets: Snippet[];
@@ -16,7 +18,7 @@ interface AnalysisAreaProps {
 
 type AnalysisTab = 'snip' | 'bullet' | 'node' | 'edge';
 
-export function AnalysisArea({ cardUuid, entities, links, snippets, bullets }: AnalysisAreaProps) {
+export function AnalysisArea({ cardUuid, cardFileName, cardClassification, entities, links, snippets, bullets }: AnalysisAreaProps) {
   const [activeTab, setActiveTab] = useState<AnalysisTab>('snip');
   const [currentSnipIndex, setCurrentSnipIndex] = useState(0);
   const [currentBulletIndex, setCurrentBulletIndex] = useState(0);
@@ -315,6 +317,159 @@ export function AnalysisArea({ cardUuid, entities, links, snippets, bullets }: A
             </div>
           </div>
         )}
+      </div>
+
+      {/* Output Footer - Formatted for copy-paste */}
+      <div className="border-t border-gray-700 bg-gray-900/70 p-3" data-testid="output-footer">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Output View</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 text-[10px] px-2"
+            onClick={async () => {
+              const outputEl = document.getElementById('output-content');
+              if (outputEl) {
+                const text = outputEl.innerText || outputEl.textContent || '';
+                try {
+                  await navigator.clipboard.writeText(text);
+                } catch {
+                  // Fallback for older browsers
+                  const range = document.createRange();
+                  range.selectNodeContents(outputEl);
+                  const selection = window.getSelection();
+                  selection?.removeAllRanges();
+                  selection?.addRange(range);
+                  document.execCommand('copy');
+                  selection?.removeAllRanges();
+                }
+              }
+            }}
+            data-testid="copy-output"
+          >
+            Copy All
+          </Button>
+        </div>
+        <div 
+          id="output-content" 
+          className="bg-gray-950 border border-gray-700 rounded p-3 max-h-[120px] overflow-y-auto font-mono text-xs"
+          data-testid="output-content"
+        >
+          {activeTab === 'snip' && (
+            <div className="space-y-2">
+              {snippets.length === 0 ? (
+                <div className="text-slate-500 italic">No snippets to display</div>
+              ) : (
+                snippets.map((snippet, idx) => (
+                  <div key={snippet.id || idx} className="text-slate-200" data-testid={`output-snip-${idx}`}>
+                    <strong className="text-amber-300">({snippet.classification || cardClassification || 'UNCLASSIFIED'})</strong>{' '}
+                    {snippet.text}
+                    {snippet.comment && <em className="text-slate-400"> {snippet.comment}</em>}
+                    {' '}<span className="text-slate-500">(reference: {cardFileName})</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {activeTab === 'bullet' && (
+            <div className="space-y-2">
+              {bullets.length === 0 ? (
+                <div className="text-slate-500 italic">No bullets to display</div>
+              ) : (
+                bullets.map((bullet, idx) => (
+                  <div key={bullet.linkId || idx} className="text-slate-200" data-testid={`output-bullet-${idx}`}>
+                    <strong className="text-cyan-300">({bullet.classification || cardClassification || 'UNCLASSIFIED'})</strong>{' '}
+                    {bullet.subject?.canonicalName || 'Unknown'}{' '}
+                    <span className="text-orange-300">[{bullet.predicate}]</span>{' '}
+                    {bullet.object?.canonicalName || 'Unknown'}
+                    {' '}<span className="text-slate-500">(reference: {bullet.sourceCardName || cardFileName})</span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {activeTab === 'node' && (
+            <div className="overflow-x-auto">
+              {filteredEntities.length === 0 ? (
+                <div className="text-slate-500 italic">No entities to display</div>
+              ) : (
+                <table className="w-full text-[10px] border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-700">
+                      <th className="text-left px-2 py-1 text-slate-400">Name</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Type</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Aliases</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Description</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Classification</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredEntities.map((entity, idx) => (
+                      <tr key={entity.id} className="border-b border-gray-800" data-testid={`output-node-${idx}`}>
+                        <td className="px-2 py-1 text-green-300">{entity.name}</td>
+                        <td className="px-2 py-1 text-slate-300">{entity.entityType || entity.type}</td>
+                        <td className="px-2 py-1 text-slate-400">{entity.aliases?.join(', ') || '-'}</td>
+                        <td className="px-2 py-1 text-slate-400">{entity.description || '-'}</td>
+                        <td className="px-2 py-1 text-slate-400">{cardClassification || 'UNCLASSIFIED'}</td>
+                        <td className="px-2 py-1 text-slate-500">{cardFileName}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'edge' && (
+            <div className="overflow-x-auto">
+              {filteredLinks.length === 0 ? (
+                <div className="text-slate-500 italic">No edges to display</div>
+              ) : (
+                <table className="w-full text-[10px] border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-700">
+                      <th className="text-left px-2 py-1 text-slate-400">Source Name</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Source Type</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Predicate</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Target Name</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Target Type</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Link Type</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Direction</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Classification</th>
+                      <th className="text-left px-2 py-1 text-slate-400">Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredLinks.map((link, idx) => {
+                      const sourceEntity = entities.find(e => e.id === link.sourceId);
+                      const targetEntity = entities.find(e => e.id === link.targetId);
+                      return (
+                        <tr key={link.id} className="border-b border-gray-800" data-testid={`output-edge-${idx}`}>
+                          <td className="px-2 py-1 text-green-300">{sourceEntity?.name || link.sourceId.slice(0, 8)}</td>
+                          <td className="px-2 py-1 text-slate-400">{sourceEntity?.entityType || sourceEntity?.type || '-'}</td>
+                          <td className="px-2 py-1 text-orange-300">{link.predicate}</td>
+                          <td className="px-2 py-1 text-green-300">{targetEntity?.name || link.targetId.slice(0, 8)}</td>
+                          <td className="px-2 py-1 text-slate-400">{targetEntity?.entityType || targetEntity?.type || '-'}</td>
+                          <td className="px-2 py-1 text-slate-400">
+                            {link.isRelationship ? 'REL' : ''}{link.isAttribute ? 'ATTR' : ''}{!link.isRelationship && !link.isAttribute ? '-' : ''}
+                          </td>
+                          <td className="px-2 py-1 text-slate-400">
+                            {link.direction === 0 ? '→' : link.direction === 1 ? '←' : link.direction === 2 ? '↔' : '-'}
+                          </td>
+                          <td className="px-2 py-1 text-slate-400">{cardClassification || 'UNCLASSIFIED'}</td>
+                          <td className="px-2 py-1 text-slate-500">{cardFileName}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

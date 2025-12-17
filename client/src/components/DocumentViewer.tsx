@@ -1420,6 +1420,12 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
           <div className="h-full flex flex-col min-h-0 overflow-hidden">
             <AnalysisArea
               cardUuid={cardUuidForQueries}
+              cardFileName={selectedFileData?.name || ''}
+              cardClassification={(() => {
+                // Extract classification from metadata YAML
+                const match = metadataContent.match(/classification:\s*"?([^"\n]+)"?/);
+                return match?.[1]?.trim() || 'UNCLASSIFIED';
+              })()}
               entities={fileSpecificTags.filter(t => t.type === 'entity')}
               links={links}
               snippets={snippets}
