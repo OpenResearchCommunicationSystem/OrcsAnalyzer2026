@@ -15,6 +15,8 @@ analyst: "System Import"
 
 === TAG INDEX START ===
 [entity:John Michael Smith](12f88e45-e3f8-4222-a8ce-463f78d74293)
+[relationship:Father of](ae8958f3-1b57-4a7d-a113-ed5d158ad59d)
+[relationship:Mother of](17cc0383-bb8c-40c9-906a-a1327edc9920)
 === TAG INDEX END ===
 
 === ORIGINAL CONTENT START ===
@@ -43,12 +45,12 @@ Marriage Location: Travis County, TX
 
 === ASSOCIATED PERSONS ===
 
-Name: Patricia O'Neil (Mother of Jasmine)
+Name: Patricia O'Neil ([relationship:Mother of](17cc0383-bb8c-40c9-906a-a1327edc9920) Jasmine)
 Address: 1204 Magnolia Street, Houston, TX 77002
 Phone: (713) 555-0299
 Relationship: Mother-in-law to John Smith
 
-Name: Robert O'Neil (Father of Jasmine)
+Name: Robert O'Neil ([relationship:Father of](ae8958f3-1b57-4a7d-a113-ed5d158ad59d) Jasmine)
 Address: 1204 Magnolia Street, Houston, TX 77002
 Phone: (713) 555-0300
 Relationship: Father-in-law to John Smith

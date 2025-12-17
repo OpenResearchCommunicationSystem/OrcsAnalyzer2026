@@ -1,0 +1,15 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: 17cc0383-bb8c-40c9-906a-a1327edc9920
+TAG_TYPE: relationship
+NAME: Mother of
+ENTITY_TYPE: family
+CREATED: 2025-12-17T23:55:46.976Z
+MODIFIED: 2025-12-17T23:55:46.976Z
+
+SEARCH_ALIASES:
+
+CARD_REFERENCES:
+  - people_search_smith_household_7a3b9c12-4d5e-6f7a-8b9c-0d1e2f3a4b5c.card.txt
+
+=== END ORCS ENTITY ===

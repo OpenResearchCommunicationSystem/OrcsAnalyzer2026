@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T23:39:08.335Z",
+  "lastUpdated": "2025-12-17T23:55:46.982Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -257,16 +257,36 @@
         "social_post_2_test_d9dd9033-3c28-41b0-acfe-ce645ef4a1cd.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "ae8958f3-1b57-4a7d-a113-ed5d158ad59d",
+      "name": "Father of",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/Father of_ae8958f3-1b57-4a7d-a113-ed5d158ad59d.relate.txt",
+      "references": [
+        "people_search_smith_household_7a3b9c12-4d5e-6f7a-8b9c-0d1e2f3a4b5c.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "17cc0383-bb8c-40c9-906a-a1327edc9920",
+      "name": "Mother of",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/Mother of_17cc0383-bb8c-40c9-906a-a1327edc9920.relate.txt",
+      "references": [
+        "people_search_smith_household_7a3b9c12-4d5e-6f7a-8b9c-0d1e2f3a4b5c.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 16,
-    "totalTags": 11,
+    "totalTags": 13,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
     "entityCount": 8,
-    "relationshipCount": 2
+    "relationshipCount": 4
   }
 }
