@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T19:23:25.011Z",
+  "lastUpdated": "2025-12-17T23:39:08.335Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -217,16 +217,56 @@
         "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "724aa428-20eb-46ff-be25-dee97f89fa4b",
+      "name": "TechCorp",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/TechCorp_724aa428-20eb-46ff-be25-dee97f89fa4b.entity.txt",
+      "references": [
+        "test_news_test_64d093ca-edbd-41a9-8f52-93661cb45ed4.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "26942c89-e577-4c86-b436-e7cc421d318e",
+      "name": "Jasmine O'Neil",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Jasmine O'Neil_26942c89-e577-4c86-b436-e7cc421d318e.entity.txt",
+      "references": [
+        "social_post_2_test_d9dd9033-3c28-41b0-acfe-ce645ef4a1cd.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "02098521-daf9-48f6-aa8a-05b05ac61256",
+      "name": "Global Clean Energy Forum",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Global Clean Energy Forum_02098521-daf9-48f6-aa8a-05b05ac61256.entity.txt",
+      "references": [
+        "social_post_2_test_d9dd9033-3c28-41b0-acfe-ce645ef4a1cd.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "78ebab6f-7608-4dc3-994a-24f8f3a5525a",
+      "name": "Berlin",
+      "type": "data",
+      "filePath": "/home/runner/workspace/user_data/data/Berlin_78ebab6f-7608-4dc3-994a-24f8f3a5525a.data.txt",
+      "references": [
+        "social_post_2_test_d9dd9033-3c28-41b0-acfe-ce645ef4a1cd.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 16,
-    "totalTags": 7,
+    "totalTags": 11,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 5,
+    "entityCount": 8,
     "relationshipCount": 2
   }
 }

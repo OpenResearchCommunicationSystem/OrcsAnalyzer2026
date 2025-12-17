@@ -14,6 +14,7 @@ file_size: 69
 analyst: ""
 
 === TAG INDEX START ===
+[entity:TechCorp](724aa428-20eb-46ff-be25-dee97f89fa4b)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
@@ -23,6 +24,6 @@ analyst: ""
 === SNIPPET INDEX END ===
 
 === ORIGINAL CONTENT START ===
-BREAKING: TechCorp announces major acquisition of AI startup for .5B
+BREAKING: [entity:TechCorp](724aa428-20eb-46ff-be25-dee97f89fa4b) announces major acquisition of AI startup for .5B
 
 === ORIGINAL CONTENT END ===

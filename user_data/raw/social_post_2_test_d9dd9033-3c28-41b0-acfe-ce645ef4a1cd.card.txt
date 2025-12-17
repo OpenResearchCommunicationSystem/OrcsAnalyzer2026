@@ -14,14 +14,18 @@ file_size: 157
 analyst: ""
 
 === TAG INDEX START ===
+[entity:Jasmine O'Neil](26942c89-e577-4c86-b436-e7cc421d318e)
+[entity:Global Clean Energy Forum](02098521-daf9-48f6-aa8a-05b05ac61256)
+[data:Berlin](78ebab6f-7608-4dc3-994a-24f8f3a5525a)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
 # Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
+(26942c89-e577-4c86-b436-e7cc421d318e) --[attended]--> (02098521-daf9-48f6-aa8a-05b05ac61256) {rel: true, attr: false} |id:968ffeaa-8e27-4e0e-a7d5-18531ee42c7a
 === LINK INDEX END ===
 
 === ORIGINAL CONTENT START ===
-Facebook Status — Jasmine O'Neil checked in at the Global Clean Energy Forum in Berlin. "Excited to speak on the ethics of AI in infrastructure planning!"
+Facebook Status — [entity:Jasmine O'Neil](26942c89-e577-4c86-b436-e7cc421d318e) checked in at the [entity:Global Clean Energy Forum](02098521-daf9-48f6-aa8a-05b05ac61256) in [data:Berlin](78ebab6f-7608-4dc3-994a-24f8f3a5525a). "Excited to speak on the ethics of AI in infrastructure planning!"
 === ORIGINAL CONTENT END ===
 
 === USER ADDED START ===

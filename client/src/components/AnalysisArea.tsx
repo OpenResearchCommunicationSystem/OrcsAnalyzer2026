@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, ChevronRight, Search, MessageSquare, Zap, Users, Link2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, MessageSquare, Zap, Users, Link2, Maximize2, Minimize2 } from 'lucide-react';
 import type { Snippet, Bullet, Tag, Link as LinkType } from '@shared/schema';
 
 interface AnalysisAreaProps {
@@ -25,6 +25,10 @@ export function AnalysisArea({ cardUuid, cardFileName, cardClassification, cardS
   const [currentBulletIndex, setCurrentBulletIndex] = useState(0);
   const [nodeSearch, setNodeSearch] = useState('');
   const [edgeSearch, setEdgeSearch] = useState('');
+  const [nodeExpanded, setNodeExpanded] = useState(false);
+  const [edgeExpanded, setEdgeExpanded] = useState(false);
+  const [outputNodeExpanded, setOutputNodeExpanded] = useState(false);
+  const [outputEdgeExpanded, setOutputEdgeExpanded] = useState(false);
 
   const tabConfig = [
     { id: 'snip' as const, label: 'Snip', icon: MessageSquare, count: snippets.length, color: 'amber' },
@@ -220,21 +224,33 @@ export function AnalysisArea({ cardUuid, cardFileName, cardClassification, cardS
 
         {activeTab === 'node' && (
           <div className="space-y-2" data-testid="node-content">
-            {/* Search */}
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Search entities..."
-                value={nodeSearch}
-                onChange={(e) => setNodeSearch(e.target.value)}
-                className="h-7 text-xs bg-gray-900 border-gray-600"
-                data-testid="node-search"
-              />
-              <Search className="w-3 h-3 absolute right-2 top-2 text-slate-500" />
+            {/* Search + Expand */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Input
+                  type="text"
+                  placeholder="Search entities..."
+                  value={nodeSearch}
+                  onChange={(e) => setNodeSearch(e.target.value)}
+                  className="h-7 text-xs bg-gray-900 border-gray-600"
+                  data-testid="node-search"
+                />
+                <Search className="w-3 h-3 absolute right-2 top-2 text-slate-500" />
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => setNodeExpanded(!nodeExpanded)}
+                title={nodeExpanded ? 'Collapse' : 'Expand'}
+                data-testid="node-expand"
+              >
+                {nodeExpanded ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+              </Button>
             </div>
 
             {/* Entity Table */}
-            <div className="max-h-[80px] overflow-y-auto border border-gray-700 rounded">
+            <div className={`${nodeExpanded ? 'max-h-[300px]' : 'max-h-[80px]'} overflow-y-auto border border-gray-700 rounded transition-all`}>
               <table className="w-full text-xs">
                 <thead className="bg-gray-800 sticky top-0">
                   <tr>
@@ -267,21 +283,33 @@ export function AnalysisArea({ cardUuid, cardFileName, cardClassification, cardS
 
         {activeTab === 'edge' && (
           <div className="space-y-2" data-testid="edge-content">
-            {/* Search */}
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Search edges..."
-                value={edgeSearch}
-                onChange={(e) => setEdgeSearch(e.target.value)}
-                className="h-7 text-xs bg-gray-900 border-gray-600"
-                data-testid="edge-search"
-              />
-              <Search className="w-3 h-3 absolute right-2 top-2 text-slate-500" />
+            {/* Search + Expand */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Input
+                  type="text"
+                  placeholder="Search edges..."
+                  value={edgeSearch}
+                  onChange={(e) => setEdgeSearch(e.target.value)}
+                  className="h-7 text-xs bg-gray-900 border-gray-600"
+                  data-testid="edge-search"
+                />
+                <Search className="w-3 h-3 absolute right-2 top-2 text-slate-500" />
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => setEdgeExpanded(!edgeExpanded)}
+                title={edgeExpanded ? 'Collapse' : 'Expand'}
+                data-testid="edge-expand"
+              >
+                {edgeExpanded ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
+              </Button>
             </div>
 
             {/* Edge Table */}
-            <div className="max-h-[80px] overflow-y-auto border border-gray-700 rounded">
+            <div className={`${edgeExpanded ? 'max-h-[300px]' : 'max-h-[80px]'} overflow-y-auto border border-gray-700 rounded transition-all`}>
               <table className="w-full text-xs">
                 <thead className="bg-gray-800 sticky top-0">
                   <tr>
@@ -353,7 +381,11 @@ export function AnalysisArea({ cardUuid, cardFileName, cardClassification, cardS
         </div>
         <div 
           id="output-content" 
-          className="bg-gray-950 border border-gray-700 rounded p-3 max-h-[120px] overflow-y-auto font-mono text-xs"
+          className={`bg-gray-950 border border-gray-700 rounded p-3 overflow-y-auto font-mono text-xs ${
+            (activeTab === 'node' && outputNodeExpanded) || (activeTab === 'edge' && outputEdgeExpanded) 
+              ? 'max-h-[450px]' 
+              : 'max-h-[120px]'
+          } transition-all`}
           data-testid="output-content"
         >
           {activeTab === 'snip' && (
@@ -392,82 +424,112 @@ export function AnalysisArea({ cardUuid, cardFileName, cardClassification, cardS
           )}
 
           {activeTab === 'node' && (
-            <div className="overflow-x-auto">
-              {filteredEntities.length === 0 ? (
-                <div className="text-slate-500 italic">No entities to display</div>
-              ) : (
-                <table className="w-full text-[10px] border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-700">
-                      <th className="text-left px-2 py-1 text-slate-400">Name</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Type</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Aliases</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Description</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Classification</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Source</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredEntities.map((entity, idx) => (
-                      <tr key={entity.id} className="border-b border-gray-800" data-testid={`output-node-${idx}`}>
-                        <td className="px-2 py-1 text-green-300">{entity.name}</td>
-                        <td className="px-2 py-1 text-slate-300">{entity.entityType || entity.type}</td>
-                        <td className="px-2 py-1 text-slate-400">{entity.aliases?.join(', ') || '-'}</td>
-                        <td className="px-2 py-1 text-slate-400">{entity.description || '-'}</td>
-                        <td className="px-2 py-1 text-slate-400">{cardClassification || 'UNCLASSIFIED'}</td>
-                        <td className="px-2 py-1 text-slate-500">{cardFileName}</td>
+            <div className="space-y-2">
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 text-[10px] px-2"
+                  onClick={() => setOutputNodeExpanded(!outputNodeExpanded)}
+                  title={outputNodeExpanded ? 'Collapse' : 'Expand'}
+                  data-testid="output-node-expand"
+                >
+                  {outputNodeExpanded ? <Minimize2 className="w-3 h-3 mr-1" /> : <Maximize2 className="w-3 h-3 mr-1" />}
+                  {outputNodeExpanded ? 'Collapse' : 'Expand'}
+                </Button>
+              </div>
+              <div className={`overflow-x-auto ${outputNodeExpanded ? 'max-h-[400px]' : 'max-h-[80px]'} overflow-y-auto transition-all`}>
+                {filteredEntities.length === 0 ? (
+                  <div className="text-slate-500 italic">No entities to display</div>
+                ) : (
+                  <table className="w-full text-[10px] border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-700">
+                        <th className="text-left px-2 py-1 text-slate-400">Name</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Type</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Aliases</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Description</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Classification</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Source</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+                    </thead>
+                    <tbody>
+                      {filteredEntities.map((entity, idx) => (
+                        <tr key={entity.id} className="border-b border-gray-800" data-testid={`output-node-${idx}`}>
+                          <td className="px-2 py-1 text-green-300">{entity.name}</td>
+                          <td className="px-2 py-1 text-slate-300">{entity.entityType || entity.type}</td>
+                          <td className="px-2 py-1 text-slate-400">{entity.aliases?.join(', ') || '-'}</td>
+                          <td className="px-2 py-1 text-slate-400">{entity.description || '-'}</td>
+                          <td className="px-2 py-1 text-slate-400">{cardClassification || 'UNCLASSIFIED'}</td>
+                          <td className="px-2 py-1 text-slate-500">{cardFileName}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
             </div>
           )}
 
           {activeTab === 'edge' && (
-            <div className="overflow-x-auto">
-              {filteredLinks.length === 0 ? (
-                <div className="text-slate-500 italic">No edges to display</div>
-              ) : (
-                <table className="w-full text-[10px] border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-700">
-                      <th className="text-left px-2 py-1 text-slate-400">Source Name</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Source Type</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Predicate</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Target Name</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Target Type</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Link Type</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Direction</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Classification</th>
-                      <th className="text-left px-2 py-1 text-slate-400">Source</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredLinks.map((link, idx) => {
-                      const sourceEntity = entities.find(e => e.id === link.sourceId);
-                      const targetEntity = entities.find(e => e.id === link.targetId);
-                      return (
-                        <tr key={link.id} className="border-b border-gray-800" data-testid={`output-edge-${idx}`}>
-                          <td className="px-2 py-1 text-green-300">{sourceEntity?.name || link.sourceId.slice(0, 8)}</td>
-                          <td className="px-2 py-1 text-slate-400">{sourceEntity?.entityType || sourceEntity?.type || '-'}</td>
-                          <td className="px-2 py-1 text-orange-300">{link.predicate}</td>
-                          <td className="px-2 py-1 text-green-300">{targetEntity?.name || link.targetId.slice(0, 8)}</td>
-                          <td className="px-2 py-1 text-slate-400">{targetEntity?.entityType || targetEntity?.type || '-'}</td>
-                          <td className="px-2 py-1 text-slate-400">
-                            {link.isRelationship ? 'REL' : ''}{link.isAttribute ? 'ATTR' : ''}{!link.isRelationship && !link.isAttribute ? '-' : ''}
-                          </td>
-                          <td className="px-2 py-1 text-slate-400">
-                            {link.direction === 0 ? '→' : link.direction === 1 ? '←' : link.direction === 2 ? '↔' : '-'}
-                          </td>
-                          <td className="px-2 py-1 text-slate-400">{cardClassification || 'UNCLASSIFIED'}</td>
-                          <td className="px-2 py-1 text-slate-500">{cardFileName}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
+            <div className="space-y-2">
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 text-[10px] px-2"
+                  onClick={() => setOutputEdgeExpanded(!outputEdgeExpanded)}
+                  title={outputEdgeExpanded ? 'Collapse' : 'Expand'}
+                  data-testid="output-edge-expand"
+                >
+                  {outputEdgeExpanded ? <Minimize2 className="w-3 h-3 mr-1" /> : <Maximize2 className="w-3 h-3 mr-1" />}
+                  {outputEdgeExpanded ? 'Collapse' : 'Expand'}
+                </Button>
+              </div>
+              <div className={`overflow-x-auto ${outputEdgeExpanded ? 'max-h-[400px]' : 'max-h-[80px]'} overflow-y-auto transition-all`}>
+                {filteredLinks.length === 0 ? (
+                  <div className="text-slate-500 italic">No edges to display</div>
+                ) : (
+                  <table className="w-full text-[10px] border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-700">
+                        <th className="text-left px-2 py-1 text-slate-400">Source Name</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Source Type</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Predicate</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Target Name</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Target Type</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Link Type</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Direction</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Classification</th>
+                        <th className="text-left px-2 py-1 text-slate-400">Source</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredLinks.map((link, idx) => {
+                        const sourceEntity = entities.find(e => e.id === link.sourceId);
+                        const targetEntity = entities.find(e => e.id === link.targetId);
+                        return (
+                          <tr key={link.id} className="border-b border-gray-800" data-testid={`output-edge-${idx}`}>
+                            <td className="px-2 py-1 text-green-300">{sourceEntity?.name || link.sourceId.slice(0, 8)}</td>
+                            <td className="px-2 py-1 text-slate-400">{sourceEntity?.entityType || sourceEntity?.type || '-'}</td>
+                            <td className="px-2 py-1 text-orange-300">{link.predicate}</td>
+                            <td className="px-2 py-1 text-green-300">{targetEntity?.name || link.targetId.slice(0, 8)}</td>
+                            <td className="px-2 py-1 text-slate-400">{targetEntity?.entityType || targetEntity?.type || '-'}</td>
+                            <td className="px-2 py-1 text-slate-400">
+                              {link.isRelationship ? 'REL' : ''}{link.isAttribute ? 'ATTR' : ''}{!link.isRelationship && !link.isAttribute ? '-' : ''}
+                            </td>
+                            <td className="px-2 py-1 text-slate-400">
+                              {link.direction === 0 ? '→' : link.direction === 1 ? '←' : link.direction === 2 ? '↔' : '-'}
+                            </td>
+                            <td className="px-2 py-1 text-slate-400">{cardClassification || 'UNCLASSIFIED'}</td>
+                            <td className="px-2 py-1 text-slate-500">{cardFileName}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
             </div>
           )}
         </div>
