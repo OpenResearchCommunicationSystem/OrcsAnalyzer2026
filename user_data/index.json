@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T18:14:22.842Z",
+  "lastUpdated": "2025-12-17T18:47:18.507Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -181,15 +181,80 @@
         "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "fb90ddfe-6021-4f8f-b869-ed6c7ca83626",
+      "name": "Industry",
+      "type": "label",
+      "filePath": "/home/runner/workspace/user_data/labels/Industry_fb90ddfe-6021-4f8f-b869-ed6c7ca83626.label.txt",
+      "references": [
+        "linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "5c574c76-62a5-43a6-8b83-775900b476ba",
+      "name": "Computer & Network Security",
+      "type": "data",
+      "filePath": "/home/runner/workspace/user_data/data/Computer & Network Security_5c574c76-62a5-43a6-8b83-775900b476ba.data.txt",
+      "references": [
+        "linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "b1ea3fbe-8a30-48d5-b804-ab3f6f37cfc4",
+      "name": "EXPERIENCE",
+      "type": "label",
+      "filePath": "/home/runner/workspace/user_data/labels/EXPERIENCE_b1ea3fbe-8a30-48d5-b804-ab3f6f37cfc4.label.txt",
+      "references": [
+        "linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "af5cf20e-c54c-47dc-9d70-23f75d78df63",
+      "name": "Chief Technology Officer",
+      "type": "data",
+      "filePath": "/home/runner/workspace/user_data/data/Chief Technology Officer_af5cf20e-c54c-47dc-9d70-23f75d78df63.data.txt",
+      "references": [
+        "linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
-  "brokenConnections": [],
+  "brokenConnections": [
+    {
+      "connectionId": "orphan-fb90ddfe-6021-4f8f-b869-ed6c7ca83626-linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt",
+      "reason": "orphaned_reference",
+      "details": "Tag \"Industry\" references file \"linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt\" which does not exist",
+      "filePath": "/home/runner/workspace/user_data/labels/Industry_fb90ddfe-6021-4f8f-b869-ed6c7ca83626.label.txt"
+    },
+    {
+      "connectionId": "orphan-5c574c76-62a5-43a6-8b83-775900b476ba-linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt",
+      "reason": "orphaned_reference",
+      "details": "Tag \"Computer & Network Security\" references file \"linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt\" which does not exist",
+      "filePath": "/home/runner/workspace/user_data/data/Computer & Network Security_5c574c76-62a5-43a6-8b83-775900b476ba.data.txt"
+    },
+    {
+      "connectionId": "orphan-b1ea3fbe-8a30-48d5-b804-ab3f6f37cfc4-linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt",
+      "reason": "orphaned_reference",
+      "details": "Tag \"EXPERIENCE\" references file \"linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt\" which does not exist",
+      "filePath": "/home/runner/workspace/user_data/labels/EXPERIENCE_b1ea3fbe-8a30-48d5-b804-ab3f6f37cfc4.label.txt"
+    },
+    {
+      "connectionId": "orphan-af5cf20e-c54c-47dc-9d70-23f75d78df63-linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt",
+      "reason": "orphaned_reference",
+      "details": "Tag \"Chief Technology Officer\" references file \"linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt\" which does not exist",
+      "filePath": "/home/runner/workspace/user_data/data/Chief Technology Officer_af5cf20e-c54c-47dc-9d70-23f75d78df63.data.txt"
+    }
+  ],
   "stats": {
     "totalFiles": 12,
-    "totalTags": 7,
+    "totalTags": 11,
     "totalConnections": 0,
-    "brokenConnectionCount": 0,
+    "brokenConnectionCount": 4,
     "entityCount": 4,
     "relationshipCount": 0
   }

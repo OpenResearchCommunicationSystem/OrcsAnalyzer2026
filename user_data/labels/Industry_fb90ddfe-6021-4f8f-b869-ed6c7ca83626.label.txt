@@ -1,0 +1,14 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: fb90ddfe-6021-4f8f-b869-ed6c7ca83626
+TAG_TYPE: label
+NAME: Industry
+CREATED: 2025-12-17T18:45:49.012Z
+MODIFIED: 2025-12-17T18:45:49.012Z
+
+SEARCH_ALIASES:
+
+CARD_REFERENCES:
+  - linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt
+
+=== END ORCS ENTITY ===

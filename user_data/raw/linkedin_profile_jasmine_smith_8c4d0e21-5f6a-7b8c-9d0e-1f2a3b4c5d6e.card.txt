@@ -14,6 +14,10 @@ file_size: 2156
 analyst: "System Import"
 
 === TAG INDEX START ===
+[label:Industry](fb90ddfe-6021-4f8f-b869-ed6c7ca83626)
+[data:Computer & Network Security](5c574c76-62a5-43a6-8b83-775900b476ba)
+[label:EXPERIENCE](b1ea3fbe-8a30-48d5-b804-ab3f6f37cfc4)
+[data:Chief Technology Officer](af5cf20e-c54c-47dc-9d70-23f75d78df63)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
@@ -34,10 +38,10 @@ Export Date: December 16, 2024
 === PROFILE HEADER ===
 
 Name: Jasmine Smith
-Headline: Chief Technology Officer at CyberNova | Cybersecurity Expert | Board Member
+Headline: [data:Chief Technology Officer](af5cf20e-c54c-47dc-9d70-23f75d78df63) at CyberNova | Cybersecurity Expert | Board Member
 Location: Austin, Texas Metropolitan Area
 Connections: 500+
-Industry: Computer & Network Security
+[label:Industry](fb90ddfe-6021-4f8f-b869-ed6c7ca83626): [data:Computer & Network Security](5c574c76-62a5-43a6-8b83-775900b476ba)
 
 === ABOUT ===
 
@@ -45,10 +49,10 @@ Experienced technology executive with 15+ years in cybersecurity and enterprise 
 
 I'm passionate about building secure systems and mentoring the next generation of security professionals. Regular speaker at DEF CON and Black Hat conferences.
 
-=== EXPERIENCE ===
+=== [label:EXPERIENCE](b1ea3fbe-8a30-48d5-b804-ab3f6f37cfc4) ===
 
 CyberNova
-Chief Technology Officer
+[data:Chief Technology Officer](af5cf20e-c54c-47dc-9d70-23f75d78df63)
 January 2021 - Present | Austin, TX
 - Leading a team of 45 engineers and researchers
 - Oversaw development of CyberNova's flagship threat detection platform

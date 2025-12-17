@@ -1,0 +1,14 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: 5c574c76-62a5-43a6-8b83-775900b476ba
+TAG_TYPE: data
+NAME: Computer & Network Security
+CREATED: 2025-12-17T18:46:33.942Z
+MODIFIED: 2025-12-17T18:46:33.942Z
+
+SEARCH_ALIASES:
+
+CARD_REFERENCES:
+  - linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt
+
+=== END ORCS ENTITY ===
