@@ -1347,6 +1347,66 @@ export class OrcsService {
     return content.replace(tagPattern, '$2');
   }
 
+  // Helper: Convert visual offset (from tag-stripped content) to raw offset (in content with markers)
+  // This is needed because the frontend calculates offsets based on rendered text without markers
+  private visualToRawOffset(rawContent: string, visualOffset: number): number {
+    const tagPattern = /\[(entity|relationship|attribute|comment|label|data):([^\]]+)\]\([a-f0-9-]+\)/gi;
+    
+    let rawOffset = 0;
+    let visualPos = 0;
+    let lastIndex = 0;
+    let match;
+    
+    // Reset regex state
+    tagPattern.lastIndex = 0;
+    
+    while ((match = tagPattern.exec(rawContent)) !== null) {
+      const markerStart = match.index;
+      const markerFull = match[0];          // Full marker: [type:text](uuid)
+      const markerText = match[2];          // Just the visible text
+      
+      // Text before this marker
+      const textBefore = rawContent.substring(lastIndex, markerStart);
+      
+      // Check if visual offset falls within the text before this marker
+      if (visualPos + textBefore.length >= visualOffset) {
+        // Offset is in the plain text before this marker
+        return rawOffset + (visualOffset - visualPos);
+      }
+      
+      // Move past the text before the marker
+      visualPos += textBefore.length;
+      rawOffset += textBefore.length;
+      
+      // Check if visual offset falls within the marker's visible text (exclusive of end)
+      // Use > instead of >= so offset at end maps to AFTER the full marker
+      if (visualPos + markerText.length > visualOffset) {
+        // Offset is strictly within the marker's visible text (not at the end)
+        // Map to the corresponding position within the marker
+        const offsetInMarker = visualOffset - visualPos;
+        // Position after the opening bracket and type prefix: [type:
+        const markerPrefix = `[${match[1]}:`;
+        return rawOffset + markerPrefix.length + offsetInMarker;
+      }
+      
+      // Move past the marker (visual sees only the text, raw sees full marker)
+      // If visualOffset equals visualPos + markerText.length, we want to insert AFTER the marker
+      visualPos += markerText.length;
+      rawOffset += markerFull.length;
+      lastIndex = markerStart + markerFull.length;
+    }
+    
+    // Handle remaining text after last marker
+    const remainingText = rawContent.substring(lastIndex);
+    if (visualPos + remainingText.length >= visualOffset) {
+      return rawOffset + (visualOffset - visualPos);
+    }
+    
+    // If we get here, the visual offset is past the end of content
+    // Return the raw content length
+    return rawContent.length;
+  }
+
   private generateTagMarkup(content: string, tag: Tag): string {
     let markedContent = content;
     
@@ -2401,11 +2461,41 @@ export class OrcsService {
 
   private insertCommentIntoContent(cardContent: string, comment: CommentInsert): string {
     const lines = cardContent.split('\n');
-    let inOriginalContent = false;
-    let currentOffset = 0;
-    // Use tag-like format [comment:text](id) so it can be stripped for integrity verification
     const commentMarker = `[comment:${comment.text}](${comment.id})`;
-
+    
+    // First, extract the ORIGINAL CONTENT section to calculate raw offset
+    let originalContentLines: string[] = [];
+    let inOriginalContent = false;
+    let originalContentStartLine = -1;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+      
+      if (trimmed === '=== ORIGINAL CONTENT START ===') {
+        inOriginalContent = true;
+        originalContentStartLine = i + 1;
+        continue;
+      }
+      if (trimmed === '=== ORIGINAL CONTENT END ===') {
+        inOriginalContent = false;
+        continue;
+      }
+      
+      if (inOriginalContent) {
+        originalContentLines.push(lines[i]);
+      }
+    }
+    
+    // Join original content to convert visual offset to raw offset
+    const rawOriginalContent = originalContentLines.join('\n');
+    
+    // Convert the visual offset (from frontend) to raw offset (accounting for tag markers)
+    const rawOffset = this.visualToRawOffset(rawOriginalContent, comment.insertOffset);
+    
+    // Now insert at the correct raw offset within ORIGINAL CONTENT section
+    let currentOffset = 0;
+    inOriginalContent = false;
+    
     for (let i = 0; i < lines.length; i++) {
       const trimmed = lines[i].trim();
 
@@ -2421,10 +2511,13 @@ export class OrcsService {
       if (inOriginalContent) {
         const lineLength = lines[i].length + 1; // +1 for newline
 
-        // Check if insertion point is in this line
-        if (currentOffset + lines[i].length >= comment.insertOffset) {
-          const lineOffset = comment.insertOffset - currentOffset;
+        // Check if insertion point is in this line using raw offset
+        if (currentOffset + lines[i].length >= rawOffset) {
+          const lineOffset = rawOffset - currentOffset;
           lines[i] = lines[i].slice(0, lineOffset) + commentMarker + lines[i].slice(lineOffset);
+          
+          // Update the comment's insertOffset to the raw offset for storage
+          comment.insertOffset = rawOffset;
           break;
         }
 

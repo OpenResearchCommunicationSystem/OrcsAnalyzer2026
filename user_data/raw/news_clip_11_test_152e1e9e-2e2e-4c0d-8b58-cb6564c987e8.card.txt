@@ -22,7 +22,6 @@ analyst: "Test Analyst Name"
 
 === SNIPPET INDEX START ===
 # Format: [start-end] "text" | {metadata} |id:uuid
-[10-100] "TechCorp has announced the acquisition of BioNex Systems in a deal valued at $3.2 billion." | {comment: "Tech Corp Comment"} |id:35977850-5f9e-4d3a-ab8c-5cf554affb7a
 === SNIPPET INDEX END ===
 
 === ORIGINAL CONTENT START ===

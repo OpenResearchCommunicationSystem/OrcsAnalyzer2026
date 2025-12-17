@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T17:10:57.488Z",
+  "lastUpdated": "2025-12-17T17:32:32.319Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -16,7 +16,7 @@
       "name": "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt",
       "type": "orcs_card",
       "hash": "85ff2f4e0a4e57193cbe3ab8516c4345834bd12d2f6c3b2ad7c006374049147a",
-      "timestamp": 1765983080200.5503,
+      "timestamp": 1765992290052.3223,
       "cardUuid": "53b483a4-a480-4d6e-8067-269be95bfb12",
       "sourceFile": "beneficial_owners_test.csv"
     },
@@ -52,7 +52,7 @@
       "name": "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt",
       "type": "orcs_card",
       "hash": "3f78b8ead0afc9152078ad939b60664f5df221257e65885df67b1402925cc9a5",
-      "timestamp": 1765986336517.7583,
+      "timestamp": 1765992290054.3223,
       "cardUuid": "152e1e9e-2e2e-4c0d-8b58-cb6564c987e8",
       "sourceFile": "news_clip_11_test.txt"
     },
@@ -106,90 +106,59 @@
       "name": "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt",
       "type": "orcs_card",
       "hash": "d5d95f27819b60fb1c06347d62256e7e6cd1b071b542f23ec6759d8f59999cde",
-      "timestamp": 1765990723157.6873,
+      "timestamp": 1765992752317.2056,
       "cardUuid": "3adbc506-3643-4917-af04-533e2eff622a",
       "sourceFile": "social_post_1_test.txt"
     }
   ],
   "tags": [
     {
-      "id": "2bb36266-ff7e-47e8-9f18-e391d3ca212d",
+      "id": "5b4164e5-0b75-4fac-8dad-78491491912a",
       "name": "Thomas Greene",
       "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/Thomas Greene_2bb36266-ff7e-47e8-9f18-e391d3ca212d.entity.txt",
+      "filePath": "/home/runner/workspace/user_data/entities/Thomas Greene_5b4164e5-0b75-4fac-8dad-78491491912a.entity.txt",
       "references": [
         "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
       "aliases": []
     },
     {
-      "id": "7991d7ab-7b8e-44f4-938e-8eee08eec142",
-      "name": "Company",
-      "type": "label",
-      "filePath": "/home/runner/workspace/user_data/labels/Company_7991d7ab-7b8e-44f4-938e-8eee08eec142.label.txt",
-      "references": [
-        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "b49c152b-db70-4f1b-ad02-369eebac469f",
-      "name": "Ultimate Beneficial Owner",
-      "type": "label",
-      "filePath": "/home/runner/workspace/user_data/labels/Ultimate Beneficial Owner_b49c152b-db70-4f1b-ad02-369eebac469f.label.txt",
-      "references": [
-        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "4fd6de3c-5c20-4f85-8092-0eea47b44c39",
-      "name": "Ownership %",
-      "type": "label",
-      "filePath": "/home/runner/workspace/user_data/labels/Ownership %_4fd6de3c-5c20-4f85-8092-0eea47b44c39.label.txt",
-      "references": [
-        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "a3ef712f-4a7c-432d-b100-e74f6470ec77",
+      "id": "c68cf7a4-b553-4a18-8a73-bedb88f19a20",
       "name": "VisionEdge Analytics",
       "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/VisionEdge Analytics_a3ef712f-4a7c-432d-b100-e74f6470ec77.entity.txt",
+      "filePath": "/home/runner/workspace/user_data/entities/VisionEdge Analytics_c68cf7a4-b553-4a18-8a73-bedb88f19a20.entity.txt",
       "references": [
-        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt",
-        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
       "aliases": []
     },
     {
-      "id": "26f07987-6f2f-447b-9563-492c33d90873",
-      "name": "FutureFoods",
+      "id": "e4f24c25-d7a8-4e9b-bed3-07d2604fa44b",
+      "name": "CloudVest Holdings",
       "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/FutureFoods_26f07987-6f2f-447b-9563-492c33d90873.entity.txt",
+      "filePath": "/home/runner/workspace/user_data/entities/CloudVest Holdings_e4f24c25-d7a8-4e9b-bed3-07d2604fa44b.entity.txt",
       "references": [
-        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
       "aliases": []
     },
     {
-      "id": "c41ce2b3-6734-4c79-b2d5-a7c252e0e309",
-      "name": "CyberNova",
-      "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/CyberNova_c41ce2b3-6734-4c79-b2d5-a7c252e0e309.entity.txt",
+      "id": "3a88694a-0fe8-443f-83d8-c9ffd1d32a0d",
+      "name": "board of directors",
+      "type": "label",
+      "filePath": "/home/runner/workspace/user_data/labels/board of directors_3a88694a-0fe8-443f-83d8-c9ffd1d32a0d.label.txt",
       "references": [
-        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
       "aliases": []
     },
     {
-      "id": "0cdeec6c-dbf4-46df-a87b-6d975c200472",
-      "name": "Ava Cheng",
-      "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/Ava Cheng_0cdeec6c-dbf4-46df-a87b-6d975c200472.entity.txt",
+      "id": "bddca075-74c6-4828-8a57-eb7d77cde977",
+      "name": "joined",
+      "type": "relationship",
+      "filePath": "/home/runner/workspace/user_data/relationships/joined_bddca075-74c6-4828-8a57-eb7d77cde977.relate.txt",
       "references": [
-        "beneficial_owners_test_53b483a4-a480-4d6e-8067-269be95bfb12.card.txt"
+        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
       "aliases": []
     }
@@ -198,10 +167,10 @@
   "brokenConnections": [],
   "stats": {
     "totalFiles": 12,
-    "totalTags": 8,
+    "totalTags": 5,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 5,
-    "relationshipCount": 0
+    "entityCount": 3,
+    "relationshipCount": 1
   }
 }
