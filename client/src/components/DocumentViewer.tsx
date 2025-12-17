@@ -666,6 +666,18 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               containsTaggedText
             };
             onTextSelection(textSelection);
+          } else if (containsTaggedText) {
+            // Selection crosses tags - the visible text won't match raw content
+            // Still report selection for snippet/comment (use best-effort offsets)
+            const textSelection: TextSelection = {
+              text: fullSelectedText,
+              startOffset: startOffset !== -1 ? startOffset : 0,
+              endOffset: startOffset !== -1 ? startOffset + fullSelectedText.length : fullSelectedText.length,
+              filename: selectedFileData.name,
+              reference: `${referenceBase}@cross-tag-selection`,
+              containsTaggedText: true
+            };
+            onTextSelection(textSelection);
           }
         }
       }
