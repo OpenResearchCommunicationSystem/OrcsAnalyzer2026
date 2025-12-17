@@ -1,0 +1,31 @@
+=== ORCS CARD ===
+version: "2025.004"
+uuid: "64d093ca-edbd-41a9-8f52-93661cb45ed4"
+source_file: "test_news_test.txt"
+source_reference: "newstest.com "
+classification: "Unclassified"
+handling:
+  - "copyrighted material, use under fair use rules only."
+created: "2025-12-17T13:59:41.585Z"
+modified: "2025-12-17T14:02:24.761Z"
+source_hash: "sha256:ef3559cefd383eea4f3cdf70ad5af91909346f038850fff34d5ed90893271169"
+file_type: "txt"
+file_size: 69
+analyst: ""
+
+=== TAG INDEX START ===
+
+=== TAG INDEX END ===
+
+=== LINK INDEX START ===
+
+=== LINK INDEX END ===
+
+=== SNIPPET INDEX START ===
+
+=== SNIPPET INDEX END ===
+
+=== ORIGINAL CONTENT START ===
+BREAKING: TechCorp announces major acquisition of AI startup for .5B
+
+=== ORIGINAL CONTENT END ===

@@ -29,7 +29,8 @@ analyst: "Test Analyst Name"
 === LINK INDEX END ===
 
 === SNIPPET INDEX START ===
-# Format: uuid|startOffset|endOffset|text|comment|classification|analyst|created
+# Format: [start-end] "text" | {metadata} |id:uuid
+[489-533] "This is a landmark moment for both companies" | {comment: "Analyst Comment: Comment possibly related to previous court decisions related to monopiles"} |id:85050c2d-6324-491d-bbe3-e5cf19410d71
 === SNIPPET INDEX END ===
 
 === ORIGINAL CONTENT START ===

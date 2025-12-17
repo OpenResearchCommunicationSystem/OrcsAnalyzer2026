@@ -1,0 +1,35 @@
+=== ORCS CARD ===
+version: "2025.004"
+uuid: "3e7127c2-f5d9-4cd5-96d6-14df521fa278"
+source_file: "board_members_test.csv"
+source_reference: "www.boardcheck.com"
+classification: "Unclassified"
+handling:
+  - ""
+created: "2025-12-17T13:56:53.718Z"
+modified: "2025-12-17T13:58:49.289Z"
+source_hash: "sha256:885c3b15d090b18c15c561a09ca694abe1a1d9ba1ac226b97032e38f8322bce9"
+file_type: "csv"
+file_size: 159
+analyst: ""
+
+=== TAG INDEX START ===
+
+=== TAG INDEX END ===
+
+=== LINK INDEX START ===
+
+=== LINK INDEX END ===
+
+=== SNIPPET INDEX START ===
+
+=== SNIPPET INDEX END ===
+
+=== ORIGINAL CONTENT START ===
+Company,Board Member,Position
+TechCorp,John Smith,CEO
+TechCorp,Ava Cheng,CFO
+BioNex Systems,Thomas Greene,Director
+CloudVest Holdings,Thomas Greene,Former COO
+
+=== ORIGINAL CONTENT END ===
