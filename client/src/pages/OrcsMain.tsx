@@ -8,6 +8,7 @@ import { TagCreationModal } from "@/components/TagCreationModal";
 import { LabelCreationModal } from "@/components/LabelCreationModal";
 import { DataCreationModal } from "@/components/DataCreationModal";
 import { CommentCreationModal } from "@/components/CommentCreationModal";
+import { SnippetCreationModal } from "@/components/SnippetCreationModal";
 import { RelationshipConnectionModal } from "@/components/RelationshipConnectionModal";
 import { MetadataForm } from "@/components/MetadataForm";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,9 @@ export default function OrcsMain() {
   
   // Comment creation modal state (separate from tag modal for inline comments)
   const [showCommentModal, setShowCommentModal] = useState(false);
+  
+  // Snippet creation modal state
+  const [showSnippetModal, setShowSnippetModal] = useState(false);
 
   const { uploadFileAsync, isUploading } = useFileOperations();
   const { stats }: { stats?: Stats } = useTagOperations();
@@ -131,6 +135,12 @@ export default function OrcsMain() {
     // Comments use the new inline insertion system
     if (type === 'comment') {
       setShowCommentModal(true);
+      return;
+    }
+    
+    // Snippets use the snippet creation modal
+    if (type === 'snippet') {
+      setShowSnippetModal(true);
       return;
     }
     
@@ -509,6 +519,17 @@ export default function OrcsMain() {
         selectedText={selectedText}
         onCommentCreated={() => {
           setShowCommentModal(false);
+          setSelectedText(null);
+        }}
+      />
+
+      {/* Snippet Creation Modal */}
+      <SnippetCreationModal
+        isOpen={showSnippetModal}
+        onClose={() => setShowSnippetModal(false)}
+        selectedText={selectedText}
+        onSnippetCreated={() => {
+          setShowSnippetModal(false);
           setSelectedText(null);
         }}
       />

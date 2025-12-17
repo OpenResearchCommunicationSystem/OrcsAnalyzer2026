@@ -165,33 +165,6 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   const [linkIsRelationship, setLinkIsRelationship] = useState(true);
   const [linkDirection, setLinkDirection] = useState<number>(1); // 0=none, 1=forward, 2=backward, 3=bidirectional
 
-  // State for pending snippet creation
-  const [pendingSnippet, setPendingSnippet] = useState<{ text: string; start: number; end: number } | null>(null);
-  const [snippetComment, setSnippetComment] = useState('');
-
-  // Mutation to create a snippet
-  const createSnippetMutation = useMutation({
-    mutationFn: async (snippetData: { text: string; offsets: { start: number; end: number }; comment?: string }) => {
-      const response = await apiRequest('POST', `/api/cards/${cardUuidForQueries}/snippets`, snippetData);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cards', cardUuidForQueries, 'snippets'] });
-      setPendingSnippet(null);
-      setSnippetComment('');
-    },
-  });
-
-  // Handler to create snippet from pending selection
-  const handleCreateSnippet = () => {
-    if (!pendingSnippet || !cardUuidForQueries) return;
-    createSnippetMutation.mutate({
-      text: pendingSnippet.text,
-      offsets: { start: pendingSnippet.start, end: pendingSnippet.end },
-      comment: snippetComment.trim() || undefined,
-    });
-  };
-
   // Mutation to delete a snippet
   const deleteSnippetMutation = useMutation({
     mutationFn: async (snippetId: string) => {
@@ -679,10 +652,6 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
             containsTaggedText
           };
           onTextSelection(textSelection);
-          // Also set pending snippet for card files
-          if (isCardFile) {
-            setPendingSnippet({ text: fullSelectedText, start: startOffset, end: endOffset });
-          }
         } else {
           // If offsets don't match, try to find the text in the section content
           const actualStartIndex = sectionContent.indexOf(fullSelectedText);
@@ -697,10 +666,6 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               containsTaggedText
             };
             onTextSelection(textSelection);
-            // Also set pending snippet for card files
-            if (isCardFile) {
-              setPendingSnippet({ text: fullSelectedText, start: actualStartIndex, end: actualEndIndex });
-            }
           }
         }
       }
@@ -1278,49 +1243,6 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Original Content</span>
               </div>
-              {cardUuidForQueries && pendingSnippet && (
-                <div className="mt-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <MessageSquare className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs text-amber-200 mb-2 line-clamp-2">
-                        "{pendingSnippet.text.slice(0, 100)}{pendingSnippet.text.length > 100 ? '...' : ''}"
-                      </div>
-                      <input
-                        type="text"
-                        value={snippetComment}
-                        onChange={(e) => setSnippetComment(e.target.value)}
-                        placeholder="Add a comment (optional)..."
-                        className="w-full px-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-amber-500"
-                        data-testid="input-snippet-comment"
-                      />
-                      <div className="flex items-center gap-2 mt-2">
-                        <Button
-                          size="sm"
-                          onClick={handleCreateSnippet}
-                          disabled={createSnippetMutation.isPending}
-                          className="h-6 px-2 bg-amber-600 hover:bg-amber-500 text-white text-xs"
-                          data-testid="button-create-snippet"
-                        >
-                          {createSnippetMutation.isPending ? 'Creating...' : 'Create Snippet'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => { setPendingSnippet(null); setSnippetComment(''); }}
-                          className="h-6 px-2 text-slate-400 hover:text-slate-200 text-xs"
-                          data-testid="button-cancel-snippet"
-                        >
-                          Cancel
-                        </Button>
-                        <span className="text-[10px] text-slate-500 ml-auto">
-                          [{pendingSnippet.start}-{pendingSnippet.end}]
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
             <div className="flex-1 overflow-y-auto p-6">
               {/* File Header */}
