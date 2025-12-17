@@ -40,7 +40,10 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/files'] });
       queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/connections'] });
       queryClient.invalidateQueries({ queryKey: ['/api/system/index'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/system/broken-connections'] });
       toast({
         title: "Reset Complete",
         description: `Cleared ${data.cardsReset} cards, ${data.tagsDeleted} tags, ${data.linksCleared} connections`,
