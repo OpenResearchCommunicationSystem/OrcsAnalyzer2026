@@ -16,6 +16,8 @@ analyst: "Test Analyst Name"
 === TAG INDEX START ===
 [entity:TechCorp](4e02036b-0c51-400e-99b5-887efb71399b)
 [entity:BioNex Systems](654388d2-3464-4ce6-b938-9a8388ab44b9)
+
+[data:$3.2 billion](62cbed65-47f8-475f-a5a0-00631d33425d)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
@@ -30,7 +32,6 @@ analyst: "Test Analyst Name"
 BREAKING: [entity:TechCorp](4e02036b-0c51-400e-99b5-887efb71399b) has announced the acquisition of [entity:BioNex Systems](654388d2-3464-4ce6-b938-9a8388ab44b9) in a deal valued at $3.2 billion. The merger is expected to complete in Q3 2025, pending regulatory approval.
 CEO John Smith commented, "This is a landmark moment for both companies."
 === ORIGINAL CONTENT END ===
-
 === USER ADDED START ===
 
 === USER ADDED END ===
