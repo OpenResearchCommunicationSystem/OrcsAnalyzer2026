@@ -394,7 +394,6 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
                 <SelectItem value="relationship">Link</SelectItem>
                 <SelectItem value="label">Label</SelectItem>
                 <SelectItem value="data">Data</SelectItem>
-                <SelectItem value="comment">Comment</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -404,8 +403,9 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
               <Label className="text-sm font-medium text-slate-300 mb-2 block">
                 {formData.type === 'entity' ? 'Entity Type' : 
                  formData.type === 'relationship' ? 'Link Type' :
-                 formData.type === 'comment' ? 'Comment Type' :
-                 'Pair Type'}
+                 formData.type === 'label' ? 'Label Type' :
+                 formData.type === 'data' ? 'Data Type' :
+                 'Type'}
               </Label>
               <Select
                 value={formData.entityType || ''}
@@ -436,16 +436,6 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
                       <SelectItem value="competition">Competition</SelectItem>
                       <SelectItem value="family">Family</SelectItem>
                       <SelectItem value="location">Location</SelectItem>
-                    </>
-                  )}
-                  {formData.type === 'comment' && (
-                    <>
-                      <SelectItem value="analysis">Analysis</SelectItem>
-                      <SelectItem value="hypothesis">Hypothesis</SelectItem>
-                      <SelectItem value="question">Question</SelectItem>
-                      <SelectItem value="note">Note</SelectItem>
-                      <SelectItem value="warning">Warning</SelectItem>
-                      <SelectItem value="summary">Summary</SelectItem>
                     </>
                   )}
                   {formData.type === 'label' && (

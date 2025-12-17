@@ -245,7 +245,6 @@ export function GraphVisualization({ onNodeClick }: GraphVisualizationProps) {
             case 'entity': return "#10b981";
             case 'relationship': return "#f59e0b";
             case 'attribute': return "#8b5cf6";
-            case 'comment': return "#06b6d4";
             case 'label': return "#06b6d4";
             case 'data': return "#a855f7";
             default: return "#6b7280";
