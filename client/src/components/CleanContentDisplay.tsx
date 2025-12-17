@@ -47,7 +47,8 @@ export function CleanContentDisplay({
     // Look for markdown-style tags: [entity:TechCorp](uuid) format
     return content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, (match, type, text, uuid) => {
       const colorClass = getTagColorClass(type);
-      return `<button class="${colorClass} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50" data-tag-id="${uuid}" data-tag-type="${type}" type="button" style="cursor: pointer; border: none; font: inherit; padding: 2px 4px; position: relative; z-index: 10;">${text}</button>`;
+      // Use user-select: text to allow text selection across tagged elements
+      return `<button class="${colorClass} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50" data-tag-id="${uuid}" data-tag-type="${type}" type="button" style="cursor: pointer; border: none; font: inherit; padding: 2px 4px; position: relative; z-index: 10; user-select: text; -webkit-user-select: text;">${text}</button>`;
     });
   };
 
@@ -61,6 +62,14 @@ export function CleanContentDisplay({
       // Check if clicked element is within our content area
       if (!contentRef.current?.contains(target)) return;
       
+      // Check if there's an active text selection - if so, don't trigger tag click
+      // This allows users to select text across tagged elements
+      const selection = window.getSelection();
+      if (selection && selection.toString().trim().length > 0) {
+        // User is selecting text, don't interfere
+        return;
+      }
+      
       // Check if clicked element is a tag button or contains tag data
       if (target.hasAttribute('data-tag-id') || target.closest('[data-tag-id]')) {
         const tagElement = target.hasAttribute('data-tag-id') ? target : target.closest('[data-tag-id]') as HTMLElement;
@@ -73,8 +82,6 @@ export function CleanContentDisplay({
           const tag = tags.find(t => t.id === tagId);
           
           if (tag) {
-            // Clear any text selection that might interfere
-            window.getSelection()?.removeAllRanges();
             onTagClick(tag);
           }
         }

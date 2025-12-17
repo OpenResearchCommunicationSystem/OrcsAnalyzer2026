@@ -484,7 +484,6 @@ export default function OrcsMain() {
           isOpen={showTagModal}
           onClose={() => setShowTagModal(false)}
           selectedText={selectedText}
-          cardId={files.find(f => f.id === selectedFile)?.cardUuid}
           onTagCreated={() => {
             setShowTagModal(false);
             setSelectedText(null);
