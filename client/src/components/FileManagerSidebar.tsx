@@ -1,10 +1,22 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Folder, FolderOpen, File as FileIcon, Eye, RefreshCw, Plus, FileText, Table, Trash2 } from "lucide-react";
+import { Folder, FolderOpen, File as FileIcon, Eye, RefreshCw, Plus, FileText, Table, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
 import { File, Stats, Tag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { useFileOperations } from "@/hooks/useFileOperations";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface FileManagerSidebarProps {
   selectedFile: string | null;
@@ -16,8 +28,33 @@ interface FileManagerSidebarProps {
 export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, onTagClick }: FileManagerSidebarProps) {
   const [showOriginals, setShowOriginals] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['raw']));
+  const [showResetModal, setShowResetModal] = useState(false);
   const { stats }: { stats?: Stats } = useTagOperations();
   const { deleteFile, isDeleting } = useFileOperations();
+  const { toast } = useToast();
+
+  const resetMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('/api/system/reset-tags', { method: 'POST' });
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tags'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/system/index'] });
+      toast({
+        title: "Reset Complete",
+        description: `Cleared ${data.cardsReset} cards, ${data.tagsDeleted} tags, ${data.linksCleared} connections`,
+      });
+      setShowResetModal(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Reset Failed",
+        description: error.message || "Failed to reset tags",
+        variant: "destructive",
+      });
+    },
+  });
 
   const { data: files = [], isLoading } = useQuery<File[]>({
     queryKey: ['/api/files'],
@@ -128,8 +165,64 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowResetModal(true)}
+            className="bg-red-900/30 border-red-600/50 hover:bg-red-900/50 text-red-300"
+            data-testid="button-reset-tags"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </Button>
         </div>
       </div>
+
+      {/* Reset Confirmation Modal */}
+      <AlertDialog open={showResetModal} onOpenChange={setShowResetModal}>
+        <AlertDialogContent className="bg-gray-900 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-400">
+              <AlertTriangle className="w-5 h-5" />
+              Reset All Tags
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-300">
+              <div className="space-y-3 mt-2">
+                <p className="font-medium text-slate-200">
+                  This will permanently remove:
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-slate-400">
+                  <li>All entities, links, labels, data tags, and comments</li>
+                  <li>All snippet highlights</li>
+                  <li>All tag markup from document content</li>
+                  <li>All connections between entities</li>
+                </ul>
+                <p className="text-amber-400 font-medium mt-4">
+                  Card metadata (source, classification, handling instructions) will be preserved.
+                </p>
+                <p className="text-red-400 font-medium">
+                  This action cannot be undone.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              className="bg-gray-800 border-gray-600 hover:bg-gray-700"
+              data-testid="button-reset-cancel"
+            >
+              Back
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => resetMutation.mutate()}
+              disabled={resetMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              data-testid="button-reset-confirm"
+            >
+              {resetMutation.isPending ? 'Resetting...' : 'Continue'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* File Tree */}
       <div className="flex-1 overflow-y-auto p-4">
