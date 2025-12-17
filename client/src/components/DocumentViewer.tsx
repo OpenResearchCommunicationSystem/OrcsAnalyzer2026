@@ -332,6 +332,7 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
   // Detect and process markdown tags in content
   const processMarkdownTags = (content: string): string => {
     // Look for markdown-style tags: [entity:TechCorp](uuid) format
+    // Use span instead of button to allow text selection across tags
     return content.replace(/\[([^:]+):([^\]]+)\]\(([^)]+)\)/g, (match, type, text, uuid) => {
       const colorClass = getTagColorClass(type);
       // Make entity tags draggable for connection workflow
@@ -342,7 +343,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
       const dragStyles = isDraggable
         ? 'cursor: grab;'
         : 'cursor: pointer;';
-      return `<button class="${colorClass} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50" data-tag-id="${uuid}" data-tag-type="${type}" ${draggableAttrs} type="button" style="${dragStyles} border: none; font: inherit; padding: 2px 4px; position: relative; z-index: 10;">${text}</button>`;
+      // Use span with role="button" to preserve text selection while maintaining interactivity
+      return `<span role="button" tabindex="0" class="${colorClass} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50" data-tag-id="${uuid}" data-tag-type="${type}" ${draggableAttrs} style="${dragStyles} user-select: text; font: inherit; padding: 2px 4px; position: relative; z-index: 10;">${text}</span>`;
     });
   };
 
