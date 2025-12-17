@@ -1,0 +1,63 @@
+LINKEDIN PROFILE EXPORT
+Profile URL: linkedin.com/in/jasmine-smith-cybernova
+Export Date: December 16, 2024
+
+=== PROFILE HEADER ===
+
+Name: Jasmine Smith
+Headline: Chief Technology Officer at CyberNova | Cybersecurity Expert | Board Member
+Location: Austin, Texas Metropolitan Area
+Connections: 500+
+Industry: Computer & Network Security
+
+=== ABOUT ===
+
+Experienced technology executive with 15+ years in cybersecurity and enterprise software. Currently serving as CTO at CyberNova, where I lead our product development and security research teams. Previously held senior engineering roles at several Fortune 500 companies.
+
+I'm passionate about building secure systems and mentoring the next generation of security professionals. Regular speaker at DEF CON and Black Hat conferences.
+
+=== EXPERIENCE ===
+
+CyberNova
+Chief Technology Officer
+January 2021 - Present | Austin, TX
+- Leading a team of 45 engineers and researchers
+- Oversaw development of CyberNova's flagship threat detection platform
+- Secured $12M Series B funding for product expansion
+
+Titan Security Systems
+VP of Engineering
+March 2017 - December 2020 | Dallas, TX
+- Managed engineering operations across 3 offices
+- Built enterprise security suite adopted by 200+ clients
+
+GlobalTech Solutions
+Senior Security Engineer
+June 2012 - February 2017 | Houston, TX
+- Developed intrusion detection systems
+- Led incident response team
+
+=== EDUCATION ===
+
+Rice University
+M.S. Computer Science, Cybersecurity Focus
+2010 - 2012
+
+University of Texas at Austin
+B.S. Computer Engineering
+2003 - 2007
+
+=== CERTIFICATIONS ===
+
+- CISSP (Certified Information Systems Security Professional)
+- CISM (Certified Information Security Manager)
+- CEH (Certified Ethical Hacker)
+
+=== CONTACT INFO ===
+
+Email: jasmine.smith@cybernova.io (Work)
+Email: jasmine.smith@outlook.com (Personal)
+Phone: (512) 555-0148
+Twitter: @JasmineSecure
+
+=== END PROFILE ===

@@ -1,0 +1,76 @@
+=== ORCS CARD ===
+version: "2025.003"
+uuid: "7a3b9c12-4d5e-6f7a-8b9c-0d1e2f3a4b5c"
+source_file: "people_search_smith_household.txt"
+source_reference: "PublicRecordsHub.com"
+classification: "Unclassified"
+handling:
+  - "FOUO"
+created: "2024-12-15T14:30:00.000Z"
+modified: "2024-12-17T18:00:00.000Z"
+source_hash: "sha256:a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+file_type: "txt"
+file_size: 1842
+analyst: "System Import"
+
+=== TAG INDEX START ===
+=== TAG INDEX END ===
+
+=== LINK INDEX START ===
+# Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
+=== LINK INDEX END ===
+
+=== SNIPPET INDEX START ===
+=== SNIPPET INDEX END ===
+
+=== COMMENT INDEX START ===
+=== COMMENT INDEX END ===
+
+=== ORIGINAL CONTENT START ===
+PEOPLE SEARCH REPORT
+Report ID: PS-2024-77231
+Generated: December 15, 2024
+Source: PublicRecordsHub.com
+
+=== HOUSEHOLD RECORD ===
+
+PRIMARY SUBJECT: John Michael Smith
+Current Address: 4521 Riverside Drive, Unit 12B, Austin, TX 78704
+Previous Address: 892 Oak Lane, Dallas, TX 75201
+Phone: (512) 555-0147
+Email: jsmith.consulting@gmail.com
+DOB: March 15, 1982
+SSN: ***-**-4472 (partial)
+
+SPOUSE: Jasmine Marie Smith (née O'Neil)
+Current Address: 4521 Riverside Drive, Unit 12B, Austin, TX 78704
+Phone: (512) 555-0148
+Email: jasmine.smith@outlook.com
+DOB: July 22, 1985
+Marriage Date: June 14, 2019
+Marriage Location: Travis County, TX
+
+=== ASSOCIATED PERSONS ===
+
+Name: Patricia O'Neil (Mother of Jasmine)
+Address: 1204 Magnolia Street, Houston, TX 77002
+Phone: (713) 555-0299
+Relationship: Mother-in-law to John Smith
+
+Name: Robert O'Neil (Father of Jasmine)
+Address: 1204 Magnolia Street, Houston, TX 77002
+Phone: (713) 555-0300
+Relationship: Father-in-law to John Smith
+
+=== PROPERTY RECORDS ===
+
+4521 Riverside Drive, Unit 12B
+Owner: John M. Smith & Jasmine M. Smith
+Purchase Date: August 2020
+Purchase Price: $385,000
+
+=== END REPORT ===
+=== ORIGINAL CONTENT END ===
+=== USER ADDED START ===
+
+=== USER ADDED END ===

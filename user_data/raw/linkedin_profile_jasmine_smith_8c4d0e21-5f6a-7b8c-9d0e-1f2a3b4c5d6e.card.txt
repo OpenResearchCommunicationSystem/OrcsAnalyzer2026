@@ -1,0 +1,96 @@
+=== ORCS CARD ===
+version: "2025.003"
+uuid: "8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e"
+source_file: "linkedin_profile_jasmine_smith.txt"
+source_reference: "linkedin.com/in/jasmine-smith-cybernova"
+classification: "Open Source"
+handling:
+  - "OSINT"
+created: "2024-12-16T09:15:00.000Z"
+modified: "2024-12-17T18:00:00.000Z"
+source_hash: "sha256:b2c3d4e5f6a78901234567890123456789abcdef01234567890abcdef0123456"
+file_type: "txt"
+file_size: 2156
+analyst: "System Import"
+
+=== TAG INDEX START ===
+=== TAG INDEX END ===
+
+=== LINK INDEX START ===
+# Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
+=== LINK INDEX END ===
+
+=== SNIPPET INDEX START ===
+=== SNIPPET INDEX END ===
+
+=== COMMENT INDEX START ===
+=== COMMENT INDEX END ===
+
+=== ORIGINAL CONTENT START ===
+LINKEDIN PROFILE EXPORT
+Profile URL: linkedin.com/in/jasmine-smith-cybernova
+Export Date: December 16, 2024
+
+=== PROFILE HEADER ===
+
+Name: Jasmine Smith
+Headline: Chief Technology Officer at CyberNova | Cybersecurity Expert | Board Member
+Location: Austin, Texas Metropolitan Area
+Connections: 500+
+Industry: Computer & Network Security
+
+=== ABOUT ===
+
+Experienced technology executive with 15+ years in cybersecurity and enterprise software. Currently serving as CTO at CyberNova, where I lead our product development and security research teams. Previously held senior engineering roles at several Fortune 500 companies.
+
+I'm passionate about building secure systems and mentoring the next generation of security professionals. Regular speaker at DEF CON and Black Hat conferences.
+
+=== EXPERIENCE ===
+
+CyberNova
+Chief Technology Officer
+January 2021 - Present | Austin, TX
+- Leading a team of 45 engineers and researchers
+- Oversaw development of CyberNova's flagship threat detection platform
+- Secured $12M Series B funding for product expansion
+
+Titan Security Systems
+VP of Engineering
+March 2017 - December 2020 | Dallas, TX
+- Managed engineering operations across 3 offices
+- Built enterprise security suite adopted by 200+ clients
+
+GlobalTech Solutions
+Senior Security Engineer
+June 2012 - February 2017 | Houston, TX
+- Developed intrusion detection systems
+- Led incident response team
+
+=== EDUCATION ===
+
+Rice University
+M.S. Computer Science, Cybersecurity Focus
+2010 - 2012
+
+University of Texas at Austin
+B.S. Computer Engineering
+2003 - 2007
+
+=== CERTIFICATIONS ===
+
+- CISSP (Certified Information Systems Security Professional)
+- CISM (Certified Information Security Manager)
+- CEH (Certified Ethical Hacker)
+
+=== CONTACT INFO ===
+
+Email: jasmine.smith@cybernova.io (Work)
+Email: jasmine.smith@outlook.com (Personal)
+Phone: (512) 555-0148
+Twitter: @JasmineSecure
+
+=== END PROFILE ===
+=== ORIGINAL CONTENT END ===
+=== USER ADDED START ===
+
+=== USER ADDED END ===
