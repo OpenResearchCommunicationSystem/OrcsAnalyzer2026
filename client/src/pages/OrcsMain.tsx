@@ -7,6 +7,7 @@ import { TagEditor } from "@/components/TagEditor";
 import { TagCreationModal } from "@/components/TagCreationModal";
 import { LabelCreationModal } from "@/components/LabelCreationModal";
 import { DataCreationModal } from "@/components/DataCreationModal";
+import { CommentCreationModal } from "@/components/CommentCreationModal";
 import { RelationshipConnectionModal } from "@/components/RelationshipConnectionModal";
 import { MetadataForm } from "@/components/MetadataForm";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,9 @@ export default function OrcsMain() {
   // Sidebar collapse state
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(false);
+  
+  // Comment creation modal state (separate from tag modal for inline comments)
+  const [showCommentModal, setShowCommentModal] = useState(false);
 
   const { uploadFileAsync, isUploading } = useFileOperations();
   const { stats }: { stats?: Stats } = useTagOperations();
@@ -123,6 +127,13 @@ export default function OrcsMain() {
       alert('Please select text first');
       return;
     }
+    
+    // Comments use the new inline insertion system
+    if (type === 'comment') {
+      setShowCommentModal(true);
+      return;
+    }
+    
     setTagModalType(type);
     setShowTagModal(true);
   };
@@ -490,6 +501,17 @@ export default function OrcsMain() {
           }}
         />
       )}
+
+      {/* Comment Insertion Modal (Inline track-changes style) */}
+      <CommentCreationModal
+        isOpen={showCommentModal}
+        onClose={() => setShowCommentModal(false)}
+        selectedText={selectedText}
+        onCommentCreated={() => {
+          setShowCommentModal(false);
+          setSelectedText(null);
+        }}
+      />
 
       {/* New File Metadata Modal */}
       {showNewFileMetadata && newlyUploadedFile && (

@@ -104,6 +104,26 @@ export const insertSnippetSchema = snippetSchema.omit({ id: true, created: true 
 export type Snippet = z.infer<typeof snippetSchema>;
 export type InsertSnippet = z.infer<typeof insertSnippetSchema>;
 
+// Comment schema - inline text insertions (track-changes style)
+// Comments are inserted into ORIGINAL CONTENT with square brackets [comment text]
+// The COMMENT INDEX tracks provenance for removal/editing
+export const commentInsertSchema = z.object({
+  id: z.string(), // UUID
+  cardId: z.string(), // Source card UUID
+  text: z.string(), // The inserted comment text (without brackets)
+  insertOffset: z.number(), // Character position where comment was inserted
+  originalLength: z.number().default(0), // If replacing text, the length of replaced content
+  analyst: z.string(), // Required: who made this comment
+  created: z.string(),
+  modified: z.string().optional(),
+  classification: z.string().optional(), // Inherited from card or overridden
+});
+
+export const insertCommentInsertSchema = commentInsertSchema.omit({ id: true, created: true });
+
+export type CommentInsert = z.infer<typeof commentInsertSchema>;
+export type InsertCommentInsert = z.infer<typeof insertCommentInsertSchema>;
+
 // Bullet interface - DERIVED from Links, not stored
 // This is a computed type for display/export purposes
 export interface Bullet {
@@ -165,7 +185,9 @@ export const graphNodeSchema = z.object({
     // New entity types
     'person', 'org', 'location', 'selector', 'date', 'event', 'object', 'concept',
     // Legacy tag types (for backwards compatibility)
-    'entity', 'relationship', 'attribute', 'comment', 'kv_pair'
+    'entity', 'relationship', 'attribute', 'comment', 'kv_pair',
+    // Phase 3 types
+    'label', 'data'
   ]),
   x: z.number().optional(),
   y: z.number().optional(),
@@ -197,6 +219,7 @@ export const textSelectionSchema = z.object({
   endOffset: z.number(),
   filename: z.string(),
   reference: z.string(), // format: "uuid@start-end"
+  containsTaggedText: z.boolean().optional(), // true if selection spans tagged elements
 });
 
 export type TextSelection = z.infer<typeof textSelectionSchema>;
@@ -252,6 +275,15 @@ export const indexedSnippetSchema = z.object({
   filePath: z.string(),
 });
 
+export const indexedCommentSchema = z.object({
+  id: z.string(),
+  cardId: z.string(),
+  text: z.string(),
+  insertOffset: z.number(),
+  analyst: z.string(),
+  filePath: z.string(),
+});
+
 export const brokenReferenceSchema = z.object({
   referenceId: z.string(),
   reason: z.enum(['missing_source_entity', 'missing_target_entity', 'missing_card', 'orphaned_file']),
@@ -266,12 +298,14 @@ export const masterIndexSchema = z.object({
   entities: z.array(indexedEntitySchema),
   links: z.array(indexedLinkSchema),
   snippets: z.array(indexedSnippetSchema),
+  comments: z.array(indexedCommentSchema).optional(), // Inline comment insertions
   brokenReferences: z.array(brokenReferenceSchema),
   stats: z.object({
     totalFiles: z.number(),
     totalEntities: z.number(),
     totalLinks: z.number(),
     totalSnippets: z.number(),
+    totalComments: z.number().optional(),
     brokenReferenceCount: z.number(),
   }),
 });
@@ -280,6 +314,7 @@ export type IndexedFile = z.infer<typeof indexedFileSchema>;
 export type IndexedEntity = z.infer<typeof indexedEntitySchema>;
 export type IndexedLink = z.infer<typeof indexedLinkSchema>;
 export type IndexedSnippet = z.infer<typeof indexedSnippetSchema>;
+export type IndexedComment = z.infer<typeof indexedCommentSchema>;
 export type BrokenReference = z.infer<typeof brokenReferenceSchema>;
 export type MasterIndex = z.infer<typeof masterIndexSchema>;
 

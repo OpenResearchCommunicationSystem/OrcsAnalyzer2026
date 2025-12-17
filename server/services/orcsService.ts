@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { Tag, InsertTag, TagType, GraphData, GraphNode, GraphEdge, Link, InsertLink, Snippet, InsertSnippet, Entity, Bullet } from '@shared/schema';
+import { Tag, InsertTag, TagType, GraphData, GraphNode, GraphEdge, Link, InsertLink, Snippet, InsertSnippet, Entity, Bullet, CommentInsert } from '@shared/schema';
 import { storage } from '../storage';
 
 const USER_DATA_DIR = path.join(process.cwd(), 'user_data');
@@ -2170,6 +2170,309 @@ export class OrcsService {
     }
     
     return null;
+  }
+
+  // =====================================================================
+  // COMMENT INSERT OPERATIONS (Inline track-changes style comments)
+  // =====================================================================
+
+  async getCommentsFromCard(cardId: string): Promise<CommentInsert[]> {
+    try {
+      const cardPath = await this.findCardPath(cardId);
+      if (!cardPath) return [];
+
+      const content = await fs.readFile(cardPath, 'utf-8');
+      return this.parseCommentIndex(content, cardId);
+    } catch (error) {
+      console.error(`Failed to get comments from card ${cardId}:`, error);
+      return [];
+    }
+  }
+
+  async addComment(cardId: string, insertData: {
+    text: string;
+    insertOffset: number;
+    analyst: string;
+    classification?: string;
+  }): Promise<CommentInsert | null> {
+    const cardPath = await this.findCardPath(cardId);
+    if (!cardPath) return null;
+
+    const id = uuidv4();
+    const now = new Date().toISOString();
+
+    const newComment: CommentInsert = {
+      id,
+      cardId,
+      text: insertData.text,
+      insertOffset: insertData.insertOffset,
+      originalLength: 0,
+      analyst: insertData.analyst,
+      created: now,
+      classification: insertData.classification,
+    };
+
+    // Read card content
+    let content = await fs.readFile(cardPath, 'utf-8');
+
+    // 1. Parse existing comments BEFORE modifying content
+    const existingComments = this.parseCommentIndex(content, cardId);
+    
+    // 2. Insert the bracketed comment into ORIGINAL CONTENT at the specified offset
+    content = this.insertCommentIntoContent(content, newComment);
+
+    // 3. Adjust offsets of all downstream comments (inserted comment shifts them)
+    const bracketedLength = `[${newComment.text}]`.length;
+    const adjustedComments = existingComments.map(c => {
+      // Only adjust comments that are after the insertion point
+      if (c.insertOffset > newComment.insertOffset) {
+        return { ...c, insertOffset: c.insertOffset + bracketedLength };
+      }
+      return c;
+    });
+    adjustedComments.push(newComment);
+
+    // 4. Write updated COMMENT INDEX
+    content = this.updateCommentIndex(content, adjustedComments);
+
+    await fs.writeFile(cardPath, content, 'utf-8');
+    return newComment;
+  }
+
+  async deleteComment(cardId: string, commentId: string): Promise<boolean> {
+    const cardPath = await this.findCardPath(cardId);
+    if (!cardPath) return false;
+
+    let content = await fs.readFile(cardPath, 'utf-8');
+    const comments = this.parseCommentIndex(content, cardId);
+    const commentToDelete = comments.find(c => c.id === commentId);
+
+    if (!commentToDelete) return false;
+
+    // 1. Remove the bracketed comment from ORIGINAL CONTENT
+    content = this.removeCommentFromContent(content, commentToDelete);
+
+    // 2. Remove from index and adjust downstream offsets
+    const bracketedLength = `[${commentToDelete.text}]`.length;
+    const remainingComments = comments
+      .filter(c => c.id !== commentId)
+      .map(c => {
+        if (c.insertOffset > commentToDelete.insertOffset) {
+          return { ...c, insertOffset: c.insertOffset - bracketedLength };
+        }
+        return c;
+      });
+
+    content = this.updateCommentIndex(content, remainingComments);
+
+    await fs.writeFile(cardPath, content, 'utf-8');
+    return true;
+  }
+
+  private parseCommentIndex(cardContent: string, cardId: string): CommentInsert[] {
+    const comments: CommentInsert[] = [];
+    const lines = cardContent.split('\n');
+    let inCommentIndex = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+
+      if (trimmed === '=== COMMENT INDEX START ===') {
+        inCommentIndex = true;
+        continue;
+      }
+      if (trimmed === '=== COMMENT INDEX END ===') {
+        inCommentIndex = false;
+        continue;
+      }
+
+      if (inCommentIndex && !trimmed.startsWith('#') && trimmed.length > 0) {
+        const comment = this.parseCommentLine(trimmed, cardId);
+        if (comment) {
+          comments.push(comment);
+        }
+      }
+    }
+
+    return comments;
+  }
+
+  private parseCommentLine(line: string, cardId: string): CommentInsert | null {
+    // Format: @offset "text" | {analyst: "...", class: "...", created: "..."} |id:uuid
+    const match = line.match(/@(\d+)\s*"([^"]*)"\s*\|\s*\{([^}]*)\}\s*\|id:([a-f0-9-]+)/);
+
+    if (!match) return null;
+
+    const [, offsetStr, text, metadata, id] = match;
+    const insertOffset = parseInt(offsetStr, 10);
+
+    // Parse metadata
+    let analyst = 'unknown';
+    let classification: string | undefined;
+    let created = new Date().toISOString();
+    let modified: string | undefined;
+
+    const metadataMatch = metadata.match(/analyst:\s*"([^"]*)"/);
+    if (metadataMatch) analyst = metadataMatch[1];
+
+    const classMatch = metadata.match(/class:\s*"([^"]*)"/);
+    if (classMatch) classification = classMatch[1];
+
+    const createdMatch = metadata.match(/created:\s*"([^"]*)"/);
+    if (createdMatch) created = createdMatch[1];
+
+    const modifiedMatch = metadata.match(/modified:\s*"([^"]*)"/);
+    if (modifiedMatch) modified = modifiedMatch[1];
+
+    return {
+      id,
+      cardId,
+      text,
+      insertOffset,
+      originalLength: 0,
+      analyst,
+      created,
+      modified,
+      classification,
+    };
+  }
+
+  private formatCommentLine(comment: CommentInsert): string {
+    const metadata: string[] = [`analyst: "${comment.analyst}"`];
+    if (comment.classification) metadata.push(`class: "${comment.classification}"`);
+    metadata.push(`created: "${comment.created}"`);
+    if (comment.modified) metadata.push(`modified: "${comment.modified}"`);
+
+    return `@${comment.insertOffset} "${comment.text}" | {${metadata.join(', ')}} |id:${comment.id}`;
+  }
+
+  private updateCommentIndex(cardContent: string, comments: CommentInsert[]): string {
+    const lines = cardContent.split('\n');
+    const result: string[] = [];
+    let inCommentIndex = false;
+    let commentIndexFound = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+
+      if (trimmed === '=== COMMENT INDEX START ===') {
+        commentIndexFound = true;
+        inCommentIndex = true;
+        result.push(line);
+        result.push('# Format: @offset "text" | {metadata} |id:uuid');
+        comments.forEach(c => {
+          result.push(this.formatCommentLine(c));
+        });
+        continue;
+      }
+
+      if (trimmed === '=== COMMENT INDEX END ===') {
+        inCommentIndex = false;
+        result.push(line);
+        continue;
+      }
+
+      if (!inCommentIndex) {
+        result.push(line);
+      }
+    }
+
+    // If no COMMENT INDEX section found, create one before SNIPPET INDEX or ORIGINAL CONTENT
+    if (!commentIndexFound) {
+      const insertPoint = result.findIndex(l =>
+        l.trim() === '=== SNIPPET INDEX START ===' ||
+        l.trim() === '=== ORIGINAL CONTENT START ==='
+      );
+
+      if (insertPoint !== -1 && comments.length > 0) {
+        const commentSection = [
+          '=== COMMENT INDEX START ===',
+          '# Format: @offset "text" | {metadata} |id:uuid',
+          ...comments.map(c => this.formatCommentLine(c)),
+          '=== COMMENT INDEX END ===',
+          ''
+        ];
+        result.splice(insertPoint, 0, ...commentSection);
+      }
+    }
+
+    return result.join('\n');
+  }
+
+  private insertCommentIntoContent(cardContent: string, comment: CommentInsert): string {
+    const lines = cardContent.split('\n');
+    let inOriginalContent = false;
+    let currentOffset = 0;
+    const bracketedText = `[${comment.text}]`;
+
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+
+      if (trimmed === '=== ORIGINAL CONTENT START ===') {
+        inOriginalContent = true;
+        continue;
+      }
+      if (trimmed === '=== ORIGINAL CONTENT END ===') {
+        inOriginalContent = false;
+        continue;
+      }
+
+      if (inOriginalContent) {
+        const lineLength = lines[i].length + 1; // +1 for newline
+
+        // Check if insertion point is in this line
+        if (currentOffset + lines[i].length >= comment.insertOffset) {
+          const lineOffset = comment.insertOffset - currentOffset;
+          lines[i] = lines[i].slice(0, lineOffset) + bracketedText + lines[i].slice(lineOffset);
+          break;
+        }
+
+        currentOffset += lineLength;
+      }
+    }
+
+    return lines.join('\n');
+  }
+
+  private removeCommentFromContent(cardContent: string, comment: CommentInsert): string {
+    const bracketedText = `[${comment.text}]`;
+    
+    // Find and remove the exact bracketed text from ORIGINAL CONTENT section
+    const lines = cardContent.split('\n');
+    let inOriginalContent = false;
+    let currentOffset = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+
+      if (trimmed === '=== ORIGINAL CONTENT START ===') {
+        inOriginalContent = true;
+        continue;
+      }
+      if (trimmed === '=== ORIGINAL CONTENT END ===') {
+        inOriginalContent = false;
+        continue;
+      }
+
+      if (inOriginalContent) {
+        const lineLength = lines[i].length + 1;
+
+        // Check if the comment is in this line
+        if (currentOffset + lines[i].length >= comment.insertOffset) {
+          const lineOffset = comment.insertOffset - currentOffset;
+          const expectedBracket = lines[i].slice(lineOffset, lineOffset + bracketedText.length);
+          
+          if (expectedBracket === bracketedText) {
+            lines[i] = lines[i].slice(0, lineOffset) + lines[i].slice(lineOffset + bracketedText.length);
+            break;
+          }
+        }
+
+        currentOffset += lineLength;
+      }
+    }
+
+    return lines.join('\n');
   }
 }
 

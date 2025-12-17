@@ -663,13 +663,20 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
         const cardUuid = extractCardUuid(selectedFileData.name);
         const referenceBase = cardUuid || selectedFileData.name;
         
+        // Check if selection spans any tagged elements
+        const containsTaggedText = (() => {
+          const fragment = range.cloneContents();
+          return fragment.querySelector('[data-tag-id]') !== null;
+        })();
+        
         if (contentAtOffsets === fullSelectedText) {
           const textSelection: TextSelection = {
             text: fullSelectedText,
             startOffset,
             endOffset,
             filename: selectedFileData.name,
-            reference: `${referenceBase}@${startOffset}-${endOffset}`
+            reference: `${referenceBase}@${startOffset}-${endOffset}`,
+            containsTaggedText
           };
           onTextSelection(textSelection);
           // Also set pending snippet for card files
@@ -686,7 +693,8 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
               startOffset: actualStartIndex,
               endOffset: actualEndIndex,
               filename: selectedFileData.name,
-              reference: `${referenceBase}@${actualStartIndex}-${actualEndIndex}`
+              reference: `${referenceBase}@${actualStartIndex}-${actualEndIndex}`,
+              containsTaggedText
             };
             onTextSelection(textSelection);
             // Also set pending snippet for card files

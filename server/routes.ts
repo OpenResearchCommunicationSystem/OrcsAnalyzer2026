@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import { z } from "zod";
 import fs from "fs/promises";
-import { insertTagSchema, insertTagConnectionSchema, textSelectionSchema, insertLinkSchema, insertSnippetSchema, linkSchema, snippetSchema } from "@shared/schema";
+import { insertTagSchema, insertTagConnectionSchema, textSelectionSchema, insertLinkSchema, insertSnippetSchema, linkSchema, snippetSchema, insertCommentInsertSchema } from "@shared/schema";
 import { fileService } from "./services/fileService";
 import { orcsService } from "./services/orcsService";
 import { indexService } from "./services/indexService";
@@ -818,6 +818,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to delete snippet:', error);
       res.status(500).json({ error: 'Failed to delete snippet' });
+    }
+  });
+
+  // =====================================================================
+  // COMMENT INSERT API (Inline track-changes style comments)
+  // =====================================================================
+
+  app.get('/api/cards/:cardId/comments', async (req, res) => {
+    try {
+      const comments = await orcsService.getCommentsFromCard(req.params.cardId);
+      res.json(comments);
+    } catch (error) {
+      console.error('Failed to get comments:', error);
+      res.status(500).json({ error: 'Failed to get comments' });
+    }
+  });
+
+  app.post('/api/cards/:cardId/comments', async (req, res) => {
+    try {
+      // Validate request body with Zod schema
+      const commentData = insertCommentInsertSchema.parse({
+        ...req.body,
+        cardId: req.params.cardId,
+      });
+
+      const comment = await orcsService.addComment(req.params.cardId, {
+        text: commentData.text,
+        insertOffset: commentData.insertOffset,
+        analyst: commentData.analyst,
+        classification: commentData.classification,
+      });
+
+      if (!comment) {
+        return res.status(404).json({ error: 'Card not found' });
+      }
+
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error('Failed to create comment:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Invalid comment data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to create comment' });
+      }
+    }
+  });
+
+  app.delete('/api/cards/:cardId/comments/:commentId', async (req, res) => {
+    try {
+      const deleted = await orcsService.deleteComment(req.params.cardId, req.params.commentId);
+      if (!deleted) {
+        return res.status(404).json({ error: 'Comment not found' });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+      res.status(500).json({ error: 'Failed to delete comment' });
     }
   });
 
