@@ -2222,11 +2222,12 @@ export class OrcsService {
     content = this.insertCommentIntoContent(content, newComment);
 
     // 3. Adjust offsets of all downstream comments (inserted comment shifts them)
-    const bracketedLength = `[${newComment.text}]`.length;
+    // Marker format: [comment:text](id)
+    const markerLength = `[comment:${newComment.text}](${newComment.id})`.length;
     const adjustedComments = existingComments.map(c => {
       // Only adjust comments that are after the insertion point
       if (c.insertOffset > newComment.insertOffset) {
-        return { ...c, insertOffset: c.insertOffset + bracketedLength };
+        return { ...c, insertOffset: c.insertOffset + markerLength };
       }
       return c;
     });
@@ -2253,12 +2254,13 @@ export class OrcsService {
     content = this.removeCommentFromContent(content, commentToDelete);
 
     // 2. Remove from index and adjust downstream offsets
-    const bracketedLength = `[${commentToDelete.text}]`.length;
+    // Marker format: [comment:text](id)
+    const markerLength = `[comment:${commentToDelete.text}](${commentToDelete.id})`.length;
     const remainingComments = comments
       .filter(c => c.id !== commentId)
       .map(c => {
         if (c.insertOffset > commentToDelete.insertOffset) {
-          return { ...c, insertOffset: c.insertOffset - bracketedLength };
+          return { ...c, insertOffset: c.insertOffset - markerLength };
         }
         return c;
       });
@@ -2403,7 +2405,8 @@ export class OrcsService {
     const lines = cardContent.split('\n');
     let inOriginalContent = false;
     let currentOffset = 0;
-    const bracketedText = `[${comment.text}]`;
+    // Use tag-like format [comment:text](id) so it can be stripped for integrity verification
+    const commentMarker = `[comment:${comment.text}](${comment.id})`;
 
     for (let i = 0; i < lines.length; i++) {
       const trimmed = lines[i].trim();
@@ -2423,7 +2426,7 @@ export class OrcsService {
         // Check if insertion point is in this line
         if (currentOffset + lines[i].length >= comment.insertOffset) {
           const lineOffset = comment.insertOffset - currentOffset;
-          lines[i] = lines[i].slice(0, lineOffset) + bracketedText + lines[i].slice(lineOffset);
+          lines[i] = lines[i].slice(0, lineOffset) + commentMarker + lines[i].slice(lineOffset);
           break;
         }
 
@@ -2435,9 +2438,10 @@ export class OrcsService {
   }
 
   private removeCommentFromContent(cardContent: string, comment: CommentInsert): string {
-    const bracketedText = `[${comment.text}]`;
+    // Use tag-like format [comment:text](id) matching the insertion format
+    const commentMarker = `[comment:${comment.text}](${comment.id})`;
     
-    // Find and remove the exact bracketed text from ORIGINAL CONTENT section
+    // Find and remove the exact comment marker from ORIGINAL CONTENT section
     const lines = cardContent.split('\n');
     let inOriginalContent = false;
     let currentOffset = 0;
@@ -2460,10 +2464,10 @@ export class OrcsService {
         // Check if the comment is in this line
         if (currentOffset + lines[i].length >= comment.insertOffset) {
           const lineOffset = comment.insertOffset - currentOffset;
-          const expectedBracket = lines[i].slice(lineOffset, lineOffset + bracketedText.length);
+          const expectedMarker = lines[i].slice(lineOffset, lineOffset + commentMarker.length);
           
-          if (expectedBracket === bracketedText) {
-            lines[i] = lines[i].slice(0, lineOffset) + lines[i].slice(lineOffset + bracketedText.length);
+          if (expectedMarker === commentMarker) {
+            lines[i] = lines[i].slice(0, lineOffset) + lines[i].slice(lineOffset + commentMarker.length);
             break;
           }
         }
