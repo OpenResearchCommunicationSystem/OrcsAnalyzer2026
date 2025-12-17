@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, DragEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { User, Link, MessageCircle, AlertTriangle } from "lucide-react";
+import { User, Link, Tag, Database, AlertTriangle, GripVertical } from "lucide-react";
 import { TextSelection, InsertTag } from "@shared/schema";
 import { useTagOperations } from "@/hooks/useTagOperations";
 import { useQuery } from "@tanstack/react-query";
@@ -31,7 +31,14 @@ export function TagCreationModal({
   const [identifier, setIdentifier] = useState('');
   const [description, setDescription] = useState('');
   const [entityType, setEntityType] = useState('');
+  const [dataCanonType, setDataCanonType] = useState('');
   const [selectedType, setSelectedType] = useState(tagType);
+
+  const handleTagTypeChange = (newType: string) => {
+    setSelectedType(newType);
+    setEntityType('');
+    setDataCanonType('');
+  };
 
   const { createTag, updateTag, isCreating } = useTagOperations();
 
@@ -56,10 +63,13 @@ export function TagCreationModal({
     if (isOpen && selectedText?.text) {
       setIdentifier(selectedText.text);
       setSelectedType(tagType);
+      setEntityType('');
+      setDataCanonType('');
     } else if (!isOpen) {
       setIdentifier('');
       setDescription('');
       setEntityType('');
+      setDataCanonType('');
     }
   }, [isOpen, selectedText?.text, tagType]);
 
@@ -105,34 +115,6 @@ export function TagCreationModal({
 
   const similarTags = findSimilarTags();
 
-  const handleCreateTag = async () => {
-    if (!selectedText || !identifier.trim()) {
-      return;
-    }
-
-    const reference = selectedText.filename;
-    
-    const tagData: InsertTag = {
-      type: selectedType as any,
-      entityType: entityType || undefined,
-      name: identifier.trim(),
-      references: [reference],
-      aliases: [],
-      keyValuePairs: {},
-      description: description.trim() || undefined,
-    };
-
-    try {
-      await createTag(tagData);
-      onTagCreated();
-      onClose();
-      setIdentifier('');
-      setDescription('');
-    } catch (error) {
-      console.error('Failed to create tag:', error);
-    }
-  };
-
   const handleSelectExistingTag = async (existingTag: TagType) => {
     if (!selectedText) {
       return;
@@ -157,7 +139,8 @@ export function TagCreationModal({
   const tagTypes = [
     { value: 'entity', label: 'Entity', icon: User, color: 'text-green-400 border-green-500' },
     { value: 'relationship', label: 'Link', icon: Link, color: 'text-orange-400 border-orange-500' },
-    { value: 'comment', label: 'Comment', icon: MessageCircle, color: 'text-blue-400 border-blue-500' },
+    { value: 'label', label: 'Label', icon: Tag, color: 'text-cyan-400 border-cyan-500' },
+    { value: 'data', label: 'Data', icon: Database, color: 'text-purple-400 border-purple-500' },
   ];
 
   const entityTypeOptions = [
@@ -181,32 +164,135 @@ export function TagCreationModal({
     { value: 'location', label: 'Location' },
   ];
 
-  const commentTypeOptions = [
-    { value: 'analysis', label: 'Analysis' },
-    { value: 'hypothesis', label: 'Hypothesis' },
-    { value: 'question', label: 'Question' },
-    { value: 'note', label: 'Note' },
-    { value: 'warning', label: 'Warning' },
-    { value: 'summary', label: 'Summary' },
+  const dataCanonTypes = [
+    { value: 'generic', label: 'Generic' },
+    { value: 'geotemporal', label: 'Geotemporal' },
+    { value: 'identifier', label: 'Identifier' },
+    { value: 'quantity', label: 'Quantity' },
+    { value: 'quality', label: 'Quality' },
+    { value: 'metadata', label: 'Metadata' },
   ];
 
   const getTypeOptions = () => {
     if (selectedType === 'entity') return entityTypeOptions;
     if (selectedType === 'relationship') return relationshipTypeOptions;
-    if (selectedType === 'comment') return commentTypeOptions;
+    if (selectedType === 'data') return dataCanonTypes;
     return [];
   };
 
   const typeOptions = getTypeOptions();
 
+  const [draggedLabel, setDraggedLabel] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+
+  const handleDragStart = (e: DragEvent<HTMLButtonElement>, labelName: string) => {
+    e.dataTransfer.setData('text/plain', labelName);
+    e.dataTransfer.effectAllowed = 'copy';
+    setDraggedLabel(labelName);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedLabel(null);
+    setDropTarget(null);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    setDropTarget(fieldName);
+  };
+
+  const handleDragLeave = () => {
+    setDropTarget(null);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLInputElement | HTMLTextAreaElement>, fieldName: string, setter: (val: string) => void, currentValue?: string) => {
+    e.preventDefault();
+    const labelName = e.dataTransfer.getData('text/plain');
+    if (labelName) {
+      if (fieldName === 'description' && currentValue) {
+        setter(currentValue + (currentValue ? ' ' : '') + labelName);
+      } else {
+        setter(labelName);
+      }
+    }
+    setDropTarget(null);
+    setDraggedLabel(null);
+  };
+
+  const [dataKey, setDataKey] = useState('');
+  const [dataValue, setDataValue] = useState('');
+  const [dataNormalized, setDataNormalized] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) {
+      setDataKey('');
+      setDataValue('');
+      setDataNormalized('');
+    }
+  }, [isOpen]);
+
+  const handleCreateTagWithData = async () => {
+    if (!selectedText || !identifier.trim()) {
+      return;
+    }
+
+    const reference = selectedText.filename;
+    
+    const keyValuePairs: Record<string, string> = {};
+    if (selectedType === 'data' && dataKey.trim()) {
+      keyValuePairs[dataKey.trim()] = dataValue.trim();
+      if (dataNormalized.trim()) {
+        keyValuePairs['_normalized'] = dataNormalized.trim();
+      }
+    }
+    
+    const getEntityTypeForSubmit = () => {
+      if (selectedType === 'label') return undefined;
+      if (selectedType === 'data') return dataCanonType || undefined;
+      return entityType || undefined;
+    };
+
+    const tagData: InsertTag = {
+      type: selectedType as any,
+      entityType: getEntityTypeForSubmit(),
+      name: identifier.trim(),
+      references: [reference],
+      aliases: [],
+      keyValuePairs,
+      description: description.trim() || undefined,
+    };
+
+    try {
+      await createTag(tagData);
+      onTagCreated();
+      onClose();
+      setIdentifier('');
+      setDescription('');
+      setDataKey('');
+      setDataValue('');
+      setDataNormalized('');
+    } catch (error) {
+      console.error('Failed to create tag:', error);
+    }
+  };
+
+  const getDropClass = (fieldName: string) => {
+    if (dropTarget === fieldName) {
+      return 'ring-2 ring-cyan-400 bg-cyan-900/20';
+    }
+    return '';
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-800 border-gray-700 text-slate-200 max-w-lg">
+      <DialogContent className="bg-gray-800 border-gray-700 text-slate-200 max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Tag</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* 1. Selected Text */}
           <div>
             <Label className="text-sm font-medium text-slate-300">Selected Text</Label>
             <div className="bg-gray-900 border border-gray-700 rounded p-3 text-sm font-mono">
@@ -214,88 +300,160 @@ export function TagCreationModal({
             </div>
           </div>
 
+          {/* 2. Tag Type - 4 buttons in 2x2 grid */}
           <div>
             <Label className="text-sm font-medium text-slate-300 mb-2">Tag Type</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {tagTypes.map(({ value, label, icon: Icon, color }) => (
                 <button
                   key={value}
-                  className={`flex items-center justify-center space-x-2 p-3 rounded border-2 transition-all ${
+                  className={`flex items-center justify-center space-x-1 p-2 rounded border-2 transition-all ${
                     selectedType === value
                       ? `${color} bg-opacity-10`
                       : 'border-gray-600 text-slate-400 hover:bg-gray-700'
                   }`}
-                  onClick={() => setSelectedType(value)}
+                  onClick={() => handleTagTypeChange(value)}
                   data-testid={`button-type-${value}`}
                 >
                   <Icon className="w-4 h-4" />
-                  <span className="text-sm">{label}</span>
+                  <span className="text-xs">{label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {selectedType && (
-            <div>
-              <Label className="text-sm font-medium text-slate-300 mb-2 block">
-                {selectedType === 'entity' ? 'Entity Type' : 
-                 selectedType === 'relationship' ? 'Link Type' :
-                 'Comment Type'} <span className="text-slate-500">(blank = Generic)</span>
+          {/* 3. Card Labels - Draggable buttons (except when creating labels) */}
+          {cardLabels.length > 0 && selectedType !== 'label' && (
+            <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+              <Label className="text-xs font-medium text-slate-400 mb-2 block">
+                <GripVertical className="w-3 h-3 inline mr-1" />
+                Drag labels to fields below:
               </Label>
-              
-              <div className="space-y-2">
-                <Select value={entityType} onValueChange={setEntityType}>
-                  <SelectTrigger className="w-full bg-gray-900 border-gray-600 text-slate-200" data-testid="select-type">
-                    <SelectValue placeholder={`Select ${selectedType} type (optional)`} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600">
-                    {typeOptions.map(opt => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                {cardLabels.length > 0 && (selectedType === 'entity' || selectedType === 'relationship') && (
-                  <div className="text-xs text-slate-400">
-                    <span className="block mb-1">Or use a label from this card:</span>
-                    {cardLabels.length <= 10 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {cardLabels.map(label => (
-                          <button
-                            key={label.id}
-                            onClick={() => setEntityType(label.name)}
-                            className="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded text-xs hover:bg-cyan-500/30"
-                            data-testid={`label-option-${label.id}`}
-                          >
-                            {label.name}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <SearchableSelect
-                        options={cardLabels.map(l => ({ value: l.name, label: l.name }))}
-                        value={entityType}
-                        onValueChange={setEntityType}
-                        placeholder="Search labels..."
-                      />
-                    )}
-                  </div>
-                )}
+              <div className="flex flex-wrap gap-1">
+                {cardLabels.map(label => (
+                  <button
+                    key={label.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, label.name)}
+                    onDragEnd={handleDragEnd}
+                    className={`px-2 py-1 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded text-xs cursor-grab active:cursor-grabbing hover:bg-cyan-500/30 transition-all ${
+                      draggedLabel === label.name ? 'opacity-50 scale-95' : ''
+                    }`}
+                    data-testid={`draggable-label-${label.id}`}
+                  >
+                    {label.name}
+                  </button>
+                ))}
               </div>
             </div>
           )}
 
+          {/* 4. Tag-Specific Fields - Entity/Link type selector */}
+          {selectedType && (selectedType === 'entity' || selectedType === 'relationship') && (
+            <div>
+              <Label className="text-sm font-medium text-slate-300 mb-2 block">
+                {selectedType === 'entity' ? 'Entity Type' : 'Link Type'} 
+                <span className="text-slate-500"> (blank = Generic)</span>
+              </Label>
+              
+              <Select value={entityType} onValueChange={setEntityType}>
+                <SelectTrigger className="w-full bg-gray-900 border-gray-600 text-slate-200" data-testid="select-type">
+                  <SelectValue placeholder={`Select ${selectedType} type (optional)`} />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  {typeOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Data canon type selector */}
+          {selectedType === 'data' && (
+            <div>
+              <Label className="text-sm font-medium text-slate-300 mb-2 block">
+                Data Type <span className="text-slate-500">(blank = Generic)</span>
+              </Label>
+              
+              <Select value={dataCanonType} onValueChange={setDataCanonType}>
+                <SelectTrigger className="w-full bg-gray-900 border-gray-600 text-slate-200" data-testid="select-data-type">
+                  <SelectValue placeholder="Select data type (optional)" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  {dataCanonTypes.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Identifier field */}
           <div>
-            <Label className="text-sm font-medium text-slate-300">Identifier</Label>
+            <Label className="text-sm font-medium text-slate-300">
+              {selectedType === 'label' ? 'Label Name' : 'Identifier'}
+            </Label>
             <Input
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="Enter unique identifier"
-              className="bg-gray-900 border-gray-600 focus:border-blue-500"
+              onDragOver={(e) => handleDragOver(e, 'identifier')}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, 'identifier', setIdentifier)}
+              placeholder={selectedType === 'label' ? 'Enter label name' : 'Enter unique identifier'}
+              className={`bg-gray-900 border-gray-600 focus:border-blue-500 transition-all ${getDropClass('identifier')}`}
               data-testid="input-identifier"
             />
           </div>
 
+          {/* Data-specific fields */}
+          {selectedType === 'data' && (
+            <>
+              <div>
+                <Label className="text-sm font-medium text-slate-300">Key</Label>
+                <Input
+                  value={dataKey}
+                  onChange={(e) => setDataKey(e.target.value)}
+                  onDragOver={(e) => handleDragOver(e, 'dataKey')}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, 'dataKey', setDataKey)}
+                  placeholder="Enter data key (e.g., 'latitude', 'amount')"
+                  className={`bg-gray-900 border-gray-600 focus:border-blue-500 transition-all ${getDropClass('dataKey')}`}
+                  data-testid="input-data-key"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-300">Value</Label>
+                <Input
+                  value={dataValue}
+                  onChange={(e) => setDataValue(e.target.value)}
+                  onDragOver={(e) => handleDragOver(e, 'dataValue')}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, 'dataValue', setDataValue)}
+                  placeholder="Enter data value"
+                  className={`bg-gray-900 border-gray-600 focus:border-blue-500 transition-all ${getDropClass('dataValue')}`}
+                  data-testid="input-data-value"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-300">
+                  Normalized Value <span className="text-slate-500">(optional)</span>
+                </Label>
+                <Input
+                  value={dataNormalized}
+                  onChange={(e) => setDataNormalized(e.target.value)}
+                  onDragOver={(e) => handleDragOver(e, 'dataNormalized')}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, 'dataNormalized', setDataNormalized)}
+                  placeholder="Standardized/normalized form"
+                  className={`bg-gray-900 border-gray-600 focus:border-blue-500 transition-all ${getDropClass('dataNormalized')}`}
+                  data-testid="input-data-normalized"
+                />
+              </div>
+            </>
+          )}
+
+          {/* Similar tags warning */}
           {similarTags.length > 0 && (
             <div className="bg-amber-900/20 border border-amber-600/30 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
@@ -332,26 +490,31 @@ export function TagCreationModal({
             </div>
           )}
 
+          {/* Description field (optional for all types) */}
           <div>
             <Label className="text-sm font-medium text-slate-300">Description (Optional)</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onDragOver={(e) => handleDragOver(e, 'description')}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, 'description', setDescription, description)}
               placeholder="Additional notes or description"
-              className="bg-gray-900 border-gray-600 focus:border-blue-500 resize-none"
-              rows={3}
+              className={`bg-gray-900 border-gray-600 focus:border-blue-500 resize-none transition-all ${getDropClass('description')}`}
+              rows={2}
               data-testid="input-description"
             />
           </div>
 
+          {/* Action buttons */}
           <div className="flex space-x-3 pt-4">
             <Button
-              onClick={handleCreateTag}
+              onClick={handleCreateTagWithData}
               disabled={isCreating || !identifier.trim() || !selectedText}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
               data-testid="button-create-tag"
             >
-              {isCreating ? 'Creating...' : 'Create Tag'}
+              {isCreating ? 'Creating...' : `Create ${selectedType === 'label' ? 'Label' : 'Tag'}`}
             </Button>
             <Button
               onClick={onClose}
