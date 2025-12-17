@@ -1426,6 +1426,11 @@ export function DocumentViewer({ selectedFile, onTextSelection, onTagClick, onFi
                 const match = metadataContent.match(/classification:\s*"?([^"\n]+)"?/);
                 return match?.[1]?.trim() || 'UNCLASSIFIED';
               })()}
+              cardSourceReference={(() => {
+                // Extract source_reference from metadata YAML
+                const match = metadataContent.match(/source_reference:\s*"?([^"\n]+)"?/);
+                return match?.[1]?.trim() || '';
+              })()}
               entities={fileSpecificTags.filter(t => t.type === 'entity')}
               links={links}
               snippets={snippets}

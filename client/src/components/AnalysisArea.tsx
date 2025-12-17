@@ -10,6 +10,7 @@ interface AnalysisAreaProps {
   cardUuid: string | null;
   cardFileName: string;
   cardClassification: string;
+  cardSourceReference: string;
   entities: Tag[];
   links: LinkType[];
   snippets: Snippet[];
@@ -18,7 +19,7 @@ interface AnalysisAreaProps {
 
 type AnalysisTab = 'snip' | 'bullet' | 'node' | 'edge';
 
-export function AnalysisArea({ cardUuid, cardFileName, cardClassification, entities, links, snippets, bullets }: AnalysisAreaProps) {
+export function AnalysisArea({ cardUuid, cardFileName, cardClassification, cardSourceReference, entities, links, snippets, bullets }: AnalysisAreaProps) {
   const [activeTab, setActiveTab] = useState<AnalysisTab>('snip');
   const [currentSnipIndex, setCurrentSnipIndex] = useState(0);
   const [currentBulletIndex, setCurrentBulletIndex] = useState(0);
@@ -365,7 +366,7 @@ export function AnalysisArea({ cardUuid, cardFileName, cardClassification, entit
                     <strong className="text-amber-300">({snippet.classification || cardClassification || 'UNCLASSIFIED'})</strong>{' '}
                     {snippet.text}
                     {snippet.comment && <em className="text-slate-400"> {snippet.comment}</em>}
-                    {' '}<span className="text-slate-500">(reference: {cardFileName})</span>
+                    {' '}<span className="text-slate-500">(source: {cardSourceReference || cardFileName})</span>
                   </div>
                 ))
               )}
@@ -381,9 +382,9 @@ export function AnalysisArea({ cardUuid, cardFileName, cardClassification, entit
                   <div key={bullet.linkId || idx} className="text-slate-200" data-testid={`output-bullet-${idx}`}>
                     <strong className="text-cyan-300">({bullet.classification || cardClassification || 'UNCLASSIFIED'})</strong>{' '}
                     {bullet.subject?.canonicalName || 'Unknown'}{' '}
-                    <span className="text-orange-300">[{bullet.predicate}]</span>{' '}
+                    <span className="text-orange-300">{bullet.predicate}</span>{' '}
                     {bullet.object?.canonicalName || 'Unknown'}
-                    {' '}<span className="text-slate-500">(reference: {bullet.sourceCardName || cardFileName})</span>
+                    {' '}<span className="text-slate-500">(source: {cardSourceReference || cardFileName})</span>
                   </div>
                 ))
               )}
