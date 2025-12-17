@@ -35,7 +35,7 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
 
   const resetMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/system/reset-tags', { method: 'POST' });
+      return await apiRequest('POST', '/api/system/reset-tags');
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/files'] });
@@ -188,8 +188,8 @@ export function FileManagerSidebar({ selectedFile, onFileSelect, searchQuery, on
               <AlertTriangle className="w-5 h-5" />
               Reset All Tags
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-300">
-              <div className="space-y-3 mt-2">
+            <AlertDialogDescription asChild>
+              <div className="text-slate-300 space-y-3 mt-2">
                 <p className="font-medium text-slate-200">
                   This will permanently remove:
                 </p>
