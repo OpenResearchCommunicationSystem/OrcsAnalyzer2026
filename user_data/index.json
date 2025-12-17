@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T15:05:56.582Z",
+  "lastUpdated": "2025-12-17T15:45:36.530Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -51,8 +51,8 @@
       "path": "/home/runner/workspace/user_data/raw/news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt",
       "name": "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt",
       "type": "orcs_card",
-      "hash": "6e2674b4e9c675fbf6791c394c8bcb189268181aae681374e649c97c5b78724f",
-      "timestamp": 1765983080201.5503,
+      "hash": "3f78b8ead0afc9152078ad939b60664f5df221257e65885df67b1402925cc9a5",
+      "timestamp": 1765986336517.7583,
       "cardUuid": "152e1e9e-2e2e-4c0d-8b58-cb6564c987e8",
       "sourceFile": "news_clip_11_test.txt"
     },
@@ -111,46 +111,15 @@
       "sourceFile": "test_news_test.txt"
     }
   ],
-  "tags": [
-    {
-      "id": "4e02036b-0c51-400e-99b5-887efb71399b",
-      "name": "TechCorp",
-      "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/TechCorp_4e02036b-0c51-400e-99b5-887efb71399b.entity.txt",
-      "references": [
-        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "654388d2-3464-4ce6-b938-9a8388ab44b9",
-      "name": "BioNex Systems",
-      "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/BioNex Systems_654388d2-3464-4ce6-b938-9a8388ab44b9.entity.txt",
-      "references": [
-        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "62cbed65-47f8-475f-a5a0-00631d33425d",
-      "name": "$3.2 billion",
-      "type": "data",
-      "filePath": "/home/runner/workspace/user_data/data/$3.2 billion_62cbed65-47f8-475f-a5a0-00631d33425d.data.txt",
-      "references": [
-        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
-      ],
-      "aliases": []
-    }
-  ],
+  "tags": [],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 12,
-    "totalTags": 3,
+    "totalTags": 0,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 2,
+    "entityCount": 0,
     "relationshipCount": 0
   }
 }
