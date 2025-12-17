@@ -14,12 +14,6 @@ file_size: 2156
 analyst: "System Import"
 
 === TAG INDEX START ===
-[label:Industry](fb90ddfe-6021-4f8f-b869-ed6c7ca83626)
-[data:Computer & Network Security](5c574c76-62a5-43a6-8b83-775900b476ba)
-[label:EXPERIENCE](b1ea3fbe-8a30-48d5-b804-ab3f6f37cfc4)
-[data:Chief Technology Officer](af5cf20e-c54c-47dc-9d70-23f75d78df63)
-[entity:Jasmine Smith](8c8ba0d3-a52a-4962-a975-36ceaac9e0dd)
-[data:Senior Security Engineer](b5a421d9-1184-4925-8ebe-41fcc6b29409)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
@@ -39,11 +33,11 @@ Export Date: December 16, 2024
 
 === PROFILE HEADER ===
 
-Name: [entity:Jasmine Smith](8c8ba0d3-a52a-4962-a975-36ceaac9e0dd)
-Headline: [data:Chief Technology Officer](af5cf20e-c54c-47dc-9d70-23f75d78df63) at CyberNova | Cybersecurity Expert | Board Member
+Name: Jasmine Smith
+Headline: Chief Technology Officer at CyberNova | Cybersecurity Expert | Board Member
 Location: Austin, Texas Metropolitan Area
 Connections: 500+
-[label:Industry](fb90ddfe-6021-4f8f-b869-ed6c7ca83626): [data:Computer & Network Security](5c574c76-62a5-43a6-8b83-775900b476ba)
+Industry: Computer & Network Security
 
 === ABOUT ===
 
@@ -51,10 +45,10 @@ Experienced technology executive with 15+ years in cybersecurity and enterprise 
 
 I'm passionate about building secure systems and mentoring the next generation of security professionals. Regular speaker at DEF CON and Black Hat conferences.
 
-=== [label:EXPERIENCE](b1ea3fbe-8a30-48d5-b804-ab3f6f37cfc4) ===
+=== EXPERIENCE ===
 
 CyberNova
-[data:Chief Technology Officer](af5cf20e-c54c-47dc-9d70-23f75d78df63)
+Chief Technology Officer
 January 2021 - Present | Austin, TX
 - Leading a team of 45 engineers and researchers
 - Oversaw development of CyberNova's flagship threat detection platform
@@ -67,7 +61,7 @@ March 2017 - December 2020 | Dallas, TX
 - Built enterprise security suite adopted by 200+ clients
 
 GlobalTech Solutions
-[data:Senior Security Engineer](b5a421d9-1184-4925-8ebe-41fcc6b29409)
+Senior Security Engineer
 June 2012 - February 2017 | Houston, TX
 - Developed intrusion detection systems
 - Led incident response team

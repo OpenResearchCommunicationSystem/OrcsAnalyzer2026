@@ -14,17 +14,8 @@ file_size: 1842
 analyst: "System Import"
 
 === TAG INDEX START ===
+[entity:John Michael Smith](12f88e45-e3f8-4222-a8ce-463f78d74293)
 === TAG INDEX END ===
-
-=== LINK INDEX START ===
-# Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
-=== LINK INDEX END ===
-
-=== SNIPPET INDEX START ===
-=== SNIPPET INDEX END ===
-
-=== COMMENT INDEX START ===
-=== COMMENT INDEX END ===
 
 === ORIGINAL CONTENT START ===
 PEOPLE SEARCH REPORT
@@ -34,7 +25,7 @@ Source: PublicRecordsHub.com
 
 === HOUSEHOLD RECORD ===
 
-PRIMARY SUBJECT: John Michael Smith
+PRIMARY SUBJECT: [entity:John Michael Smith](12f88e45-e3f8-4222-a8ce-463f78d74293)
 Current Address: 4521 Riverside Drive, Unit 12B, Austin, TX 78704
 Previous Address: 892 Oak Lane, Dallas, TX 75201
 Phone: (512) 555-0147
@@ -71,6 +62,7 @@ Purchase Price: $385,000
 
 === END REPORT ===
 === ORIGINAL CONTENT END ===
+
 === USER ADDED START ===
 
 === USER ADDED END ===

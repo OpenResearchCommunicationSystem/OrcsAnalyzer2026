@@ -1,0 +1,15 @@
+=== ORCS ENTITY ===
+VERSION: 1.0
+UUID: de2db0db-4c37-45d6-a2bd-8c78e3d19beb
+TAG_TYPE: relationship
+NAME: joined the board of directors
+ENTITY_TYPE: employment
+CREATED: 2025-12-17T19:22:30.328Z
+MODIFIED: 2025-12-17T19:22:30.328Z
+
+SEARCH_ALIASES:
+
+CARD_REFERENCES:
+  - social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt
+
+=== END ORCS ENTITY ===
