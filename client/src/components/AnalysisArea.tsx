@@ -451,6 +451,7 @@ export function AnalysisArea({ cardUuid, cardFileName, cardClassification, cardS
                         <th className="text-left px-2 py-1 text-slate-400">Description</th>
                         <th className="text-left px-2 py-1 text-slate-400">Classification</th>
                         <th className="text-left px-2 py-1 text-slate-400">Source</th>
+                        <th className="text-left px-2 py-1 text-slate-400">UUID</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -461,7 +462,8 @@ export function AnalysisArea({ cardUuid, cardFileName, cardClassification, cardS
                           <td className="px-2 py-1 text-slate-400">{entity.aliases?.join(', ') || '-'}</td>
                           <td className="px-2 py-1 text-slate-400">{entity.description || '-'}</td>
                           <td className="px-2 py-1 text-slate-400">{cardClassification || 'UNCLASSIFIED'}</td>
-                          <td className="px-2 py-1 text-slate-500">{cardFileName}</td>
+                          <td className="px-2 py-1 text-slate-500">{cardSourceReference || cardFileName}</td>
+                          <td className="px-2 py-1 text-slate-500 font-mono">{entity.id}</td>
                         </tr>
                       ))}
                     </tbody>
