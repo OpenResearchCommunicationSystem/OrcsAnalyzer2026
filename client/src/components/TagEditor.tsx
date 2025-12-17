@@ -47,10 +47,17 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
     if (selectedTag) {
       setFormData(selectedTag);
       // Populate data-specific fields from keyValuePairs if this is a data tag
+      // Data tags store: {[actualKey]: value, _normalized?: normValue}
       if (selectedTag.type === 'data' && selectedTag.keyValuePairs) {
-        setDataKey(selectedTag.keyValuePairs.key || '');
-        setDataValue(selectedTag.keyValuePairs.value || '');
-        setDataNormalized(selectedTag.keyValuePairs.normalized || '');
+        const kvp = selectedTag.keyValuePairs;
+        // Find the actual key (not _normalized)
+        const actualKey = Object.keys(kvp).find(k => k !== '_normalized') || '';
+        const actualValue = actualKey ? (kvp[actualKey] || '') : '';
+        const normalized = kvp._normalized || '';
+        
+        setDataKey(actualKey);
+        setDataValue(actualValue);
+        setDataNormalized(normalized);
       } else {
         setDataKey('');
         setDataValue('');
@@ -231,14 +238,16 @@ export function TagEditor({ selectedTag, onTagUpdate, onClose, onReferenceClick 
   const handleSave = () => {
     if (selectedTag && formData.name && formData.type) {
       // For data tags, include the data-specific fields in keyValuePairs
+      // Format: {[key]: value, _normalized?: normValue}
       let finalFormData = { ...formData };
-      if (formData.type === 'data') {
-        finalFormData.keyValuePairs = {
-          ...formData.keyValuePairs,
-          key: dataKey,
-          value: dataValue,
-          normalized: dataNormalized,
+      if (formData.type === 'data' && dataKey.trim()) {
+        const newKvp: Record<string, string> = {
+          [dataKey.trim()]: dataValue.trim()
         };
+        if (dataNormalized.trim()) {
+          newKvp._normalized = dataNormalized.trim();
+        }
+        finalFormData.keyValuePairs = newKvp;
       }
       
       updateTag(selectedTag.id, finalFormData);

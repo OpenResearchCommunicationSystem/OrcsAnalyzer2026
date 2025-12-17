@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T18:47:18.507Z",
+  "lastUpdated": "2025-12-17T19:06:51.881Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -221,6 +221,26 @@
         "linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt"
       ],
       "aliases": []
+    },
+    {
+      "id": "8c8ba0d3-a52a-4962-a975-36ceaac9e0dd",
+      "name": "Jasmine Smith",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Jasmine Smith_8c8ba0d3-a52a-4962-a975-36ceaac9e0dd.entity.txt",
+      "references": [
+        "linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "b5a421d9-1184-4925-8ebe-41fcc6b29409",
+      "name": "Senior Security Engineer",
+      "type": "data",
+      "filePath": "/home/runner/workspace/user_data/data/Senior Security Engineer_b5a421d9-1184-4925-8ebe-41fcc6b29409.data.txt",
+      "references": [
+        "linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt"
+      ],
+      "aliases": []
     }
   ],
   "connections": [],
@@ -248,14 +268,26 @@
       "reason": "orphaned_reference",
       "details": "Tag \"Chief Technology Officer\" references file \"linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt\" which does not exist",
       "filePath": "/home/runner/workspace/user_data/data/Chief Technology Officer_af5cf20e-c54c-47dc-9d70-23f75d78df63.data.txt"
+    },
+    {
+      "connectionId": "orphan-8c8ba0d3-a52a-4962-a975-36ceaac9e0dd-linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt",
+      "reason": "orphaned_reference",
+      "details": "Tag \"Jasmine Smith\" references file \"linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt\" which does not exist",
+      "filePath": "/home/runner/workspace/user_data/entities/Jasmine Smith_8c8ba0d3-a52a-4962-a975-36ceaac9e0dd.entity.txt"
+    },
+    {
+      "connectionId": "orphan-b5a421d9-1184-4925-8ebe-41fcc6b29409-linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt",
+      "reason": "orphaned_reference",
+      "details": "Tag \"Senior Security Engineer\" references file \"linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt\" which does not exist",
+      "filePath": "/home/runner/workspace/user_data/data/Senior Security Engineer_b5a421d9-1184-4925-8ebe-41fcc6b29409.data.txt"
     }
   ],
   "stats": {
     "totalFiles": 12,
-    "totalTags": 11,
+    "totalTags": 13,
     "totalConnections": 0,
-    "brokenConnectionCount": 4,
-    "entityCount": 4,
+    "brokenConnectionCount": 6,
+    "entityCount": 5,
     "relationshipCount": 0
   }
 }

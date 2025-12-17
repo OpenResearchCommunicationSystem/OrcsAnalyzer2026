@@ -18,6 +18,8 @@ analyst: "System Import"
 [data:Computer & Network Security](5c574c76-62a5-43a6-8b83-775900b476ba)
 [label:EXPERIENCE](b1ea3fbe-8a30-48d5-b804-ab3f6f37cfc4)
 [data:Chief Technology Officer](af5cf20e-c54c-47dc-9d70-23f75d78df63)
+[entity:Jasmine Smith](8c8ba0d3-a52a-4962-a975-36ceaac9e0dd)
+[data:Senior Security Engineer](b5a421d9-1184-4925-8ebe-41fcc6b29409)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
@@ -37,7 +39,7 @@ Export Date: December 16, 2024
 
 === PROFILE HEADER ===
 
-Name: Jasmine Smith
+Name: [entity:Jasmine Smith](8c8ba0d3-a52a-4962-a975-36ceaac9e0dd)
 Headline: [data:Chief Technology Officer](af5cf20e-c54c-47dc-9d70-23f75d78df63) at CyberNova | Cybersecurity Expert | Board Member
 Location: Austin, Texas Metropolitan Area
 Connections: 500+
@@ -65,7 +67,7 @@ March 2017 - December 2020 | Dallas, TX
 - Built enterprise security suite adopted by 200+ clients
 
 GlobalTech Solutions
-Senior Security Engineer
+[data:Senior Security Engineer](b5a421d9-1184-4925-8ebe-41fcc6b29409)
 June 2012 - February 2017 | Houston, TX
 - Developed intrusion detection systems
 - Led incident response team
