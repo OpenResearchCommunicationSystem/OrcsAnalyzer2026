@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T14:57:37.854Z",
+  "lastUpdated": "2025-12-17T14:52:07.113Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -131,36 +131,16 @@
         "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
       ],
       "aliases": []
-    },
-    {
-      "id": "f3d2ea24-85f7-4aae-aa6d-3de5b5b64cc7",
-      "name": "acquisition",
-      "type": "relationship",
-      "filePath": "/home/runner/workspace/user_data/relationships/acquisition_f3d2ea24-85f7-4aae-aa6d-3de5b5b64cc7.relate.txt",
-      "references": [
-        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "f86d7d99-1d73-4bb6-9906-5de16bee2d98",
-      "name": "3.2 billion",
-      "type": "data",
-      "filePath": "/home/runner/workspace/user_data/data/3.2 billion_f86d7d99-1d73-4bb6-9906-5de16bee2d98.data.txt",
-      "references": [
-        "news_clip_11_test_152e1e9e-2e2e-4c0d-8b58-cb6564c987e8.card.txt"
-      ],
-      "aliases": []
     }
   ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 12,
-    "totalTags": 4,
+    "totalTags": 2,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
     "entityCount": 2,
-    "relationshipCount": 1
+    "relationshipCount": 0
   }
 }
