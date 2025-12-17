@@ -236,9 +236,9 @@ export function RelationshipConnectionModal({
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="" disabled>
+                    <div className="px-2 py-1.5 text-sm text-slate-500">
                       No links in document
-                    </SelectItem>
+                    </div>
                   )}
                 </SelectContent>
               </Select>
