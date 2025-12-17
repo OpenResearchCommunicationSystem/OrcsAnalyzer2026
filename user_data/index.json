@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T17:32:32.319Z",
+  "lastUpdated": "2025-12-17T18:14:22.842Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -65,6 +65,16 @@
       "timestamp": 1765409076816.083
     },
     {
+      "id": "610bdf25003183f3c676cd290ca4c97f",
+      "path": "/home/runner/workspace/user_data/raw/social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt",
+      "name": "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt",
+      "type": "orcs_card",
+      "hash": "d5d95f27819b60fb1c06347d62256e7e6cd1b071b542f23ec6759d8f59999cde",
+      "timestamp": 1765992752317.2056,
+      "cardUuid": "3adbc506-3643-4917-af04-533e2eff622a",
+      "sourceFile": "social_post_1_test.txt"
+    },
+    {
       "id": "2b3c0f8c9206c7c0bbfc9ff397a60474",
       "path": "/home/runner/workspace/user_data/raw/social_post_2_test.txt",
       "name": "social_post_2_test.txt",
@@ -99,64 +109,74 @@
       "timestamp": 1765981045899.047,
       "cardUuid": "64d093ca-edbd-41a9-8f52-93661cb45ed4",
       "sourceFile": "test_news_test.txt"
-    },
-    {
-      "id": "610bdf25003183f3c676cd290ca4c97f",
-      "path": "/home/runner/workspace/user_data/raw/social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt",
-      "name": "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt",
-      "type": "orcs_card",
-      "hash": "d5d95f27819b60fb1c06347d62256e7e6cd1b071b542f23ec6759d8f59999cde",
-      "timestamp": 1765992752317.2056,
-      "cardUuid": "3adbc506-3643-4917-af04-533e2eff622a",
-      "sourceFile": "social_post_1_test.txt"
     }
   ],
   "tags": [
     {
-      "id": "5b4164e5-0b75-4fac-8dad-78491491912a",
+      "id": "a89204a2-7ec6-4743-9e7c-6a734f78b77e",
       "name": "Thomas Greene",
       "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/Thomas Greene_5b4164e5-0b75-4fac-8dad-78491491912a.entity.txt",
+      "filePath": "/home/runner/workspace/user_data/entities/Thomas Greene_a89204a2-7ec6-4743-9e7c-6a734f78b77e.entity.txt",
       "references": [
         "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
       "aliases": []
     },
     {
-      "id": "c68cf7a4-b553-4a18-8a73-bedb88f19a20",
+      "id": "9c87349f-a0af-4459-887f-c7f838848897",
       "name": "VisionEdge Analytics",
       "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/VisionEdge Analytics_c68cf7a4-b553-4a18-8a73-bedb88f19a20.entity.txt",
+      "filePath": "/home/runner/workspace/user_data/entities/VisionEdge Analytics_9c87349f-a0af-4459-887f-c7f838848897.entity.txt",
       "references": [
         "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
       "aliases": []
     },
     {
-      "id": "e4f24c25-d7a8-4e9b-bed3-07d2604fa44b",
+      "id": "0ccfb7fe-b4a9-4734-b4c1-1fc7e5a5f6ab",
       "name": "CloudVest Holdings",
       "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/CloudVest Holdings_e4f24c25-d7a8-4e9b-bed3-07d2604fa44b.entity.txt",
+      "filePath": "/home/runner/workspace/user_data/entities/CloudVest Holdings_0ccfb7fe-b4a9-4734-b4c1-1fc7e5a5f6ab.entity.txt",
       "references": [
         "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
       "aliases": []
     },
     {
-      "id": "3a88694a-0fe8-443f-83d8-c9ffd1d32a0d",
+      "id": "d4fc8073-5a78-4850-812b-1ffbb931d75c",
+      "name": "CyberNova",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/CyberNova_d4fc8073-5a78-4850-812b-1ffbb931d75c.entity.txt",
+      "references": [
+        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "c638bdec-24a1-45d5-afe5-94e31c401e6d",
+      "name": "joined",
+      "type": "label",
+      "filePath": "/home/runner/workspace/user_data/labels/joined_c638bdec-24a1-45d5-afe5-94e31c401e6d.label.txt",
+      "references": [
+        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "685d3285-b8bf-4911-8fe3-f0b8aa59e519",
+      "name": "previously",
+      "type": "label",
+      "filePath": "/home/runner/workspace/user_data/labels/previously_685d3285-b8bf-4911-8fe3-f0b8aa59e519.label.txt",
+      "references": [
+        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "45acd035-51e9-43b2-b4bc-3fe4e666e17c",
       "name": "board of directors",
       "type": "label",
-      "filePath": "/home/runner/workspace/user_data/labels/board of directors_3a88694a-0fe8-443f-83d8-c9ffd1d32a0d.label.txt",
-      "references": [
-        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "bddca075-74c6-4828-8a57-eb7d77cde977",
-      "name": "joined",
-      "type": "relationship",
-      "filePath": "/home/runner/workspace/user_data/relationships/joined_bddca075-74c6-4828-8a57-eb7d77cde977.relate.txt",
+      "filePath": "/home/runner/workspace/user_data/labels/board of directors_45acd035-51e9-43b2-b4bc-3fe4e666e17c.label.txt",
       "references": [
         "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
       ],
@@ -167,10 +187,10 @@
   "brokenConnections": [],
   "stats": {
     "totalFiles": 12,
-    "totalTags": 5,
+    "totalTags": 7,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 3,
-    "relationshipCount": 1
+    "entityCount": 4,
+    "relationshipCount": 0
   }
 }

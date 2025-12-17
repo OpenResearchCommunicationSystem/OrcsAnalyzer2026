@@ -14,10 +14,27 @@ file_size: 166
 analyst: ""
 
 === TAG INDEX START ===
+[entity:Thomas Greene](a89204a2-7ec6-4743-9e7c-6a734f78b77e)
+[entity:VisionEdge Analytics](9c87349f-a0af-4459-887f-c7f838848897)
+[entity:CloudVest Holdings](0ccfb7fe-b4a9-4734-b4c1-1fc7e5a5f6ab)
+[entity:CyberNova](d4fc8073-5a78-4850-812b-1ffbb931d75c)
+[label:joined](c638bdec-24a1-45d5-afe5-94e31c401e6d)
+[label:previously](685d3285-b8bf-4911-8fe3-f0b8aa59e519)
+[label:board of directors](45acd035-51e9-43b2-b4bc-3fe4e666e17c)
 === TAG INDEX END ===
 
+=== LINK INDEX START ===
+# Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
+(a89204a2-7ec6-4743-9e7c-6a734f78b77e) --[joined BOD]--> (9c87349f-a0af-4459-887f-c7f838848897) {rel: true, attr: false} |id:76017f63-ab51-4d4e-9393-ae918b6b2987
+=== LINK INDEX END ===
+
+=== SNIPPET INDEX START ===
+# Format: [start-end] "text" | {metadata} |id:uuid
+[18-163] "Thomas Greene just joined the board of directors at VisionEdge Analytics. He previously held executive roles at CloudVest Holdings and CyberNova." | {comment: "Comment: Need to research how long he stated at other companies."} |id:4a55eea5-1b25-4009-a52e-e41d7de3d286
+=== SNIPPET INDEX END ===
+
 === ORIGINAL CONTENT START ===
-LinkedIn Update — Thomas Greene just joined the board of directors at VisionEdge Analytics. He previously held executive roles at CloudVest Holdings and CyberNova.
+LinkedIn Update — [entity:Thomas Greene](a89204a2-7ec6-4743-9e7c-6a734f78b77e) just [label:joined](c638bdec-24a1-45d5-afe5-94e31c401e6d) the [label:board of directors](45acd035-51e9-43b2-b4bc-3fe4e666e17c) at [entity:VisionEdge Analytics](9c87349f-a0af-4459-887f-c7f838848897). He [label:previously](685d3285-b8bf-4911-8fe3-f0b8aa59e519) held executive roles at [entity:CloudVest Holdings](0ccfb7fe-b4a9-4734-b4c1-1fc7e5a5f6ab) and [entity:CyberNova](d4fc8073-5a78-4850-812b-1ffbb931d75c).
 === ORIGINAL CONTENT END ===
 
 === USER ADDED START ===
