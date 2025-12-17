@@ -14,14 +14,17 @@ file_size: 166
 analyst: ""
 
 === TAG INDEX START ===
+[entity:Thomas Greene](2bb36266-ff7e-47e8-9f18-e391d3ca212d)
+[entity:VisionEdge Analytics](a3ef712f-4a7c-432d-b100-e74f6470ec77)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
 # Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
+(2bb36266-ff7e-47e8-9f18-e391d3ca212d) --[Joined]--> (a3ef712f-4a7c-432d-b100-e74f6470ec77) {rel: true, attr: false, dir: 0} |id:38fb5ea8-67e2-40f3-96b4-88fadfc72eb0
 === LINK INDEX END ===
 
 === ORIGINAL CONTENT START ===
-LinkedIn Update — Thomas Greene just joined the board of directors at VisionEdge Analytics. He previously held executive roles at CloudVest Holdings and CyberNova.
+LinkedIn Update — [entity:Thomas Greene](2bb36266-ff7e-47e8-9f18-e391d3ca212d) just joined the board of directors at [entity:VisionEdge Analytics](a3ef712f-4a7c-432d-b100-e74f6470ec77). He previously held executive roles at CloudVest Holdings and CyberNova.
 === ORIGINAL CONTENT END ===
 
 === USER ADDED START ===

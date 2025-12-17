@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T15:45:36.530Z",
+  "lastUpdated": "2025-12-17T16:46:11.383Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -111,15 +111,36 @@
       "sourceFile": "test_news_test.txt"
     }
   ],
-  "tags": [],
+  "tags": [
+    {
+      "id": "2bb36266-ff7e-47e8-9f18-e391d3ca212d",
+      "name": "Thomas Greene",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/Thomas Greene_2bb36266-ff7e-47e8-9f18-e391d3ca212d.entity.txt",
+      "references": [
+        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "a3ef712f-4a7c-432d-b100-e74f6470ec77",
+      "name": "VisionEdge Analytics",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/VisionEdge Analytics_a3ef712f-4a7c-432d-b100-e74f6470ec77.entity.txt",
+      "references": [
+        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
+      ],
+      "aliases": []
+    }
+  ],
   "connections": [],
   "brokenConnections": [],
   "stats": {
     "totalFiles": 12,
-    "totalTags": 0,
+    "totalTags": 2,
     "totalConnections": 0,
     "brokenConnectionCount": 0,
-    "entityCount": 0,
+    "entityCount": 2,
     "relationshipCount": 0
   }
 }
