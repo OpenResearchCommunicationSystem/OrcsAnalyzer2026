@@ -14,15 +14,12 @@ file_size: 159
 analyst: ""
 
 === TAG INDEX START ===
-
 === TAG INDEX END ===
 
 === LINK INDEX START ===
-
 === LINK INDEX END ===
 
 === SNIPPET INDEX START ===
-
 === SNIPPET INDEX END ===
 
 === ORIGINAL CONTENT START ===

@@ -14,28 +14,19 @@ file_size: 251
 analyst: "Test Analyst Name"
 
 === TAG INDEX START ===
-[entity:TechCorp](c99e12bd-6baa-4327-950c-841759cc495c)
-[entity:BioNex Systems](303e09df-d6a1-4d1a-8c90-4f865e12324e)
-[data:3.2 billion](cee90be4-6ae7-4abd-8676-7df32df87c32)
-[relationship:acquisition](685ed2ff-1fb5-41aa-b3c7-b554c0af25b1)
-[label:CEO](4f0e878b-c232-4a27-99fa-406f78d8a43d)
-[entity:John Smith](7586f6f3-5fea-4d98-9095-3f3cc4726926)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
 # Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
-(c99e12bd-6baa-4327-950c-841759cc495c) --[acquisition]--> (303e09df-d6a1-4d1a-8c90-4f865e12324e) {rel: true, attr: false} |id:397212e1-a171-4e40-9224-5707ca2fbcf1
-(7586f6f3-5fea-4d98-9095-3f3cc4726926) --[CEO OF]--> (c99e12bd-6baa-4327-950c-841759cc495c) {rel: true, attr: false} |id:299de15f-7138-4804-8747-0f1f6552146f
 === LINK INDEX END ===
 
 === SNIPPET INDEX START ===
 # Format: [start-end] "text" | {metadata} |id:uuid
-[489-533] "This is a landmark moment for both companies" | {comment: "Analyst Comment: Comment possibly related to previous court decisions related to monopiles"} |id:85050c2d-6324-491d-bbe3-e5cf19410d71
 === SNIPPET INDEX END ===
 
 === ORIGINAL CONTENT START ===
-BREAKING: [entity:TechCorp](c99e12bd-6baa-4327-950c-841759cc495c) has announced the [relationship:acquisition](685ed2ff-1fb5-41aa-b3c7-b554c0af25b1) of [entity:BioNex Systems](303e09df-d6a1-4d1a-8c90-4f865e12324e) in a deal valued at $[data:3.2 billion](cee90be4-6ae7-4abd-8676-7df32df87c32). The merger is expected to complete in Q3 2025, pending regulatory approval.
-[label:CEO](4f0e878b-c232-4a27-99fa-406f78d8a43d) [entity:John Smith](7586f6f3-5fea-4d98-9095-3f3cc4726926) commented, "This is a landmark moment for both companies."
+BREAKING: TechCorp has announced the acquisition of BioNex Systems in a deal valued at $3.2 billion. The merger is expected to complete in Q3 2025, pending regulatory approval.
+CEO John Smith commented, "This is a landmark moment for both companies."
 === ORIGINAL CONTENT END ===
 
 === USER ADDED START ===

@@ -14,10 +14,6 @@ file_size: 169
 analyst: ""
 
 === TAG INDEX START ===
-[label:VisionEdge Analytics](5ec98c80-5aef-4dc0-8789-f8c1a8bc56c9)
-[data:12345](c69c79e1-90ed-476e-a91c-b9c450ed1836)
-[entity:Ava Cheng](28cd6710-002f-40af-9ea8-1e0dcf8acb53)
-[label:Ultimate Beneficial Owner](18617d0d-358c-40f7-b921-e81d34f79879)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
@@ -25,11 +21,11 @@ analyst: ""
 === LINK INDEX END ===
 
 === ORIGINAL CONTENT START ===
-Company,[label:Ultimate Beneficial Owner](18617d0d-358c-40f7-b921-e81d34f79879),Ownership %
-[label:VisionEdge Analytics](5ec98c80-5aef-4dc0-8789-f8c1a8bc56c9),[entity:Ava Cheng](28cd6710-002f-40af-9ea8-1e0dcf8acb53),45
+Company,Ultimate Beneficial Owner,Ownership %
+VisionEdge Analytics,Ava Cheng,45
 FutureFoods,Maria Lopez,60
 CyberNova,Jasmine O'Neil,35
-[label:VisionEdge Analytics](5ec98c80-5aef-4dc0-8789-f8c1a8bc56c9),John Green,54
+VisionEdge Analytics,John Green,54
 === ORIGINAL CONTENT END ===
 === USER ADDED START ===
 
