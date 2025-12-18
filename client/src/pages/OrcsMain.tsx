@@ -51,7 +51,7 @@ export default function OrcsMain() {
   const [showSnippetModal, setShowSnippetModal] = useState(false);
 
   const { uploadFileAsync, isUploading } = useFileOperations();
-  const { stats }: { stats?: Stats } = useTagOperations();
+  const { stats, deleteTag }: { stats?: Stats; deleteTag: (id: string) => void } = useTagOperations();
   const { toast } = useToast();
   
   // Fetch files for reference navigation
@@ -333,6 +333,11 @@ export default function OrcsMain() {
             selectedText={selectedText}
             onCreateTag={handleCreateTag}
             onClearSelection={() => setSelectedText(null)}
+            onDeleteTag={(tagId) => {
+              deleteTag(tagId);
+              setSelectedTag(null);
+            }}
+            selectedTagId={selectedTag?.id || null}
           />
 
           {/* Document Viewer Area - Flex container for resizable panels */}

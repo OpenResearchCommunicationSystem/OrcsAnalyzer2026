@@ -1,14 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { User, Link, Bookmark, Database, X, Highlighter, MessageCircle } from "lucide-react";
+import { User, Link, Bookmark, Database, X, Highlighter, MessageCircle, Trash2 } from "lucide-react";
 import { TextSelection } from "@shared/schema";
 
 interface TagToolbarProps {
   selectedText: TextSelection | null;
   onCreateTag: (type: string) => void;
   onClearSelection: () => void;
+  onDeleteTag?: (tagId: string) => void;
+  selectedTagId?: string | null;
 }
 
-export function TagToolbar({ selectedText, onCreateTag, onClearSelection }: TagToolbarProps) {
+export function TagToolbar({ selectedText, onCreateTag, onClearSelection, onDeleteTag, selectedTagId }: TagToolbarProps) {
   const containsTaggedText = selectedText?.containsTaggedText ?? false;
   
   return (
@@ -61,6 +63,18 @@ export function TagToolbar({ selectedText, onCreateTag, onClearSelection }: TagT
             >
               <Database className="w-4 h-4 mr-1" />
               Data
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => selectedTagId && onDeleteTag?.(selectedTagId)}
+              disabled={!selectedTagId}
+              className="bg-red-500 bg-opacity-20 text-red-400 hover:bg-opacity-30 border border-red-500 border-opacity-30 disabled:opacity-40 disabled:cursor-not-allowed"
+              data-testid="button-delete-tag"
+              title="Delete selected tag"
+            >
+              <Trash2 className="w-4 h-4" />
             </Button>
             
             <div className="w-px h-6 bg-gray-600 mx-1" />

@@ -1,6 +1,6 @@
 {
   "version": "2025.003",
-  "lastUpdated": "2025-12-17T23:55:46.982Z",
+  "lastUpdated": "2025-12-17T23:57:17.803Z",
   "files": [
     {
       "id": "2d56c333098d4d9452da3ccf0a16b2df",
@@ -189,16 +189,6 @@
       "aliases": []
     },
     {
-      "id": "07a576f8-fb2f-441a-a404-adc01177d874",
-      "name": "CyberNova",
-      "type": "entity",
-      "filePath": "/home/runner/workspace/user_data/entities/CyberNova_07a576f8-fb2f-441a-a404-adc01177d874.entity.txt",
-      "references": [
-        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt"
-      ],
-      "aliases": []
-    },
-    {
       "id": "de2db0db-4c37-45d6-a2bd-8c78e3d19beb",
       "name": "joined the board of directors",
       "type": "relationship",
@@ -275,6 +265,17 @@
       "filePath": "/home/runner/workspace/user_data/relationships/Mother of_17cc0383-bb8c-40c9-906a-a1327edc9920.relate.txt",
       "references": [
         "people_search_smith_household_7a3b9c12-4d5e-6f7a-8b9c-0d1e2f3a4b5c.card.txt"
+      ],
+      "aliases": []
+    },
+    {
+      "id": "07a576f8-fb2f-441a-a404-adc01177d874",
+      "name": "CyberNova",
+      "type": "entity",
+      "filePath": "/home/runner/workspace/user_data/entities/CyberNova_07a576f8-fb2f-441a-a404-adc01177d874.entity.txt",
+      "references": [
+        "social_post_1_test_3adbc506-3643-4917-af04-533e2eff622a.card.txt",
+        "linkedin_profile_jasmine_smith_8c4d0e21-5f6a-7b8c-9d0e-1f2a3b4c5d6e.card.txt"
       ],
       "aliases": []
     }
