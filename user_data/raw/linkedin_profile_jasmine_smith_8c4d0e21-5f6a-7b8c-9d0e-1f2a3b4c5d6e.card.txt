@@ -14,7 +14,6 @@ file_size: 2156
 analyst: "System Import"
 
 === TAG INDEX START ===
-[entity:CyberNova](07a576f8-fb2f-441a-a404-adc01177d874)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
@@ -29,30 +28,30 @@ analyst: "System Import"
 
 === ORIGINAL CONTENT START ===
 LINKEDIN PROFILE EXPORT
-Profile URL: linkedin.com/in/jasmine-smith-[entity:cybernova](07a576f8-fb2f-441a-a404-adc01177d874)
+Profile URL: linkedin.com/in/jasmine-smith-cybernova
 Export Date: December 16, 2024
 
 === PROFILE HEADER ===
 
 Name: Jasmine Smith
-Headline: Chief Technology Officer at [entity:CyberNova](07a576f8-fb2f-441a-a404-adc01177d874) | Cybersecurity Expert | Board Member
+Headline: Chief Technology Officer at CyberNova | Cybersecurity Expert | Board Member
 Location: Austin, Texas Metropolitan Area
 Connections: 500+
 Industry: Computer & Network Security
 
 === ABOUT ===
 
-Experienced technology executive with 15+ years in cybersecurity and enterprise software. Currently serving as CTO at [entity:CyberNova](07a576f8-fb2f-441a-a404-adc01177d874), where I lead our product development and security research teams. Previously held senior engineering roles at several Fortune 500 companies.
+Experienced technology executive with 15+ years in cybersecurity and enterprise software. Currently serving as CTO at CyberNova, where I lead our product development and security research teams. Previously held senior engineering roles at several Fortune 500 companies.
 
 I'm passionate about building secure systems and mentoring the next generation of security professionals. Regular speaker at DEF CON and Black Hat conferences.
 
 === EXPERIENCE ===
 
-[entity:CyberNova](07a576f8-fb2f-441a-a404-adc01177d874)
+CyberNova
 Chief Technology Officer
 January 2021 - Present | Austin, TX
 - Leading a team of 45 engineers and researchers
-- Oversaw development of [entity:CyberNova](07a576f8-fb2f-441a-a404-adc01177d874)'s flagship threat detection platform
+- Oversaw development of CyberNova's flagship threat detection platform
 - Secured $12M Series B funding for product expansion
 
 Titan Security Systems
@@ -85,7 +84,7 @@ B.S. Computer Engineering
 
 === CONTACT INFO ===
 
-Email: jasmine.smith@[entity:cybernova](07a576f8-fb2f-441a-a404-adc01177d874).io (Work)
+Email: jasmine.smith@cybernova.io (Work)
 Email: jasmine.smith@outlook.com (Personal)
 Phone: (512) 555-0148
 Twitter: @JasmineSecure

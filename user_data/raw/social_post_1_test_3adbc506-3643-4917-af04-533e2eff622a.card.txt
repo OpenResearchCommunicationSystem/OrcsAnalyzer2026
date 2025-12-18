@@ -14,28 +14,18 @@ file_size: 166
 analyst: ""
 
 === TAG INDEX START ===
-[entity:Thomas Greene](59a6fd70-29ca-489d-8fa1-8f10c414c161)
-[entity:VisionEdge Analytics](114bade2-3281-48f9-b2af-d96db0c21525)
-[entity:CloudVest Holdings](ce9a6ab0-3aa0-4932-a0fa-5dc876e841f8)
-[entity:CyberNova](07a576f8-fb2f-441a-a404-adc01177d874)
-[relationship:joined the board of directors](de2db0db-4c37-45d6-a2bd-8c78e3d19beb)
-[relationship:previously held executive roles](fa7cddec-ecdf-417a-a798-3fd9838256cc)
 === TAG INDEX END ===
 
 === LINK INDEX START ===
 # Format: (SourceUUID) --[PREDICATE:prop=value]--> (TargetUUID) {flags} |id:uuid
-(59a6fd70-29ca-489d-8fa1-8f10c414c161) --[joined the board of directors]--> (114bade2-3281-48f9-b2af-d96db0c21525) {rel: true, attr: false} |id:9662cf33-a765-4c63-ab3b-8ad175b6d6ea
-(59a6fd70-29ca-489d-8fa1-8f10c414c161) --[previously held executive roles]--> (ce9a6ab0-3aa0-4932-a0fa-5dc876e841f8) {rel: true, attr: false} |id:49e206da-5ef8-4ff8-9dde-cf1fe8a094b3
-(59a6fd70-29ca-489d-8fa1-8f10c414c161) --[previously held executive roles]--> (07a576f8-fb2f-441a-a404-adc01177d874) {rel: true, attr: false} |id:0c5b97b9-019f-4567-ba37-3e69e19eeaa1
 === LINK INDEX END ===
 
 === SNIPPET INDEX START ===
 # Format: [start-end] "text" | {metadata} |id:uuid
-[17-163] " Thomas Greene just joined the board of directors at VisionEdge Analytics. He previously held executive roles at CloudVest Holdings and CyberNova." | {comment: "Here is my comment"} |id:267d5f64-6d3b-476f-a46d-4e3aaa3700b3
 === SNIPPET INDEX END ===
 
 === ORIGINAL CONTENT START ===
-LinkedIn Update — [entity:Thomas Greene](59a6fd70-29ca-489d-8fa1-8f10c414c161) just [relationship:joined the board of directors](de2db0db-4c37-45d6-a2bd-8c78e3d19beb) at [entity:VisionEdge Analytics](114bade2-3281-48f9-b2af-d96db0c21525). He [relationship:previously held executive roles](fa7cddec-ecdf-417a-a798-3fd9838256cc) at [entity:CloudVest Holdings](ce9a6ab0-3aa0-4932-a0fa-5dc876e841f8) and [entity:CyberNova](07a576f8-fb2f-441a-a404-adc01177d874).
+LinkedIn Update — Thomas Greene just joined the board of directors at VisionEdge Analytics. He previously held executive roles at CloudVest Holdings and CyberNova.
 === ORIGINAL CONTENT END ===
 
 === USER ADDED START ===
